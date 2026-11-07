@@ -12,8 +12,20 @@ import {
   Sparkles,
   RefreshCw,
   X,
-  Play
+  Play,
+  Palette
 } from 'lucide-react';
+
+export const CALENDAR_COLOR_PRESETS = [
+  { hex: '#8c4a27', labelET: 'Terrakota / Teak', labelEN: 'Terracotta / Teak' },
+  { hex: '#3b6245', labelET: 'Metsaroheline', labelEN: 'Forest Green' },
+  { hex: '#2b5c75', labelET: 'Sügavsinine', labelEN: 'Deep Blue' },
+  { hex: '#7b2cbf', labelET: 'Ploomililla', labelEN: 'Plum Violet' },
+  { hex: '#b7791f', labelET: 'Merevaik / Ooker', labelEN: 'Amber Ochre' },
+  { hex: '#9b2c2c', labelET: 'Karmiinpunane', labelEN: 'Crimson' },
+  { hex: '#3d4451', labelET: 'Kiltkivi', labelEN: 'Slate Charcoal' },
+  { hex: '#0f766e', labelET: 'Meresinine / Teal', labelEN: 'Marine Teal' }
+];
 
 export default function CalendarView({
   t,
@@ -45,9 +57,12 @@ export default function CalendarView({
   const [notes, setNotes] = useState('');
   const [linkedMaterialIds, setLinkedMaterialIds] = useState([]);
   const [dailyMinutes, setDailyMinutes] = useState(25);
+  const [color, setColor] = useState('#8c4a27');
+  const [planDays, setPlanDays] = useState(5);
 
   // Plan builder inline state per event
   const [planInputMinutesByEvent, setPlanInputMinutesByEvent] = useState({});
+  const [planInputDaysByEvent, setPlanInputDaysByEvent] = useState({});
 
   function openNewEventModal(prefillDate = null) {
     setEditingEventId(null);
@@ -59,6 +74,8 @@ export default function CalendarView({
     setNotes('');
     setLinkedMaterialIds(materials[0] ? [materials[0].id] : []);
     setDailyMinutes(25);
+    setColor('#8c4a27');
+    setPlanDays(5);
     setIsEventModalOpen(true);
   }
 
@@ -72,6 +89,8 @@ export default function CalendarView({
     setNotes(ev.notes || '');
     setLinkedMaterialIds(ev.linkedMaterialIds || []);
     setDailyMinutes(ev.dailyMinutes || 25);
+    setColor(ev.color || '#8c4a27');
+    setPlanDays(ev.planDays || 5);
     setIsEventModalOpen(true);
   }
 
@@ -98,7 +117,9 @@ export default function CalendarView({
       notes: notes.trim(),
       completed: existing ? existing.completed : false,
       linkedMaterialIds,
-      dailyMinutes: Number(dailyMinutes) || 25
+      dailyMinutes: Number(dailyMinutes) || 25,
+      color: color || '#8c4a27',
+      planDays: Number(planDays) || 5
     };
 
     onSaveEvent(savedEvent);
@@ -262,12 +283,18 @@ export default function CalendarView({
                         (ev.title || '').length > 16
                           ? `${ev.title.slice(0, 15).trim()}…`
                           : ev.title;
+                      const pillStyle = !ev.completed && ev.color ? {
+                        backgroundColor: ev.color,
+                        borderColor: ev.color,
+                        color: '#ffffff'
+                      } : undefined;
                       return (
                         <span
                           key={ev.id}
                           className={`day-event-pill ${
                             ev.completed ? 'pill-done' : 'pill-deadline'
                           }`}
+                          style={pillStyle}
                           title={ev.title}
                         >
                           {shortTitle}
@@ -280,12 +307,16 @@ export default function CalendarView({
                         (sess.topicTitle || '').length > 14
                           ? `${sess.topicTitle.slice(0, 13).trim()}…`
                           : sess.topicTitle;
+                      const sessionStyle = !sess.completed && sess.eventColor ? {
+                        borderLeft: `3px solid ${sess.eventColor}`
+                      } : undefined;
                       return (
                         <span
                           key={sess.id}
                           className={`day-event-pill pill-session ${
                             sess.completed ? 'pill-done' : ''
                           }`}
+                          style={sessionStyle}
                           title={`${sess.topicTitle} (${sess.minutes} min)`}
                         >
                           📚 {shortTopic}
@@ -308,11 +339,26 @@ export default function CalendarView({
             const existingPlan = studyPlans.find((p) => p.eventId === ev.id);
             const dateChangedSincePlan =
               existingPlan && existingPlan.targetDate !== ev.date;
+
+            const todayMidnight = new Date();
+            todayMidnight.setHours(0, 0, 0, 0);
+            const [ey, em, ed] = (ev.date || '').split('-').map(Number);
+            const eventMidnight = ey && em && ed ? new Date(ey, em - 1, ed) : new Date();
+            eventMidnight.setHours(0, 0, 0, 0);
+            const diffDaysRaw = Math.round((eventMidnight.getTime() - todayMidnight.getTime()) / 86400000);
+            const daysUntilEvent = Math.max(1, diffDaysRaw);
+
             const currentMinutesVal =
               planInputMinutesByEvent[ev.id] ??
               existingPlan?.dailyMinutes ??
               ev.dailyMinutes ??
               25;
+
+            const currentDaysVal =
+              planInputDaysByEvent[ev.id] ??
+              existingPlan?.totalDays ??
+              ev.planDays ??
+              Math.min(daysUntilEvent, 5);
 
             return (
               <article
@@ -320,9 +366,15 @@ export default function CalendarView({
                 className={`calendar-event-card ${
                   ev.completed ? 'event-completed' : ''
                 }`}
+                style={!ev.completed && ev.color ? { borderLeftColor: ev.color } : undefined}
               >
                 <div className="event-card-top">
                   <div className="material-badges" style={{ marginBottom: 0 }}>
+                    <span
+                      className="event-color-pill-tag"
+                      style={{ backgroundColor: ev.color || '#8c4a27' }}
+                      title={ev.color || '#8c4a27'}
+                    />
                     <span className="badge badge-violet">
                       {t.calendar.types[ev.type] || ev.type}
                     </span>
@@ -410,52 +462,146 @@ export default function CalendarView({
                       </div>
                     )}
 
-                    <div className="plan-controls-row">
-                      <label className="plan-minutes-label">
-                        <Clock size={14} />
-                        <span>{t.calendar.dailyMinutesLabel}</span>
-                      </label>
-                      <div className="plan-minutes-input-group">
-                        <input
-                          type="number"
-                          min={5}
-                          max={240}
-                          step={5}
-                          className="form-input plan-min-input"
-                          value={currentMinutesVal}
-                          onChange={(e) =>
-                            setPlanInputMinutesByEvent((prev) => ({
-                              ...prev,
-                              [ev.id]: e.target.value
-                            }))
-                          }
-                        />
-                        <span className="minutes-unit">
-                          {t.calendar.minutesPerDay}
-                        </span>
-                        <button
-                          type="button"
-                          className="btn btn-primary btn-sm"
-                          onClick={() =>
-                            onCreateOrUpdateStudyPlan(
-                              ev,
-                              Number(currentMinutesVal) || 25
-                            )
-                          }
-                        >
-                          {existingPlan ? (
-                            <>
-                              <RefreshCw size={14} />
-                              <span>{t.calendar.regeneratePlanBtn}</span>
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles size={14} />
-                              <span>{t.calendar.createPlanBtn}</span>
-                            </>
-                          )}
-                        </button>
+                    <div className="plan-builder-header">
+                      <span className="plan-builder-badge">
+                        <Sparkles size={13} />
+                        {t.calendar.planSettingsTitle}
+                      </span>
+                    </div>
+
+                    <div className="plan-inputs-grid">
+                      {/* Daily minutes input & quick chips */}
+                      <div className="plan-input-card">
+                        <label className="plan-minutes-label">
+                          <Clock size={14} />
+                          <span>{t.calendar.dailyMinutesLabel}</span>
+                        </label>
+                        <div className="plan-input-with-presets">
+                          <div className="plan-minutes-input-group">
+                            <input
+                              type="number"
+                              min={5}
+                              max={240}
+                              step={5}
+                              className="form-input plan-min-input"
+                              value={currentMinutesVal}
+                              onChange={(e) =>
+                                setPlanInputMinutesByEvent((prev) => ({
+                                  ...prev,
+                                  [ev.id]: e.target.value
+                                }))
+                              }
+                            />
+                            <span className="minutes-unit">
+                              {t.calendar.minutesPerDay}
+                            </span>
+                          </div>
+                          <div className="plan-quick-presets">
+                            {[15, 25, 45, 60].map((mins) => (
+                              <button
+                                key={mins}
+                                type="button"
+                                className={`preset-chip ${Number(currentMinutesVal) === mins ? 'active' : ''}`}
+                                onClick={() =>
+                                  setPlanInputMinutesByEvent((prev) => ({
+                                    ...prev,
+                                    [ev.id]: mins
+                                  }))
+                                }
+                              >
+                                {mins} min
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
+
+                      {/* Number of days input & quick chips */}
+                      <div className="plan-input-card">
+                        <label className="plan-minutes-label">
+                          <CalendarIcon size={14} />
+                          <span>{t.calendar.planDaysLabel}</span>
+                        </label>
+                        <div className="plan-input-with-presets">
+                          <div className="plan-minutes-input-group">
+                            <input
+                              type="number"
+                              min={1}
+                              max={60}
+                              step={1}
+                              className="form-input plan-min-input"
+                              value={currentDaysVal}
+                              onChange={(e) =>
+                                setPlanInputDaysByEvent((prev) => ({
+                                  ...prev,
+                                  [ev.id]: e.target.value
+                                }))
+                              }
+                            />
+                            <span className="minutes-unit">
+                              {t.calendar.daysUnit}
+                            </span>
+                          </div>
+                          <div className="plan-quick-presets">
+                            {[3, 5, 7].map((dCount) => (
+                              <button
+                                key={dCount}
+                                type="button"
+                                className={`preset-chip ${Number(currentDaysVal) === dCount ? 'active' : ''}`}
+                                onClick={() =>
+                                  setPlanInputDaysByEvent((prev) => ({
+                                    ...prev,
+                                    [ev.id]: dCount
+                                  }))
+                                }
+                              >
+                                {dCount} {dCount === 1 ? t.calendar.daySingular : t.calendar.dayPlural}
+                              </button>
+                            ))}
+                            {daysUntilEvent > 0 && (
+                              <button
+                                type="button"
+                                className={`preset-chip ${Number(currentDaysVal) === daysUntilEvent ? 'active' : ''}`}
+                                onClick={() =>
+                                  setPlanInputDaysByEvent((prev) => ({
+                                    ...prev,
+                                    [ev.id]: daysUntilEvent
+                                  }))
+                                }
+                                title={`${daysUntilEvent} ${t.calendar.daysUntilDeadline}`}
+                              >
+                                {t.calendar.untilDeadlineLabel} ({daysUntilEvent} {daysUntilEvent === 1 ? t.calendar.daySingular : t.calendar.dayPlural})
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="plan-actions-bar mt-3">
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={() =>
+                          onCreateOrUpdateStudyPlan(
+                            ev,
+                            Number(currentMinutesVal) || 25,
+                            Number(currentDaysVal) || Math.min(daysUntilEvent, 5)
+                          )
+                        }
+                      >
+                        {existingPlan ? (
+                          <>
+                            <RefreshCw size={14} />
+                            <span>{t.calendar.regeneratePlanBtn}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles size={14} />
+                            <span>{t.calendar.createPlanBtn}</span>
+                          </>
+                        )}
+                      </button>
                     </div>
 
                     {existingPlan &&
@@ -633,6 +779,26 @@ export default function CalendarView({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                 />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  <Palette size={14} />
+                  <span>{t.calendar.colorLabel}</span>
+                </label>
+                <div className="color-swatches-grid">
+                  {CALENDAR_COLOR_PRESETS.map((preset) => (
+                    <button
+                      key={preset.hex}
+                      type="button"
+                      className={`color-swatch-circle ${color === preset.hex ? 'active' : ''}`}
+                      style={{ backgroundColor: preset.hex }}
+                      onClick={() => setColor(preset.hex)}
+                      title={preset.labelET}
+                      aria-label={preset.labelET}
+                    />
+                  ))}
+                </div>
               </div>
 
               <div className="form-group">

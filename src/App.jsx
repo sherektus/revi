@@ -21,6 +21,10 @@ import {
   saveUILang,
   loadTheme,
   saveTheme,
+  loadFontSize,
+  saveFontSize,
+  loadHighContrast,
+  saveHighContrast,
   loadMaterials,
   saveMaterials,
   loadAllProgress,
@@ -51,6 +55,8 @@ export default function App() {
   );
   const [uiLang, setUiLang] = useState(() => loadUILang());
   const [theme, setTheme] = useState(() => loadTheme());
+  const [fontSize, setFontSize] = useState(() => loadFontSize());
+  const [highContrast, setHighContrast] = useState(() => loadHighContrast());
   const [materials, setMaterials] = useState(() => loadMaterials());
   const [progressMap, setProgressMap] = useState(() =>
     loadAllProgress(loadMaterials())
@@ -96,6 +102,19 @@ export default function App() {
     document.documentElement.setAttribute('lang', uiLang);
     saveUILang(uiLang);
   }, [uiLang]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-font-size', fontSize);
+    saveFontSize(fontSize);
+  }, [fontSize]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute(
+      'data-high-contrast',
+      highContrast ? 'true' : 'false'
+    );
+    saveHighContrast(highContrast);
+  }, [highContrast]);
 
   // Persist currentView and activeMaterialId so refreshing (F5) stays on exact view
   useEffect(() => {
@@ -352,11 +371,20 @@ export default function App() {
     saveCalendarEvents(nextEvents);
   }
 
-  function handleCreateOrUpdateStudyPlan(event, dailyMinutes) {
-    const updatedEvent = { ...event, dailyMinutes };
+  function handleCreateOrUpdateStudyPlan(event, dailyMinutes, planDays = null) {
+    const updatedEvent = {
+      ...event,
+      dailyMinutes: Number(dailyMinutes) || 25,
+      ...(planDays ? { planDays: Number(planDays) } : {})
+    };
     handleSaveCalendarEvent(updatedEvent);
 
-    const generatedPlan = generateStudyPlanForEvent(updatedEvent, materials);
+    const generatedPlan = generateStudyPlanForEvent(
+      updatedEvent,
+      materials,
+      null,
+      planDays
+    );
     const otherPlans = studyPlans.filter((p) => p.eventId !== event.id);
     const nextPlans = [...otherPlans, generatedPlan];
     setStudyPlans(nextPlans);
@@ -468,6 +496,10 @@ export default function App() {
         onChangeLang={handleChangeLang}
         theme={theme}
         onToggleTheme={handleToggleTheme}
+        fontSize={fontSize}
+        onChangeFontSize={setFontSize}
+        highContrast={highContrast}
+        onToggleHighContrast={() => setHighContrast((prev) => !prev)}
         currentView={currentView}
         onNavigate={(view) => {
           setCurrentView(view);
@@ -485,7 +517,7 @@ export default function App() {
         </div>
       )}
 
-      <main className="main-content">
+      <main id="main-content" className="main-content">
         {currentView === 'home' && (
           <HomeView
             t={t}

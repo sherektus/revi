@@ -213,20 +213,17 @@ export default function MockExamView({
                         className={`exercise-option-btn ${
                           isChosen ? 'option-selected' : ''
                         }`}
-                        style={
-                          isChosen
-                            ? {
-                                borderColor: 'var(--accent)',
-                                background: 'var(--accent-soft)'
-                              }
-                            : undefined
-                        }
                         onClick={() => handleSelectOption(qIdx, oIdx)}
                       >
                         <span className="option-letter">
                           {['A', 'B', 'C', 'D'][oIdx] || oIdx + 1}
                         </span>
                         <span className="option-text">{opt}</span>
+                        {isChosen && (
+                          <span className="option-status-badge badge-status-selected">
+                            <span>Valitud</span>
+                          </span>
+                        )}
                       </button>
                     );
                   })}
@@ -317,7 +314,7 @@ export default function MockExamView({
                   <div className="material-badges" style={{ marginBottom: 0 }}>
                     <span
                       className={`badge ${
-                        item.isCorrect ? 'badge-success' : 'badge-warning'
+                        item.isCorrect ? 'badge-success' : 'badge-danger'
                       }`}
                     >
                       {item.isCorrect ? (
@@ -325,10 +322,12 @@ export default function MockExamView({
                       ) : (
                         <XCircle size={13} />
                       )}
-                      {idx + 1}.{' '}
-                      {item.isCorrect
-                        ? t.material.exercises.correctFeedback
-                        : t.material.exercises.incorrectFeedback}
+                      <span>
+                        {idx + 1}.{' '}
+                        {item.isCorrect
+                          ? t.material.exercises.correctFeedback
+                          : t.material.exercises.incorrectFeedback}
+                      </span>
                     </span>
                     <span className="badge badge-neutral">
                       {item.materialTitle}

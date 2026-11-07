@@ -36,6 +36,8 @@ export default function UploadModal({
   const [enabledFeatures, setEnabledFeatures] = useState({
     ...DEFAULT_ENABLED_FEATURES
   });
+  const [academicRecommendation, setAcademicRecommendation] = useState(null);
+  const [isAnalyzingSubject, setIsAnalyzingSubject] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState('reading');
@@ -57,9 +59,52 @@ export default function UploadModal({
       } else {
         setSelectedFiles([]);
         setTitle('');
+        setAcademicRecommendation(null);
       }
     }
   }, [isOpen, initialFile, uiLang]);
+
+  // Compare uploaded document text against textbooks & curricula to suggest subject (non-binding proposal)
+  useEffect(() => {
+    let active = true;
+    if (selectedFiles.length === 0) {
+      setAcademicRecommendation(null);
+      return;
+    }
+
+    async function scanAcademicSubject() {
+      setIsAnalyzingSubject(true);
+      try {
+        const file = selectedFiles[0];
+        const parsed = await parseUploadedFile(file, contentLang);
+        if (!active) return;
+        const res = analyzeDocumentWithTextbooks(
+          parsed.pages || [],
+          title || file.name,
+          contentLang
+        );
+        if (active) {
+          setAcademicRecommendation(res);
+        }
+      } catch (e) {
+        if (active) {
+          const fallback = analyzeDocumentWithTextbooks(
+            [],
+            title || selectedFiles[0]?.name || '',
+            contentLang
+          );
+          setAcademicRecommendation(fallback);
+        }
+      } finally {
+        if (active) setIsAnalyzingSubject(false);
+      }
+    }
+
+    scanAcademicSubject();
+    return () => {
+      active = false;
+    };
+  }, [selectedFiles, contentLang, title]);
 
   if (!isOpen) return null;
 
@@ -492,6 +537,63 @@ export default function UploadModal({
               required
             />
           </div>
+
+          {/* Academic Textbook Subject Proposal (Pakkumine, mitte sund) */}
+          {academicRecommendation && academicRecommendation.hasMatch && (
+            <div className="academic-suggestion-box">
+              <div className="academic-rec-header">
+                <div className="academic-rec-badge">
+                  <Sparkles size={14} />
+                  <span>{t.upload.academicSuggestionTitle}</span>
+                </div>
+                <span className="academic-confidence-chip">
+                  {academicRecommendation.confidence === 'high'
+                    ? t.upload.academicConfidenceHigh
+                    : t.upload.academicConfidenceMed}
+                </span>
+              </div>
+
+              <div className="academic-rec-content">
+                <p className="academic-textbook-lead">
+                  <strong>{t.upload.academicSuggestionBasis}:</strong>{' '}
+                  {academicRecommendation.matchedTextbooks?.[0] || 'Ülikooli alusõpikud ja ainekavad'}
+                </p>
+
+                <div className="academic-rec-actions">
+                  <button
+                    type="button"
+                    className={`btn btn-sm ${subject === academicRecommendation.recommendedSubject ? 'btn-primary' : 'btn-secondary'}`}
+                    onClick={() => {
+                      setSubject(academicRecommendation.recommendedSubject);
+                      setCustomSubject('');
+                    }}
+                  >
+                    <CheckCircle2 size={13} />
+                    <span>{t.upload.academicApplyBtn}: {academicRecommendation.recommendedSubject}</span>
+                  </button>
+
+                  {academicRecommendation.alternativeSubjects?.length > 0 && (
+                    <div className="academic-alt-row">
+                      <span className="academic-alt-label">{t.upload.academicAlternativePrefix}</span>
+                      {academicRecommendation.alternativeSubjects.map((alt) => (
+                        <button
+                          key={alt}
+                          type="button"
+                          className={`chip-btn ${subject === alt ? 'chip-active' : ''}`}
+                          onClick={() => {
+                            setSubject(alt);
+                            setCustomSubject('');
+                          }}
+                        >
+                          {alt}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="material-subject-select" className="form-label">

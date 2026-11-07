@@ -2429,10 +2429,16 @@ export default function MaterialStudyView({
                           <kbd className="keycap-hint">{oIdx + 1}</kbd>
                         )}
                         {isAnswered && isCorrectOption && (
-                          <CheckCircle2 size={19} className="option-status-icon" />
+                          <span className="option-status-badge badge-status-correct">
+                            <CheckCircle2 size={14} />
+                            <span>{t.material?.exercises?.correctFeedback || 'Õige'}</span>
+                          </span>
                         )}
                         {isAnswered && isSelected && !isCorrectOption && (
-                          <XCircle size={19} className="option-status-icon" />
+                          <span className="option-status-badge badge-status-wrong">
+                            <XCircle size={14} />
+                            <span>{t.material?.exercises?.incorrectFeedback || 'Vale'}</span>
+                          </span>
                         )}
                       </button>
                     );

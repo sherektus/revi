@@ -13,7 +13,9 @@ import {
   Play,
   Pause,
   RotateCcw,
-  ShieldCheck
+  ShieldCheck,
+  Type,
+  Eye
 } from 'lucide-react';
 
 export default function Navbar({
@@ -22,6 +24,10 @@ export default function Navbar({
   onChangeLang,
   theme,
   onToggleTheme,
+  fontSize = 'normal',
+  onChangeFontSize,
+  highContrast = false,
+  onToggleHighContrast,
   currentView,
   onNavigate,
   onOpenUploadModal,
@@ -63,9 +69,26 @@ export default function Navbar({
   const mins = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
   const secs = String(secondsLeft % 60).padStart(2, '0');
 
+  function cycleFontSize() {
+    if (fontSize === 'normal') onChangeFontSize?.('large');
+    else if (fontSize === 'large') onChangeFontSize?.('xlarge');
+    else onChangeFontSize?.('normal');
+  }
+
+  const fontSizeLabel =
+    fontSize === 'xlarge'
+      ? t.nav.textSizeXLarge
+      : fontSize === 'large'
+      ? t.nav.textSizeLarge
+      : t.nav.textSizeNormal;
+
   return (
-    <header className="navbar">
-      <div className="navbar-inner container">
+    <>
+      <a href="#main-content" className="skip-to-content-link">
+        {t.nav.skipToContent}
+      </a>
+      <header className="navbar">
+        <div className="navbar-inner container">
         <div className="navbar-left">
           <button
             type="button"
@@ -223,8 +246,38 @@ export default function Navbar({
               className={`theme-icon moon-icon ${theme === 'dark' ? 'active' : ''}`}
             />
           </button>
+
+          {/* Teksti suurendamise nupp vaevnägijatele ja mugavaks lugemiseks */}
+          <button
+            type="button"
+            className={`a11y-action-btn ${fontSize !== 'normal' ? 'active' : ''}`}
+            onClick={cycleFontSize}
+            title={`${t.nav.textSize}: ${fontSizeLabel}`}
+            aria-label={`${t.nav.textSize}: ${fontSizeLabel}`}
+          >
+            <Type size={14} />
+            <span className="font-size-tag">
+              {fontSize === 'xlarge' ? '130%' : fontSize === 'large' ? '115%' : '100%'}
+            </span>
+          </button>
+
+          {/* Vaevnägijate vaade (kõrge kontrast) */}
+          <button
+            type="button"
+            className={`a11y-action-btn ${highContrast ? 'active' : ''}`}
+            onClick={onToggleHighContrast}
+            title={highContrast ? t.nav.highContrastOn : t.nav.highContrast}
+            aria-label={highContrast ? t.nav.highContrastOn : t.nav.highContrast}
+            aria-pressed={highContrast}
+          >
+            <Eye size={15} />
+            <span className="sr-only">
+              {highContrast ? t.nav.highContrastOn : t.nav.highContrastOff}
+            </span>
+          </button>
         </div>
       </div>
     </header>
+    </>
   );
 }

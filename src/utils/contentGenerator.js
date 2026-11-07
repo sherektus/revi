@@ -1,3 +1,22 @@
+import { isNoiseOrUrlLine, stripUrlsAndNoise } from './academicClassifier';
+
+/**
+ * Validates whether a candidate heading, concept term, definition, or question text
+ * is genuine academic study text and not an URL, link fragment, or presentation noise.
+ */
+export function isValidStudyText(str) {
+  if (!str || typeof str !== 'string') return false;
+  const trimmed = str.trim();
+  if (trimmed.length < 3) return false;
+  if (isNoiseOrUrlLine(trimmed)) return false;
+  if (/https?:\/\//i.test(trimmed)) return false;
+  if (/www\.[a-z0-9]/i.test(trimmed)) return false;
+  if (/youtube\.com|youtu\.be/i.test(trimmed)) return false;
+  if (/^https?$/i.test(trimmed)) return false;
+  if (/^(?:link|allikas|viide|url|veebiviide)\b/i.test(trimmed) && trimmed.length < 30) return false;
+  return true;
+}
+
 /**
  * Generates structured, summarized study views (Topics/Summary points, Slide Figures,
  * Flashcards, Exercises, and Formula Sheet items) from parsed file pages/slides
@@ -211,7 +230,14 @@ export function extractConciseTopicHeading(sentences, fallbackIndex, isEN = fals
   const defaultTitle = isEN ? `Topic ${fallbackIndex}` : `Teema ${fallbackIndex}`;
   if (!sentences || sentences.length === 0) return defaultTitle;
 
-  const first = cleanPunctuationAndNoise(sentences[0]);
+  // Filter out any noisy/URL lines first so URLs like youtube.com never become headings
+  const validCandidates = (sentences || [])
+    .map((s) => cleanPunctuationAndNoise(stripUrlsAndNoise(s)))
+    .filter((s) => s && isValidStudyText(s) && !isNoiseOrUrlLine(s));
+
+  if (validCandidates.length === 0) return defaultTitle;
+
+  const first = validCandidates[0];
   if (!first) return defaultTitle;
 
   // If first line is a pure short number assignment like "G=9700t", look for a better phrase or label it clearly
@@ -741,9 +767,13 @@ function extractTopicConcepts({ sentences, heading, sourceRef, topicId }) {
       sepMatch &&
       !/^(?:slaid|slide|lk|page|näide|example|loeng|lecture|joonis|figure|teema)\b/i.test(sepMatch[1])
     ) {
-      const term = cleanPunctuationAndNoise(sepMatch[1]);
-      const def = compressSentenceForStudy(sepMatch[2]);
-      if (term.toLowerCase() !== def.replace(/[.!?]+$/, '').toLowerCase()) {
+      const term = cleanPunctuationAndNoise(stripUrlsAndNoise(sepMatch[1]));
+      const def = compressSentenceForStudy(stripUrlsAndNoise(sepMatch[2]));
+      if (
+        isValidStudyText(term) &&
+        isValidStudyText(def) &&
+        term.toLowerCase() !== def.replace(/[.!?]+$/, '').toLowerCase()
+      ) {
         concepts.push({ term, definition: def, sourceRef, topicId });
         continue;
       }
@@ -754,9 +784,11 @@ function extractTopicConcepts({ sentences, heading, sourceRef, topicId }) {
       /^([A-ZÕÄÖÜŠŽ][A-Za-zÕÄÖÜŠŽõäöüšž0-9\s()-]{2,38}?)\s+(?:on\s+(?!võrdne\b|vajalik\b|ühel\b)|nimetatakse\s+|tähendab\s+|defineeritakse\s+kui\s+|väljendab\s+)(.{12,220})$/
     );
     if (defMatchET) {
-      const term = cleanPunctuationAndNoise(defMatchET[1]).replace(/^(?:kui|et|sest|kuna)\s+/i, '');
-      const def = compressSentenceForStudy(defMatchET[2]);
+      const term = cleanPunctuationAndNoise(stripUrlsAndNoise(defMatchET[1])).replace(/^(?:kui|et|sest|kuna)\s+/i, '');
+      const def = compressSentenceForStudy(stripUrlsAndNoise(defMatchET[2]));
       if (
+        isValidStudyText(term) &&
+        isValidStudyText(def) &&
         term.split(/\s+/).length <= 5 &&
         term.toLowerCase() !== def.replace(/[.!?]+$/, '').toLowerCase()
       ) {
@@ -770,9 +802,9 @@ function extractTopicConcepts({ sentences, heading, sourceRef, topicId }) {
       /^([A-Z][A-Za-z0-9\s()-]{2,38}?)\s+(?:is\s+defined\s+as|refers\s+to|represents|denotes|is\s+a\s+)(.{12,220})$/i
     );
     if (defMatchEN) {
-      const term = cleanPunctuationAndNoise(defMatchEN[1]);
-      const def = compressSentenceForStudy(defMatchEN[2]);
-      if (term.split(/\s+/).length <= 5) {
+      const term = cleanPunctuationAndNoise(stripUrlsAndNoise(defMatchEN[1]));
+      const def = compressSentenceForStudy(stripUrlsAndNoise(defMatchEN[2]));
+      if (isValidStudyText(term) && isValidStudyText(def) && term.split(/\s+/).length <= 5) {
         concepts.push({ term: capitalizeSentenceStart(term), definition: def, sourceRef, topicId });
       }
     }
@@ -1011,6 +1043,8 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
 
   for (const concept of allConcepts) {
     if (flashcards.length >= 14) break;
+    if (!isValidStudyText(concept.term) || !isValidStudyText(concept.definition)) continue;
+    if (/https?|www\.|youtube/i.test(concept.term) || /https?|www\.|youtube/i.test(concept.definition)) continue;
     const question = isEN
       ? `How is "${concept.term}" defined in the context of ${concept.topicTitle}?`
       : `Mida tähendab mõiste „${concept.term}“ teemas „${concept.topicTitle}“?`;
@@ -1026,6 +1060,8 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
 
   for (const formula of allFormulas) {
     if (flashcards.length >= 16) break;
+    if (!isValidStudyText(formula.label) || !isValidStudyText(formula.expression)) continue;
+    if (/https?|www\.|youtube/i.test(formula.label) || /https?|www\.|youtube/i.test(formula.expression)) continue;
     const alreadyAdded = flashcards.some((f) => f.answer === formula.expression);
     if (alreadyAdded) continue;
     const question = isEN
@@ -1043,6 +1079,8 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
 
   for (const factItem of allFacts) {
     if (flashcards.length >= 12) break;
+    if (!isValidStudyText(factItem.fact) || !isValidStudyText(factItem.topicTitle)) continue;
+    if (/https?|www\.|youtube/i.test(factItem.fact) || /https?|www\.|youtube/i.test(factItem.topicTitle)) continue;
     const alreadyAdded = flashcards.some((f) => f.answer === factItem.fact);
     if (alreadyAdded) continue;
     const question = isEN
@@ -1062,8 +1100,8 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
   const exercises = [];
 
   const distractorDefinitions = [
-    ...allConcepts.map((c) => c.definition),
-    ...allFacts.map((f) => f.fact),
+    ...allConcepts.filter((c) => isValidStudyText(c.definition)).map((c) => c.definition),
+    ...allFacts.filter((f) => isValidStudyText(f.fact)).map((f) => f.fact),
     ...(isEN
       ? [
           'The value remains strictly constant regardless of input parameters or boundary conditions.',
@@ -1075,7 +1113,7 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
           'See seos kehtib üksnes juhul, kui keha tihedus läheneb lõpmatusele.',
           'Tegemist on pindpinevusest tingitud kõrvalefektiga, mis tasakaalu ei mõjuta.'
         ])
-  ];
+  ].filter((d) => isValidStudyText(d) && !/https?|www\.|youtube/i.test(d));
 
   const distractorFormulas = [
     ...allFormulas.map((f) => f.expression),

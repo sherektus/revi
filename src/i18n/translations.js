@@ -16,7 +16,16 @@ export const translations = {
       timerBreak: 'Paus',
       timerStart: 'Käivita fookustaimer (25 min)',
       timerPause: 'Peata taimer',
-      timerReset: 'Nulli taimer'
+      timerReset: 'Nulli taimer',
+      a11yMenu: 'Ligipääsetavus ja teksti suurus',
+      textSize: 'Teksti suurus',
+      textSizeNormal: 'Tavaline tekst',
+      textSizeLarge: 'Suur tekst',
+      textSizeXLarge: 'Väga suur tekst',
+      highContrast: 'Vaevnägijate vaade (kõrge kontrast)',
+      highContrastOn: 'Kõrge kontrast sees',
+      highContrastOff: 'Tavaline kontrast',
+      skipToContent: 'Otse peamise sisu juurde'
     },
     featuresConfig: {
       title: 'Õppeviisid ja abivahendid',
@@ -472,7 +481,16 @@ export const translations = {
       timerBreak: 'Break',
       timerStart: 'Start focus timer (25 min)',
       timerPause: 'Pause timer',
-      timerReset: 'Reset timer'
+      timerReset: 'Reset timer',
+      a11yMenu: 'Accessibility & Text Size',
+      textSize: 'Text Size',
+      textSizeNormal: 'Normal text',
+      textSizeLarge: 'Large text',
+      textSizeXLarge: 'Extra large text',
+      highContrast: 'Enhanced contrast mode for low vision',
+      highContrastOn: 'High contrast on',
+      highContrastOff: 'Standard contrast',
+      skipToContent: 'Skip to main content'
     },
     featuresConfig: {
       title: 'Study Views & Tools',

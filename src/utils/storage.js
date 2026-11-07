@@ -13,7 +13,9 @@ const KEYS = {
   NAV_STATE: 'kordur_nav_state_v1',
   CALENDAR_EVENTS: 'kordur_calendar_events_v1',
   STUDY_PLANS: 'kordur_study_plans_v1',
-  SPACED_REP: 'kordur_spaced_rep_v1'
+  SPACED_REP: 'kordur_spaced_rep_v1',
+  FONT_SIZE: 'revi_font_size_v1',
+  HIGH_CONTRAST: 'revi_high_contrast_v1'
 };
 
 const DB_NAME = 'kordur_files_db';
@@ -228,6 +230,39 @@ export function loadTheme() {
 export function saveTheme(theme) {
   try {
     localStorage.setItem(KEYS.THEME, theme);
+  } catch {
+    // ignore
+  }
+}
+
+export function loadFontSize() {
+  try {
+    const saved = localStorage.getItem(KEYS.FONT_SIZE);
+    return saved === 'large' || saved === 'xlarge' ? saved : 'normal';
+  } catch {
+    return 'normal';
+  }
+}
+
+export function saveFontSize(size) {
+  try {
+    localStorage.setItem(KEYS.FONT_SIZE, size);
+  } catch {
+    // ignore
+  }
+}
+
+export function loadHighContrast() {
+  try {
+    return localStorage.getItem(KEYS.HIGH_CONTRAST) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export function saveHighContrast(enabled) {
+  try {
+    localStorage.setItem(KEYS.HIGH_CONTRAST, String(enabled));
   } catch {
     // ignore
   }
