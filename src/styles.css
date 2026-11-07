@@ -394,7 +394,17 @@ h2,
 code,
 pre,
 .formula-code {
+  display: block;
   font-family: 'JetBrains Mono', monospace;
+  font-size: 1.02rem;
+  font-weight: 600;
+  padding: 0.65rem 0.95rem;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-left: 3.5px solid var(--accent-cyan);
+  border-radius: 0.55rem;
+  color: var(--text-primary);
+  overflow-x: auto;
 }
 
 button,
@@ -1938,13 +1948,13 @@ button {
 }
 
 .formula-unit-badge {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  padding: 0.15rem 0.5rem;
+  padding: 0.18rem 0.55rem;
   border-radius: var(--radius-full);
-  background: var(--bg-selected);
-  color: var(--text-primary);
-  border: 1px solid var(--accent-border);
+  background: var(--accent-cyan-soft);
+  color: var(--accent-cyan-text);
+  border: 1px solid var(--accent-cyan-border);
 }
 
 .formula-expression-wrap {
@@ -2009,9 +2019,9 @@ button {
   line-height: 1.5;
   color: var(--text-primary);
   background: var(--bg-subtle);
-  padding: 0.4rem 0.55rem;
-  border-radius: 0.35rem;
-  border-left: 2px solid var(--accent);
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.45rem;
+  border-left: 2.5px solid var(--accent-amber);
 }
 
 /* --- FLASHCARDS & EXERCISES SESSION STAGE --- */
@@ -3804,7 +3814,7 @@ button {
   padding: 0.85rem 1.15rem;
   background: var(--bg-main);
   border: 1px solid var(--border-color);
-  border-left: 4px solid var(--accent);
+  border-left: 4px solid var(--accent-cyan);
   border-radius: 0.75rem;
   display: flex;
   align-items: center;
@@ -3817,7 +3827,7 @@ button {
 [data-theme='dark'] .formula-sheet-expression-box {
   background: color-mix(in srgb, var(--bg-card) 90%, #000);
   border-color: rgba(255, 255, 255, 0.08);
-  border-left-color: var(--accent);
+  border-left-color: var(--accent-cyan);
 }
 
 .formula-sheet-details {

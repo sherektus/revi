@@ -397,8 +397,8 @@ export function loadMaterials() {
         };
       }
 
-      // Automatically upgrade already-uploaded user materials to the clean summarized schema (v3)
-      if (!mat.isSample && Array.isArray(mat.pages) && mat.pages.length > 0 && mat.contentSchemaVersion !== 3) {
+      // Automatically upgrade already-uploaded user materials to the clean summarized schema (v5)
+      if (!mat.isSample && Array.isArray(mat.pages) && mat.pages.length > 0 && (mat.contentSchemaVersion || 0) < 5) {
         try {
           const regenerated = generateStudyContent({
             pages: mat.pages,
@@ -411,7 +411,7 @@ export function loadMaterials() {
 
           return {
             ...mat,
-            contentSchemaVersion: 3,
+            contentSchemaVersion: 5,
             enabledFeatures: mergedFeatures,
             topics: regenerated.topics,
             figures: regenerated.figures?.length ? regenerated.figures : mat.figures || [],
@@ -425,7 +425,7 @@ export function loadMaterials() {
 
       return {
         ...mat,
-        contentSchemaVersion: mat.contentSchemaVersion || 3,
+        contentSchemaVersion: mat.contentSchemaVersion || 5,
         figures: mat.figures || [],
         enabledFeatures: mergedFeatures
       };

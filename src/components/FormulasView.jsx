@@ -44,7 +44,10 @@ export default function FormulasView({
         const cleanTopicTitle = cleanPunctuationAndNoise(tp.title);
         for (const f of tp.formulas || []) {
           const rawExpr = typeof f === 'string' ? f : f.expression || '';
+          const rawLabel = typeof f === 'object' ? f.label || '' : '';
           if (!isGenuineFormulaExpression(rawExpr)) continue;
+          if (/&[a-z0-9_]+=|\bwatch\?|\bindex=|\blist=|\bv=[A-Za-z0-9_-]{5,}/i.test(rawExpr)) continue;
+          if (/&[a-z0-9_]+=|\bwatch\?|\bindex=|\blist=/i.test(rawLabel)) continue;
 
           const sourceRef = (typeof f === 'object' && f.sourceRef) || tp.sourceRef;
           const enriched = enrichFormulaMetadata({
@@ -55,6 +58,9 @@ export default function FormulasView({
             refLabel: sourceRef?.label || '',
             isEN
           });
+
+          const isPlaceholder = (val) =>
+            !val || val === '—' || val === '-' || val === 'undefined' || val.trim() === '';
 
           list.push({
             ...(typeof f === 'object' ? f : {}),
@@ -67,9 +73,18 @@ export default function FormulasView({
                 ? cleanPunctuationAndNoise(f.label)
                 : enriched.label,
             expression: enriched.expression,
-            symbols: (typeof f === 'object' && f.symbols) || enriched.symbols,
-            units: (typeof f === 'object' && f.units) || enriched.units,
-            example: (typeof f === 'object' && f.example) || enriched.example,
+            symbols:
+              typeof f === 'object' && !isPlaceholder(f.symbols)
+                ? f.symbols
+                : enriched.symbols,
+            units:
+              typeof f === 'object' && !isPlaceholder(f.units)
+                ? f.units
+                : enriched.units,
+            example:
+              typeof f === 'object' && !isPlaceholder(f.example)
+                ? f.example
+                : enriched.example,
             topicTitle: cleanTopicTitle,
             materialId: mat.id,
             materialTitle: mat.title,

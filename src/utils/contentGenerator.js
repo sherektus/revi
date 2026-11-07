@@ -234,36 +234,42 @@ export function extractConciseTopicHeading(sentences, fallbackIndex, isEN = fals
   const defaultTitle = isEN ? `Topic ${fallbackIndex}` : `Teema ${fallbackIndex}`;
   if (!sentences || sentences.length === 0) return defaultTitle;
 
-  // Filter out any noisy/URL lines first so URLs like youtube.com never become headings
+  // Filter out any noisy/URL lines or lecturer/course stamps first
   const validCandidates = (sentences || [])
     .map((s) => cleanPunctuationAndNoise(stripUrlsAndNoise(s)))
-    .filter((s) => s && isValidStudyText(s) && !isNoiseOrUrlLine(s));
+    .filter(
+      (s) =>
+        s &&
+        isValidStudyText(s) &&
+        !isNoiseOrUrlLine(s) &&
+        !/\b(?:capt\.|prof\.|dots\.|lektor|mni\s*\d+|teema\s*\d+)\b/i.test(s)
+    );
 
   if (validCandidates.length === 0) return defaultTitle;
 
-  const first = validCandidates[0];
+  const first = cleanPunctuationAndNoise(validCandidates[0]);
   if (!first) return defaultTitle;
 
   // If first line is a pure short number assignment like "G=9700t", look for a better phrase or label it clearly
   if (/^[A-Za-zÕÄÖÜŠŽõäöüšž₀₁₂]+\s*=\s*[\d.,]+\s*[a-zA-Z%/³²]*$/.test(first)) {
-    const descriptive = sentences.find((s) => s.length > 8 && !/^[A-Za-z]+\s*=/.test(s));
+    const descriptive = validCandidates.find((s) => s.length > 8 && !/^[A-Za-z]+\s*=/.test(s));
     if (descriptive) {
       return extractConciseTopicHeading([descriptive], fallbackIndex, isEN);
     }
     const varName = first.split('=')[0].trim();
     if (varName === 'G' || varName === 'B') {
-      return isEN ? 'Buoyancy & Weight Calculation' : 'Raskusjõu ja üleslükkejõu arvutusnäide';
+      return isEN ? 'Buoyancy & Weight Equilibrium' : 'Laeva ujuvustingimus (G = B)';
     }
     return isEN ? `Calculation Example (${first})` : `Arvutusnäide (${first})`;
   }
 
-  // If the first sentence is already a concise heading (<= 48 chars, no verb clauses)
-  if (first.length <= 48 && !/[,;:]/.test(first) && !/\b(?:on|nimetatakse|tähendab|kui|kuna|sest|mille)\b/i.test(first)) {
+  // If the first candidate is already a concise heading (<= 45 chars, no verb clauses)
+  if (first.length <= 45 && !/[,;:]/.test(first) && !/\b(?:on|nimetatakse|tähendab|kui|kuna|sest|mille)\b/i.test(first)) {
     return capitalizeSentenceStart(first.replace(/[.!?]+$/, ''));
   }
 
   // Pattern 1: "X on Y..." -> extract X if X is a clean noun phrase (1-5 words)
-  const onMatch = first.match(/^([A-ZÕÄÖÜŠŽa-zõäöüšž0-9\s()/-]{3,42}?)\s+(?:on|nimetatakse|tähendab|kirjeldab|väljendab|koosneb|tekib|tekivad|mõjub|võrdub)\b/i);
+  const onMatch = first.match(/^([A-ZÕÄÖÜŠŽa-zõäöüšž0-9\s()/-]{3,42}?)\s+(?:on\s+|nimetatakse\s+|tähendab\s+|kirjeldab\s+|väljendab\s+|koosneb\s+|tekib\s+|tekivad\s+|mõjub\s+|võrdub\s+)/i);
   if (onMatch) {
     const candidate = cleanPunctuationAndNoise(onMatch[1]).replace(/^(?:kui|et|sest|kuna)\s+/i, '');
     if (candidate.length >= 4 && candidate.split(/\s+/).length <= 6) {
@@ -285,16 +291,16 @@ export function extractConciseTopicHeading(sentences, fallbackIndex, isEN = fals
 
   // Pattern 3: Take up to the first comma or clause boundary, then trim trailing function words
   let clause = first.split(/[,;:.!?]|\s+(?:mille|mis|kuna|sest|kui|ehk|ning|et)\b/i)[0].trim();
-  clause = clause
+  clause = cleanPunctuationAndNoise(clause)
     .replace(/\b(?:on|ja|ning|või|ehk|kui|kuna|sest|et|enamasti|tavaliselt|alati|peamiselt)$/i, '')
     .replace(/[,;:\-–—]+$/, '')
     .trim();
 
   const words = clause.split(/\s+/);
-  if (words.length > 6) {
-    clause = words.slice(0, 5).join(' ');
+  if (words.length > 5) {
+    clause = words.slice(0, 4).join(' ');
   }
-  clause = clause.replace(/\b(?:on|ja|ning|või|ehk|kui|kuna|sest|et)$/i, '').trim();
+  clause = cleanPunctuationAndNoise(clause.replace(/\b(?:on|ja|ning|või|ehk|kui|kuna|sest|et)$/i, '')).trim();
 
   return capitalizeSentenceStart(clause || defaultTitle);
 }
@@ -786,10 +792,10 @@ function extractTopicConcepts({ sentences, heading, sourceRef, topicId }) {
     const cleaned = cleanPunctuationAndNoise(sent);
     if (!cleaned || cleaned.length < 15) continue;
 
-    // 1. Explicit separator with mandatory whitespace around en-dash/em-dash/hyphen, or colon:
-    // Notice: requires \s+[-–—]\s+ so compound prefixes like "hüdro- ja" are NEVER split!
+    // 1. Explicit separator with mandatory whitespace around en-dash or em-dash, or colon:
+    // Notice: hyphen (-) is explicitly excluded so compound prefixes like "hüdro- ja" are NEVER split!
     const sepMatch = cleaned.match(
-      /^([A-ZÕÄÖÜŠŽa-zõäöüšž0-9\s()Δ]{3,42}?)\s*(?::\s+|\s+[—–-]\s+)\s*(.{12,220})$/
+      /^([A-ZÕÄÖÜŠŽa-zõäöüšž0-9\s()Δ]{3,42}?)\s*(?::\s+|\s+[—–]\s+)\s*(.{12,220})$/
     );
     if (
       sepMatch &&

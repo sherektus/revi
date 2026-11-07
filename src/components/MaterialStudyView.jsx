@@ -1079,7 +1079,23 @@ export default function MaterialStudyView({
 
           <div className="topics-list">
             {displayedTopics.map((tp, idx) => {
-              const cleanTitle = cleanPunctuationAndNoise(tp.title);
+              let rawCandidateTitle = cleanPunctuationAndNoise(tp.title);
+              if (
+                !rawCandidateTitle ||
+                /\b(?:capt\.|prof\.|dots\.|lektor|mni\s*\d+|teema\s*\d+)\b/i.test(rawCandidateTitle) ||
+                rawCandidateTitle.length > 50 ||
+                /\b(?:on|nimetatakse|tähendab|mille)\b/i.test(rawCandidateTitle)
+              ) {
+                rawCandidateTitle = extractConciseTopicHeading(
+                  [tp.title, tp.summary, ...(tp.bulletPoints || [])],
+                  idx + 1,
+                  material.contentLang === 'en'
+                );
+              }
+              const cleanTitle = cleanPunctuationAndNoise(rawCandidateTitle)
+                .replace(/^[•●▪◦‣⁃\-–—*+>·.,;:()\s\d.)]+/u, '')
+                .replace(/[,:;]+$/, '')
+                .trim();
               const cleanSummary = cleanPunctuationAndNoise(tp.summary);
               const normSummary = cleanSummary.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
 
@@ -1098,10 +1114,16 @@ export default function MaterialStudyView({
                 return term.toLowerCase() !== def.replace(/[.!?]+$/, '').toLowerCase();
               });
 
+              const isPlaceholder = (val) =>
+                !val || val === '—' || val === '-' || val === 'undefined' || String(val).trim() === '';
+
               const validFormulas = (tp.formulas || [])
                 .map((f) => {
                   const rawExpr = typeof f === 'string' ? f : f.expression || '';
+                  const rawLabel = typeof f === 'object' ? f.label || '' : '';
                   if (!isGenuineFormulaExpression(rawExpr)) return null;
+                  if (/&[a-z0-9_]+=|\bwatch\?|\bindex=|\blist=|\bv=[A-Za-z0-9_-]{5,}/i.test(rawExpr)) return null;
+                  if (/&[a-z0-9_]+=|\bwatch\?|\bindex=|\blist=/i.test(rawLabel)) return null;
                   const enriched = enrichFormulaMetadata({
                     rawLabel: typeof f === 'object' ? f.label : '',
                     rawExpression: rawExpr,
@@ -1112,11 +1134,27 @@ export default function MaterialStudyView({
                   });
                   return {
                     ...(typeof f === 'object' ? f : {}),
-                    label: enriched.label,
+                    label:
+                      typeof f === 'object' &&
+                      f.label &&
+                      !/^(?:valem\s*(?:\/|või)\s*seos|põhiseos|formula\s*\/\s*relation|core\s*relation)/i.test(
+                        f.label
+                      )
+                        ? cleanPunctuationAndNoise(f.label)
+                        : enriched.label,
                     expression: enriched.expression,
-                    symbols: (typeof f === 'object' && f.symbols) || enriched.symbols,
-                    units: (typeof f === 'object' && f.units) || enriched.units,
-                    example: (typeof f === 'object' && f.example) || enriched.example
+                    symbols:
+                      typeof f === 'object' && !isPlaceholder(f.symbols)
+                        ? f.symbols
+                        : enriched.symbols,
+                    units:
+                      typeof f === 'object' && !isPlaceholder(f.units)
+                        ? f.units
+                        : enriched.units,
+                    example:
+                      typeof f === 'object' && !isPlaceholder(f.example)
+                        ? f.example
+                        : enriched.example
                   };
                 })
                 .filter(Boolean);
