@@ -1,6 +1,6 @@
 export const translations = {
   et: {
-    appName: 'Kordur',
+    appName: 'Revi',
     appTagline: 'Nutikas õppematerjalide kordaja',
     nav: {
       home: 'Avaleht',
@@ -14,7 +14,7 @@ export const translations = {
       badge: 'Nutikas õppimine tudengitele',
       title: 'Muuda loenguslaidid ja konspektid aktiivseks kordamiseks',
       subtitle:
-        'Laadi üles PDF, PPTX või TXT fail. Kordur jaotab materjali teemadeks ning loob automaatselt kordamispunktid, mälukaardid ja enesekontrolli harjutused koos viidetega algallikale.',
+        'Laadi üles PDF, PPTX või TXT fail. Revi jaotab materjali teemadeks ning loob automaatselt kordamispunktid, mälukaardid ja enesekontrolli harjutused koos viidetega algallikale.',
       addBtn: 'Lisa materjal',
       continueBtn: 'Jätka kordamist',
       trySampleBtn: 'Proovi näidismaterjali „Tuletised“',
@@ -186,7 +186,7 @@ export const translations = {
     ]
   },
   en: {
-    appName: 'Kordur',
+    appName: 'Revi',
     appTagline: 'Smart Study Companion for Students',
     nav: {
       home: 'Home',
@@ -200,7 +200,7 @@ export const translations = {
       badge: 'Smart study workflows for students',
       title: 'Turn lecture slides, PDFs, and notes into active recall',
       subtitle:
-        'Upload a PDF, PPTX, or TXT file. Kordur organizes your material into topics and generates study points, flashcards, and practice exercises linked to your original slides or pages.',
+        'Upload a PDF, PPTX, or TXT file. Revi organizes your material into topics and generates study points, flashcards, and practice exercises linked to your original slides or pages.',
       addBtn: 'Add material',
       continueBtn: 'Continue studying',
       trySampleBtn: 'Try sample material “Tuletised / Derivatives”',
