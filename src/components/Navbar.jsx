@@ -6,6 +6,7 @@ import {
   ClipboardCheck,
   Sigma,
   Plus,
+  Minus,
   Sun,
   Moon,
   Layers,
@@ -119,18 +120,43 @@ export default function Navbar({
   const mins = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
   const secs = String(secondsLeft % 60).padStart(2, '0');
 
-  function cycleFontSize() {
-    if (fontSize === 'normal') onChangeFontSize?.('large');
-    else if (fontSize === 'large') onChangeFontSize?.('xlarge');
-    else onChangeFontSize?.('normal');
+  // Font size steps: 80% (xsmall), 90% (small), 100% (normal), 115% (large), 130% (xlarge), 145% (xxlarge)
+  const FONT_SIZE_STEPS = [80, 90, 100, 115, 130, 145];
+
+  const currentPercent = (() => {
+    if (fontSize === 'normal' || fontSize === 100 || fontSize === '100') return 100;
+    if (fontSize === 'large' || fontSize === 115 || fontSize === '115') return 115;
+    if (fontSize === 'xlarge' || fontSize === 130 || fontSize === '130') return 130;
+    if (fontSize === 'small' || fontSize === 90 || fontSize === '90') return 90;
+    if (fontSize === 'xsmall' || fontSize === 80 || fontSize === '80') return 80;
+    const num = Number(fontSize);
+    return !isNaN(num) && num > 0 ? num : 100;
+  })();
+
+  const currentStepIndex = (() => {
+    const directIdx = FONT_SIZE_STEPS.indexOf(currentPercent);
+    if (directIdx !== -1) return directIdx;
+    return FONT_SIZE_STEPS.reduce(
+      (prevIdx, currVal, idx) =>
+        Math.abs(currVal - currentPercent) <
+        Math.abs(FONT_SIZE_STEPS[prevIdx] - currentPercent)
+          ? idx
+          : prevIdx,
+      2
+    );
+  })();
+
+  function handleDecreaseFontSize() {
+    if (currentStepIndex > 0) {
+      onChangeFontSize?.(FONT_SIZE_STEPS[currentStepIndex - 1]);
+    }
   }
 
-  const fontSizeLabel =
-    fontSize === 'xlarge'
-      ? t.nav.textSizeXLarge
-      : fontSize === 'large'
-      ? t.nav.textSizeLarge
-      : t.nav.textSizeNormal;
+  function handleIncreaseFontSize() {
+    if (currentStepIndex < FONT_SIZE_STEPS.length - 1) {
+      onChangeFontSize?.(FONT_SIZE_STEPS[currentStepIndex + 1]);
+    }
+  }
 
   return (
     <>
@@ -442,19 +468,61 @@ export default function Navbar({
               />
             </button>
 
-            {/* Teksti suurendamise nupp vaevnägijatele ja mugavaks lugemiseks */}
-            <button
-              type="button"
-              className={`a11y-action-btn ${fontSize !== 'normal' ? 'active' : ''}`}
-              onClick={cycleFontSize}
-              title={`${t.nav.textSize}: ${fontSizeLabel}`}
-              aria-label={`${t.nav.textSize}: ${fontSizeLabel}`}
+            {/* Teksti suurendamise ja vähendamise stepper vaevnägijatele ja kohandamiseks */}
+            <div
+              className="font-size-stepper"
+              role="group"
+              aria-label={t.nav?.textSize || 'Teksti suurus'}
             >
-              <Type size={14} />
-              <span className="font-size-tag">
-                {fontSize === 'xlarge' ? '130%' : fontSize === 'large' ? '115%' : '100%'}
-              </span>
-            </button>
+              <button
+                type="button"
+                className="font-step-btn"
+                onClick={handleDecreaseFontSize}
+                disabled={currentStepIndex <= 0}
+                title={
+                  uiLang === 'en'
+                    ? 'Make text smaller (−)'
+                    : 'Tee tekst väiksemaks (−)'
+                }
+                aria-label={
+                  uiLang === 'en' ? 'Make text smaller' : 'Tee tekst väiksemaks'
+                }
+              >
+                <Minus size={12} strokeWidth={2.4} />
+              </button>
+
+              <button
+                type="button"
+                className={`font-size-indicator ${currentPercent !== 100 ? 'custom-size' : ''}`}
+                onClick={() => onChangeFontSize?.(100)}
+                title={
+                  uiLang === 'en'
+                    ? `Text size: ${currentPercent}%. Click to reset to 100%`
+                    : `Teksti suurus: ${currentPercent}%. Klõpsa, et lähtestada 100% peale`
+                }
+                aria-label={`${t.nav?.textSize || 'Teksti suurus'}: ${currentPercent}%`}
+              >
+                <Type size={13} />
+                <span className="font-size-tag">{currentPercent}%</span>
+              </button>
+
+              <button
+                type="button"
+                className="font-step-btn"
+                onClick={handleIncreaseFontSize}
+                disabled={currentStepIndex >= FONT_SIZE_STEPS.length - 1}
+                title={
+                  uiLang === 'en'
+                    ? 'Make text larger (+)'
+                    : 'Tee tekst suuremaks (+)'
+                }
+                aria-label={
+                  uiLang === 'en' ? 'Make text larger' : 'Tee tekst suuremaks'
+                }
+              >
+                <Plus size={12} strokeWidth={2.4} />
+              </button>
+            </div>
 
             {/* Vaevnägijate vaade (kõrge kontrast) */}
             <button

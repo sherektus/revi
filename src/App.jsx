@@ -104,8 +104,22 @@ export default function App() {
   }, [uiLang]);
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-font-size', fontSize);
-    saveFontSize(fontSize);
+    const percent =
+      fontSize === 'xlarge'
+        ? 130
+        : fontSize === 'large'
+        ? 115
+        : fontSize === 'small'
+        ? 90
+        : fontSize === 'xsmall'
+        ? 80
+        : fontSize === 'normal'
+        ? 100
+        : Number(fontSize) || 100;
+
+    document.documentElement.setAttribute('data-font-size', String(percent));
+    document.documentElement.style.fontSize = `${(16 * percent) / 100}px`;
+    saveFontSize(percent);
   }, [fontSize]);
 
   useEffect(() => {
