@@ -215,6 +215,7 @@ export default function UploadModal({
           lastOpenedAt: now,
           enabledFeatures,
           pages,
+          figures: generated.figures || [],
           topics: generated.topics,
           flashcards: generated.flashcards,
           exercises: generated.exercises
@@ -245,6 +246,7 @@ export default function UploadModal({
           fileName: file.name,
           fileType,
           pages,
+          figures: generated.figures || [],
           topics: generated.topics,
           flashcards: generated.flashcards,
           exercises: generated.exercises
@@ -285,6 +287,7 @@ export default function UploadModal({
 
   const featureKeys = [
     'summary',
+    'figures',
     'flashcards',
     'exercises',
     'quickTest',
@@ -368,7 +371,9 @@ export default function UploadModal({
               <div className="selected-files-header">
                 <span className="file-label-caption">
                   {t.upload.selectedFile} ({selectedFiles.length}{' '}
-                  {t.upload.filesCountSuffix})
+                  {selectedFiles.length === 1
+                    ? t.upload.fileSingular || 'fail'
+                    : t.upload.filesCountSuffix})
                 </span>
                 {selectedFiles.length > 1 && (
                   <span className="badge badge-violet">

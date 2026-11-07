@@ -95,7 +95,7 @@ export default function LibraryView({
       const chosenMats = materials.filter((m) => next.includes(m.id));
       if (chosenMats.length >= 2) {
         setCombineTitle(
-          chosenMats.map((m) => m.title.split('—')[0].trim()).join(' + ')
+          chosenMats.map((m) => m.title.split(/[—–]/)[0].trim()).join(' + ')
         );
         if (chosenMats[0]?.subject) {
           setCombineSubject(chosenMats[0].subject);
@@ -137,6 +137,7 @@ export default function LibraryView({
 
   const featureKeys = [
     'summary',
+    'figures',
     'flashcards',
     'exercises',
     'quickTest',

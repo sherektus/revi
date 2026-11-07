@@ -1,75 +1,75 @@
 :root,
 [data-theme='light'] {
-  /* Sunlit Travertine, Teak Wood & Botanical Sanctuary */
-  --bg-main: #f5efe6;
-  --bg-card: #fcf9f4;
-  --bg-subtle: #ebe2d3;
-  --bg-elevated: #fffdf9;
-  --text-primary: #2a1f17;
-  --text-secondary: #5c4b3c;
-  --text-muted: #877362;
-  --border-color: #e2d5c3;
-  --border-strong: #cfbea7;
+  /* Warm Limestone, Alabaster White, Greige Stone & Brushed Bronze */
+  --bg-main: #f5f4f1;
+  --bg-card: #fcfbfa;
+  --bg-subtle: #ebe8e3;
+  --bg-elevated: #ffffff;
+  --text-primary: #23211f;
+  --text-secondary: #5c5650;
+  --text-muted: #8a827a;
+  --border-color: #e2ded8;
+  --border-strong: #ccc6be;
 
-  /* Warm Teak / Terracotta Wood Accent */
-  --accent: #8c4a27;
-  --accent-hover: #733a1b;
-  --accent-soft: rgba(140, 74, 39, 0.11);
-  --accent-border: rgba(140, 74, 39, 0.28);
-  --accent-text: #733a1b;
+  /* Smoked Oak & Warm Taupe-Stone Accent */
+  --accent: #635547;
+  --accent-hover: #4d4237;
+  --accent-soft: rgba(99, 85, 71, 0.09);
+  --accent-border: rgba(99, 85, 71, 0.25);
+  --accent-text: #4a3f33;
 
-  /* Lush Botanical Sage / Forest Green */
-  --success: #3b6245;
-  --success-soft: rgba(59, 98, 69, 0.12);
-  --success-border: rgba(59, 98, 69, 0.3);
+  /* Eucalyptus & Olive Leaf Green */
+  --success: #4a5d46;
+  --success-soft: rgba(74, 93, 70, 0.11);
+  --success-border: rgba(74, 93, 70, 0.28);
 
-  /* Warm Honey / Ochre */
-  --warning: #b86b1b;
-  --warning-soft: rgba(184, 107, 27, 0.12);
-  --warning-border: rgba(184, 107, 27, 0.3);
+  /* Brushed Antique Brass / Bronze */
+  --warning: #9c7b4c;
+  --warning-soft: rgba(156, 123, 76, 0.12);
+  --warning-border: rgba(156, 123, 76, 0.3);
 
-  /* Terracotta Clay Red */
-  --danger: #b9382c;
-  --danger-soft: rgba(185, 56, 44, 0.11);
-  --danger-border: rgba(185, 56, 44, 0.28);
+  /* Muted Mineral Terracotta */
+  --danger: #a6443b;
+  --danger-soft: rgba(166, 68, 59, 0.1);
+  --danger-border: rgba(166, 68, 59, 0.26);
 
-  --shadow-sm: 0 3px 12px rgba(42, 31, 23, 0.05);
-  --shadow-md: 0 10px 28px rgba(42, 31, 23, 0.08);
-  --shadow-lg: 0 22px 48px rgba(42, 31, 23, 0.13);
+  --shadow-sm: 0 3px 12px rgba(35, 33, 31, 0.04);
+  --shadow-md: 0 10px 28px rgba(35, 33, 31, 0.07);
+  --shadow-lg: 0 22px 48px rgba(35, 33, 31, 0.11);
 }
 
 [data-theme='dark'] {
-  /* Evening Walnut Study Lounge & Warm Amber Glow */
-  --bg-main: #18130f;
-  --bg-card: #221b16;
-  --bg-subtle: #2d241d;
-  --bg-elevated: #28201a;
-  --text-primary: #f4ece1;
-  --text-secondary: #bba997;
-  --text-muted: #8a7766;
-  --border-color: #382d24;
-  --border-strong: #4c3d32;
+  /* Volcanic Basalt, Matte Charcoal & Warm Greige Stone */
+  --bg-main: #1b1a18;
+  --bg-card: #242220;
+  --bg-subtle: #2f2c29;
+  --bg-elevated: #2a2725;
+  --text-primary: #f2efe9;
+  --text-secondary: #b5ada4;
+  --text-muted: #857d75;
+  --border-color: #36332f;
+  --border-strong: #4a4540;
 
-  /* Warm Sunlit Teak / Amber Accent */
-  --accent: #c97a4b;
-  --accent-hover: #db8c5d;
-  --accent-soft: rgba(201, 122, 75, 0.16);
-  --accent-border: rgba(201, 122, 75, 0.38);
-  --accent-text: #e7a77e;
+  /* Warm Taupe-Bronze & Brushed Stone Accent */
+  --accent: #8f7a62;
+  --accent-hover: #a38d74;
+  --accent-soft: rgba(176, 155, 130, 0.14);
+  --accent-border: rgba(176, 155, 130, 0.32);
+  --accent-text: #d6c5b1;
 
-  /* Mossy Forest Green */
-  --success: #62946d;
-  --success-soft: rgba(98, 148, 109, 0.16);
-  --success-border: rgba(98, 148, 109, 0.36);
+  /* Soft Eucalyptus Sage */
+  --success: #768f71;
+  --success-soft: rgba(118, 143, 113, 0.15);
+  --success-border: rgba(118, 143, 113, 0.34);
 
-  /* Warm Golden Amber */
-  --warning: #df9543;
-  --warning-soft: rgba(223, 149, 67, 0.15);
-  --warning-border: rgba(223, 149, 67, 0.35);
+  /* Brushed Antique Brass */
+  --warning: #c4a06a;
+  --warning-soft: rgba(196, 160, 106, 0.15);
+  --warning-border: rgba(196, 160, 106, 0.34);
 
-  --danger: #e06356;
-  --danger-soft: rgba(224, 99, 86, 0.15);
-  --danger-border: rgba(224, 99, 86, 0.35);
+  --danger: #d46b61;
+  --danger-soft: rgba(212, 107, 97, 0.15);
+  --danger-border: rgba(212, 107, 97, 0.34);
 
   --shadow-sm: 0 3px 12px rgba(0, 0, 0, 0.28);
   --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.38);

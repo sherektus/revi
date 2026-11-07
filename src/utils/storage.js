@@ -909,6 +909,7 @@ export function combineMaterialsIntoCollection({
   const colId = `col-${Date.now()}`;
 
   const combinedPages = [];
+  const combinedFigures = [];
   const combinedTopics = [];
   const combinedFlashcards = [];
   const combinedExercises = [];
@@ -1020,6 +1021,30 @@ export function combineMaterialsIntoCollection({
       });
     });
 
+    (mat.figures || []).forEach((fig) => {
+      const origNum = fig.sourceRef?.number || 1;
+      const mappedNum = pageNumMap[origNum] || pageOffset + 1;
+      const origLabel = fig.sourceRef?.label || `Slaid ${origNum}`;
+      const newLabel = origLabel.includes(shortSource)
+        ? origLabel
+        : `${shortSource} • ${origLabel}`;
+      const nextFigNum = combinedFigures.length + 1;
+
+      combinedFigures.push({
+        ...fig,
+        id: `${colId}-fig-${nextFigNum}`,
+        figureNumber: nextFigNum,
+        topicId:
+          topicIdMap[fig.topicId] ||
+          combinedTopics[combinedTopics.length - 1]?.id,
+        sourceRef: {
+          ...(fig.sourceRef || { type: 'slide' }),
+          number: mappedNum,
+          label: newLabel
+        }
+      });
+    });
+
     pageOffset += Math.max(1, matPages.length);
   });
 
@@ -1043,6 +1068,7 @@ export function combineMaterialsIntoCollection({
       ...(enabledFeatures || {})
     },
     pages: combinedPages,
+    figures: combinedFigures,
     topics: combinedTopics,
     flashcards: combinedFlashcards,
     exercises: combinedExercises

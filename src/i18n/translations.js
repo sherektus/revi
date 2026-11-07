@@ -80,6 +80,7 @@ export const translations = {
       addMoreFilesBtn: 'Lisa veel faile sellesse kogumisse',
       removeFileBtn: 'Eemalda',
       multiFileBadge: 'Ühine kogum',
+      fileSingular: 'fail',
       filesCountSuffix: 'faili',
       changeFile: 'Tühjenda valik',
       titleLabel: 'Materjali pealkiri',
@@ -147,7 +148,7 @@ export const translations = {
       combineModalSubtitle:
         'Vali olemasolevad slaidiesitlused, PDF-id või konspektid ning loo neist üks ühine kordamispunktide, mälukaartide ja harjutuste kogum.',
       combineTitleLabel: 'Ühise kogumi pealkiri',
-      combineTitlePlaceholder: 'nt Matemaatiline analüüs — Loengud 1–5 koondkogum',
+      combineTitlePlaceholder: 'nt Matemaatiline analüüs – loengute 1–5 koondkogum',
       combineSelectLabel: 'Vali ühendatavad materjalid (vähemalt 2):',
       combineCreateBtn: 'Ühenda ühiseks kogumiks',
       collectionBadge: 'Ühine kogum'
@@ -491,6 +492,7 @@ export const translations = {
       addMoreFilesBtn: 'Add more files to this collection',
       removeFileBtn: 'Remove',
       multiFileBadge: 'Unified collection',
+      fileSingular: 'file',
       filesCountSuffix: 'files',
       changeFile: 'Clear selection',
       titleLabel: 'Material title',
