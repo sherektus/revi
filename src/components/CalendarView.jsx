@@ -28,6 +28,21 @@ export const CALENDAR_COLOR_PRESETS = [
   { hex: '#0f766e', labelET: 'Meresinine / Teal', labelEN: 'Marine Teal' }
 ];
 
+function formatCalendarPillTitle(title) {
+  if (!title) return '';
+  let s = String(title).trim();
+  s = s
+    .replace(/^Matemaatilise\s+analüüsi\s+(?:kontrolltöö|KT)[:\s]*/i, 'KT: ')
+    .replace(/^Kontrolltöö[:\s]*/i, 'KT: ')
+    .replace(/^Eksam[:\s]*/i, 'Eksam: ')
+    .replace(/^Arvestus[:\s]*/i, 'Arv: ')
+    .replace(/^Test[:\s]*/i, 'Test: ');
+  if (s.length > 15) {
+    return `${s.slice(0, 14).trim()}…`;
+  }
+  return s;
+}
+
 export default function CalendarView({
   t,
   materials,
@@ -426,10 +441,7 @@ export default function CalendarView({
 
                   <div className="day-pills-stack">
                     {cell.dayEvents.slice(0, 2).map((ev) => {
-                      const shortTitle =
-                        (ev.title || '').length > 16
-                          ? `${ev.title.slice(0, 15).trim()}…`
-                          : ev.title;
+                      const shortTitle = formatCalendarPillTitle(ev.title);
                       const pillStyle = !ev.completed && ev.color ? {
                         backgroundColor: ev.color,
                         borderColor: ev.color,
