@@ -197,11 +197,6 @@ export default function HomeView({
       <section className="hero-section">
         <div className="hero-content">
           <div className="hero-badge-row">
-            <div className="hero-badge">
-              <Sparkles size={15} />
-              <span>{t.hero.badge}</span>
-            </div>
-
             <button
               type="button"
               className="btn btn-secondary btn-sm customize-dashboard-btn"
