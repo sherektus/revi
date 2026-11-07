@@ -789,12 +789,14 @@ const DEFAULT_SAMPLE_EVENTS = [
     title: 'Matemaatilise analüüsi kontrolltöö: tuletised',
     type: 'test', // 'test' | 'exam' | 'homework' | 'project' | 'other'
     subject: 'Matemaatiline analüüs',
+    color: '#8c4a27', // warm terracotta / teak
     date: '2026-11-13',
     time: '10:15',
     notes: 'Slaidid 1–5: tuletise definitsioon, puutuja võrrand, korrutise ja jagatise reegel, ahelreegel ning ekstreemumid.',
     completed: false,
     linkedMaterialIds: ['sample-tuletised-et'],
-    dailyMinutes: 25
+    dailyMinutes: 25,
+    planDays: 5
   }
 ];
 
@@ -842,19 +844,36 @@ export function saveStudyPlans(plans) {
  * Generates or regenerates a multi-day Study Plan ("Koosta kordamisplaan") for a calendar event
  * based on linked materials, deadline date, and available daily minutes!
  */
-export function generateStudyPlanForEvent(event, materials, startDateStr = null) {
+export function generateStudyPlanForEvent(
+  event,
+  materials,
+  startDateStr = null,
+  customDays = null
+) {
   const baseDate = startDateStr ? new Date(startDateStr) : new Date();
   const startDay = new Date(
     Date.UTC(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate())
   );
 
   const [y, m, d] = (event.date || '').split('-').map(Number);
-  const targetDay = y && m && d ? new Date(Date.UTC(y, m - 1, d)) : new Date(startDay.getTime() + 5 * 86400000);
+  const targetDay =
+    y && m && d
+      ? new Date(Date.UTC(y, m - 1, d))
+      : new Date(startDay.getTime() + 5 * 86400000);
 
-  const diffDays = Math.max(
+  const naturalDiffDays = Math.max(
     1,
-    Math.min(30, Math.ceil((targetDay.getTime() - startDay.getTime()) / 86400000))
+    Math.ceil((targetDay.getTime() - startDay.getTime()) / 86400000)
   );
+
+  // If user explicitly chose how many days (mitme päeva peale), honor that; else default to days until deadline
+  const chosenDays = customDays !== null && customDays !== undefined
+    ? Number(customDays)
+    : event.planDays !== null && event.planDays !== undefined
+    ? Number(event.planDays)
+    : naturalDiffDays;
+
+  const totalDays = Math.max(1, Math.min(60, chosenDays || 5));
 
   const linkedMaterials = materials.filter((mat) =>
     (event.linkedMaterialIds || []).includes(mat.id)
@@ -893,9 +912,10 @@ export function generateStudyPlanForEvent(event, materials, startDateStr = null)
   }
 
   const dailyMinutes = Math.max(5, Number(event.dailyMinutes) || 20);
+  const eventColor = event.color || '#8c4a27';
   const sessions = [];
 
-  for (let dayIdx = 0; dayIdx < diffDays; dayIdx++) {
+  for (let dayIdx = 0; dayIdx < totalDays; dayIdx++) {
     const sessionDate = new Date(startDay.getTime() + dayIdx * 86400000)
       .toISOString()
       .slice(0, 10);
@@ -909,9 +929,10 @@ export function generateStudyPlanForEvent(event, materials, startDateStr = null)
         id: `sess-${event.id}-${dayIdx + 1}`,
         eventId: event.id,
         eventTitle: event.title,
+        eventColor,
         date: sessionDate,
         dayNumber: dayIdx + 1,
-        totalDays: diffDays,
+        totalDays,
         minutes: dailyMinutes,
         materialId: assignedUnit.materialId,
         materialTitle: assignedUnit.materialTitle,
@@ -929,8 +950,10 @@ export function generateStudyPlanForEvent(event, materials, startDateStr = null)
     id: `plan-${event.id}`,
     eventId: event.id,
     eventTitle: event.title,
+    eventColor,
     targetDate: event.date,
     dailyMinutes,
+    planDays: totalDays,
     linkedMaterialIds: event.linkedMaterialIds || [],
     createdAt: new Date().toISOString(),
     sessions

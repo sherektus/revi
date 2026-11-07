@@ -1112,7 +1112,10 @@ export default function MaterialStudyView({
                   return {
                     ...(typeof f === 'object' ? f : {}),
                     label: enriched.label,
-                    expression: enriched.expression
+                    expression: enriched.expression,
+                    symbols: (typeof f === 'object' && f.symbols) || enriched.symbols,
+                    units: (typeof f === 'object' && f.units) || enriched.units,
+                    example: (typeof f === 'object' && f.example) || enriched.example
                   };
                 })
                 .filter(Boolean);
@@ -1186,8 +1189,22 @@ export default function MaterialStudyView({
                         <div className="formulas-list">
                           {validFormulas.map((f, fIdx) => (
                             <div key={fIdx} className="formula-card">
-                              <span className="formula-label">{f.label}</span>
+                              <div className="formula-card-top-row">
+                                <span className="formula-label">{f.label}</span>
+                                {f.units && f.units !== '—' && (
+                                  <span className="formula-unit-badge">{f.units}</span>
+                                )}
+                              </div>
                               <code className="formula-code">{f.expression}</code>
+                              {f.symbols && f.symbols !== '—' && (
+                                <p className="formula-symbols-caption">{f.symbols}</p>
+                              )}
+                              {f.example && f.example !== '—' && (
+                                <p className="formula-example-caption">
+                                  <strong>{material.contentLang === 'en' ? 'Example: ' : 'Näide: '}</strong>
+                                  {f.example}
+                                </p>
+                              )}
                             </div>
                           ))}
                         </div>

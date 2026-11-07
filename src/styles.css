@@ -1251,23 +1251,64 @@ button {
 .formula-card {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  padding: 0.8rem 0.95rem;
+  gap: 0.45rem;
+  padding: 0.85rem 1rem;
   background: var(--bg-card);
   border: 1px solid var(--accent-border);
   border-radius: 0.65rem;
 }
 
+.formula-card-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .formula-label {
-  font-size: 0.76rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.formula-unit-badge {
+  font-size: 0.7rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+  background: var(--accent-light, #f0eae1);
+  color: var(--accent-primary, #3f6a52);
+  border: 1px solid var(--accent-border, #d8ceb8);
 }
 
 .formula-code {
-  font-size: 0.92rem;
+  font-size: 0.94rem;
   font-weight: 600;
   color: var(--accent-text);
+  background: var(--bg-surface);
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.35rem;
+  display: inline-block;
+  overflow-x: auto;
+}
+
+.formula-symbols-caption {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.formula-example-caption {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.025);
+  padding: 0.4rem 0.55rem;
+  border-radius: 0.35rem;
+  border-left: 2px solid var(--accent-primary, #3f6a52);
 }
 
 /* --- FLASHCARDS & EXERCISES SESSION STAGE --- */

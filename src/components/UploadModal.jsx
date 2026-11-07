@@ -17,6 +17,7 @@ import { parseUploadedFile } from '../utils/fileParser';
 import { generateStudyContent } from '../utils/contentGenerator';
 import { combineMaterialsIntoCollection } from '../utils/storage';
 import { DEFAULT_ENABLED_FEATURES } from '../data/sampleMaterial';
+import { analyzeDocumentWithTextbooks } from '../utils/academicClassifier';
 
 export default function UploadModal({
   isOpen,
@@ -194,6 +195,19 @@ export default function UploadModal({
         setProcessingStep('generating');
         await new Promise((r) => setTimeout(r, 200));
 
+        const analysis = analyzeDocumentWithTextbooks(
+          pages,
+          finalTitle,
+          contentLang
+        );
+        let resolvedSubject = finalSubject;
+        if (
+          (!isCustom && subject === 'Matemaatiline analüüs' && analysis.hasMatch) ||
+          !resolvedSubject
+        ) {
+          resolvedSubject = analysis.recommendedSubject;
+        }
+
         const generated = generateStudyContent({
           pages,
           fileType,
@@ -208,7 +222,8 @@ export default function UploadModal({
           isSample: false,
           isCollection: false,
           title: finalTitle,
-          subject: finalSubject,
+          subject: resolvedSubject,
+          matchedTextbooks: analysis.matchedTextbooks || [],
           fileName: singleFile.name,
           fileType,
           contentLang,
@@ -266,13 +281,28 @@ export default function UploadModal({
       setProcessingStep('generating');
       await new Promise((r) => setTimeout(r, 200));
 
+      const allPages = parsedSingleMaterials.flatMap((m) => m.pages || []);
+      const multiAnalysis = analyzeDocumentWithTextbooks(
+        allPages,
+        finalTitle,
+        contentLang
+      );
+      let resolvedSubject = finalSubject;
+      if (
+        (!isCustom && subject === 'Matemaatiline analüüs' && multiAnalysis.hasMatch) ||
+        !resolvedSubject
+      ) {
+        resolvedSubject = multiAnalysis.recommendedSubject;
+      }
+
       const unifiedCollection = combineMaterialsIntoCollection({
         materialsToCombine: parsedSingleMaterials,
         title: finalTitle,
-        subject: finalSubject,
+        subject: resolvedSubject,
         contentLang,
         enabledFeatures
       });
+      unifiedCollection.matchedTextbooks = multiAnalysis.matchedTextbooks || [];
 
       await onMaterialCreated(unifiedCollection, selectedFiles);
     } catch (err) {

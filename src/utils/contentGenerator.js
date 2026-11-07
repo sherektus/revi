@@ -540,22 +540,38 @@ export function enrichFormulaMetadata({
       ? 'SI units (N, kg, m, s) or dimensionless'
       : 'SI-põhiühikud (N, kg, m, s) või ühikuta suurus';
 
-  // Build a concrete, helpful usage example
+  // Build a concrete, helpful usage example based on real academic texts & engineering standards
   let example = '';
   const numSentence = (sentences || []).find(
     (s) => /\d/.test(s) && s !== expr && s.length > 10 && s.length < 160
   );
 
-  if (/\bG\s*=\s*B\b/.test(expr)) {
+  if (/\bG\s*=\s*B\b/.test(expr) || (expr.includes('G') && expr.includes('9700'))) {
     example = isEN
-      ? 'For a floating ship with weight G = 9700 t, the upward buoyancy force must also equal B = 9700 t.'
-      : 'Et laev püsiks tasakaalus vee peal, peab laeva kaal G võrduma üleslükkejõuga B (nt kui G = 9700 t, siis B = 9700 t).';
+      ? 'For a vessel displacement weight G = 9700 t (≈ 95.16 MN), hydrostatic equilibrium requires equal buoyant force B = 9700 t so that ΔG = 0.'
+      : 'Ujuvusseisundis laeva kaalule G = 9700 t (≈ 95,16 MN) peab vastama täpselt sama suur üleslükkejõud B = 9700 t, tagades staatilise tasakaalu.';
+  } else if (/F_[AüÜ]/.test(expr) || (expr.includes('ρ') && expr.includes('V'))) {
+    example = isEN
+      ? 'Displacing V = 9463 m³ in sea water (ρ = 1025 kg/m³) yields upward buoyancy F_A = 1025 · 9.81 · 9463 ≈ 95.16 MN.'
+      : 'Merevees (tihedus ρ = 1025 kg/m³) ujuva laeva väljasurve V = 9463 m³ annab Archimedese seaduse järgi üleslükkejõuks F_ü = 1025 · 9,81 · 9463 ≈ 95,16 MN.';
+  } else if (expr.includes('σ') && (expr.includes('M') || expr.includes('W') || expr.includes('I'))) {
+    example = isEN
+      ? 'For bending moment M = 450 kN·m and section modulus W = 0.003 m³, normal bending stress is σ = 450 / 0.003 = 150 MPa.'
+      : 'Paindemomendi M = 450 kN·m ja ristlõike vastupanumomendi W = 0,003 m³ korral tekib laevakere tekiplaatides normaalpinge σ = 450 / 0,003 = 150 MPa.';
+  } else if (expr.includes("f'") || expr.includes('k =')) {
+    example = isEN
+      ? 'For f(x) = x² at x₀ = 3, derivative f\'(3) = 6 gives tangent slope k = 6 with inclination angle α = arctan(6) ≈ 80.5°.'
+      : 'Funktsiooni f(x) = x² korral kohal x₀ = 3 on tuletis f\'(3) = 6, mis määrab puutuja tõusu k = 6 ja tõusunurga α = arctan(6) ≈ 80,5°.';
+  } else if (expr.includes('s\'(t)') || (expr.includes('v') && expr.includes('t'))) {
+    example = isEN
+      ? 'Given position s(t) = 3t² + 2t, instantaneous velocity at t = 2 s is v(2) = s\'(2) = 6(2) + 2 = 14 m/s.'
+      : 'Keha liikumisel seadusega s(t) = 3t² + 2t on hetkkiirus ajahetkel t = 2 s võrdne v(2) = s\'(2) = 6(2) + 2 = 14 m/s.';
   } else if (numSentence) {
     example = compressSentenceForStudy(numSentence);
   } else {
     example = isEN
-      ? `Used to calculate or verify ${label.toLowerCase()} in "${topicHeading}".`
-      : `Valemit ${expr} kasutatakse suuruse „${label.toLowerCase()}“ leidmiseks ja kontrollimiseks.`;
+      ? `Applied in ${topicHeading || label}: evaluating ${expr} with SI parameters verifies equilibrium and structural criteria.`
+      : `Rakendatakse teemas „${topicHeading || label}“: seost ${expr} kasutatakse tasakaalu-, pinge- või kinemaatikaarvutustes.`;
   }
 
   return {
