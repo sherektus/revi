@@ -108,7 +108,9 @@ export default function ExplainInOwnWordsModal({
   const [customConceptTitle, setCustomConceptTitle] = useState('');
   const [explanationText, setExplanationText] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const [speechSupported, setSpeechSupported] = useState(false);
+  const speechSupported =
+    typeof window !== 'undefined' &&
+    Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
   const [recognitionError, setRecognitionError] = useState(null);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [userFollowUpAnswer, setUserFollowUpAnswer] = useState('');
@@ -116,59 +118,15 @@ export default function ExplainInOwnWordsModal({
 
   const recognitionRef = useRef(null);
 
-  // Initialize Speech Recognition
   useEffect(() => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      setSpeechSupported(true);
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = isEN ? 'en-US' : 'et-EE';
-
-      recognition.onresult = (event) => {
-        let transcript = '';
-        for (let i = 0; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript + ' ';
-        }
-        setExplanationText((prev) => {
-          const base = prev.trim();
-          return base ? `${base} ${transcript.trim()}` : transcript.trim();
-        });
-      };
-
-      recognition.onerror = (e) => {
-        console.warn('Speech recognition error:', e);
-        setIsListening(false);
-        if (e.error !== 'no-speech') {
-          setRecognitionError(
-            isEN
-              ? `Microphone error (${e.error}). You can type your explanation.`
-              : `Mikrofoni viga (${e.error}). Selgituse saab sisestada ka tekstina.`
-          );
-        }
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current = recognition;
-    } else {
-      setSpeechSupported(false);
-    }
-
     return () => {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.abort();
-        } catch {
-          // ignore
-        }
+      try {
+        recognitionRef.current?.abort();
+      } catch {
+        // ignore
       }
     };
-  }, [isEN]);
+  }, []);
 
   useEffect(() => {
     if (initialConcept) {
@@ -190,7 +148,7 @@ export default function ExplainInOwnWordsModal({
     CONCEPT_KNOWLEDGE_BASE.find((c) => c.id === selectedConceptId) || null;
 
   function toggleSpeech() {
-    if (!speechSupported || !recognitionRef.current) {
+    if (!speechSupported) {
       alert(
         isEN
           ? 'Voice input is supported in Chrome, Edge, and Safari.'
@@ -201,7 +159,7 @@ export default function ExplainInOwnWordsModal({
 
     if (isListening) {
       try {
-        recognitionRef.current.stop();
+        recognitionRef.current?.stop();
       } catch {
         // ignore
       }
@@ -209,8 +167,46 @@ export default function ExplainInOwnWordsModal({
     } else {
       setRecognitionError(null);
       try {
-        recognitionRef.current.lang = isEN ? 'en-US' : 'et-EE';
-        recognitionRef.current.start();
+        const SpeechRecognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          setIsListening(false);
+          return;
+        }
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = isEN ? 'en-US' : 'et-EE';
+
+        recognition.onresult = (event) => {
+          let transcript = '';
+          for (let i = 0; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript + ' ';
+          }
+          setExplanationText((prev) => {
+            const base = prev.trim();
+            return base ? `${base} ${transcript.trim()}` : transcript.trim();
+          });
+        };
+
+        recognition.onerror = (e) => {
+          console.warn('Speech recognition error:', e);
+          setIsListening(false);
+          if (e.error !== 'no-speech') {
+            setRecognitionError(
+              isEN
+                ? `Microphone error (${e.error}). You can type your explanation.`
+                : `Mikrofoni viga (${e.error}). Selgituse saab sisestada ka tekstina.`
+            );
+          }
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
         setIsListening(true);
       } catch (err) {
         console.warn('Could not start recognition:', err);

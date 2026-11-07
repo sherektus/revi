@@ -1507,17 +1507,20 @@ export function loadDashboardConfig() {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Merge with defaults in case new widgets are added
-        const merged = parsed.map((item) => {
-          const def = DEFAULT_DASHBOARD_WIDGETS.find((w) => w.id === item.id);
-          return { ...(def || {}), ...item };
-        });
-        DEFAULT_DASHBOARD_WIDGETS.forEach((def) => {
-          if (!merged.some((m) => m.id === def.id)) {
-            merged.push(def);
-          }
-        });
-        return merged;
+        const validParsed = parsed.filter((item) => item && typeof item === 'object' && item.id);
+        if (validParsed.length > 0) {
+          // Merge with defaults in case new widgets are added
+          const merged = validParsed.map((item) => {
+            const def = DEFAULT_DASHBOARD_WIDGETS.find((w) => w.id === item.id);
+            return { ...(def || {}), ...item };
+          });
+          DEFAULT_DASHBOARD_WIDGETS.forEach((def) => {
+            if (!merged.some((m) => m.id === def.id)) {
+              merged.push(def);
+            }
+          });
+          return merged;
+        }
       }
     }
   } catch {
@@ -1686,7 +1689,9 @@ export function loadErrorNotebook() {
     const raw = localStorage.getItem(getScopedKey(KEYS.ERROR_NOTEBOOK));
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed)) {
+        return parsed.filter((e) => e && typeof e === 'object' && e.id);
+      }
     }
   } catch {
     // fallback

@@ -664,8 +664,11 @@ export default function MaterialStudyView({
     if (e.target?.closest && e.target.closest('.contextual-selection-pill')) return;
     if (e.target?.closest && e.target.closest('.contextual-modal-card')) return;
 
-    const sel = window.getSelection();
-    if (!sel || sel.isCollapsed) {
+    const sel =
+      typeof window !== 'undefined' && window.getSelection
+        ? window.getSelection()
+        : null;
+    if (!sel || sel.isCollapsed || !sel.rangeCount || sel.rangeCount === 0) {
       return;
     }
 

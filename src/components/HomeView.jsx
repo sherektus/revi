@@ -67,7 +67,7 @@ export default function HomeView({
     setMistakes(loadErrorNotebook());
   }, []);
 
-  const unresolvedMistakes = (mistakes || []).filter((m) => !m.resolved);
+  const unresolvedMistakes = (mistakes || []).filter((m) => m && !m.resolved);
 
   const sortedRecent = [...materials].sort((a, b) => {
     const tA = new Date(a.lastOpenedAt || a.createdAt || 0).getTime();
@@ -82,7 +82,7 @@ export default function HomeView({
     sortedRecent[0];
 
   const resumeStats = resumeMaterial
-    ? calculateMaterialStats(resumeMaterial, progressMap[resumeMaterial.id])
+    ? calculateMaterialStats(resumeMaterial, progressMap?.[resumeMaterial.id])
     : null;
 
   // Upcoming uncompleted deadlines sorted by date ascending
@@ -418,7 +418,7 @@ export default function HomeView({
                           <div className="deadline-mini-top">
                             <div className="material-badges" style={{ marginBottom: 0 }}>
                               <span className="badge badge-violet">
-                                {t.calendar.types[ev.type] || ev.type}
+                                {t.calendar?.types?.[ev.type] || ev.type}
                               </span>
                               <span className="badge badge-neutral">{ev.subject}</span>
                             </div>
@@ -485,8 +485,8 @@ export default function HomeView({
                             </span>
                             <p className="due-preview-question">
                               {item.itemType === 'flashcard'
-                                ? item.card.question
-                                : item.exercise.question}
+                                ? item.card?.question || ''
+                                : item.exercise?.question || ''}
                             </p>
                           </div>
                         ))}
@@ -520,7 +520,7 @@ export default function HomeView({
           }
 
           // 5. CONTINUE STUDYING / ACTIVE SESSION
-          if (widget.id === 'continueStudy' && resumeMaterial) {
+          if (widget.id === 'continueStudy' && resumeMaterial && resumeStats) {
             return (
               <section key="continueStudy" className="dashboard-widget-section continue-banner-section">
                 <div className="continue-banner-card">
@@ -598,7 +598,11 @@ export default function HomeView({
 
                 <div className="materials-grid">
                   {sortedRecent.slice(0, 6).map((mat) => {
-                    const stats = calculateMaterialStats(mat, progressMap[mat.id]);
+                    const stats = calculateMaterialStats(mat, progressMap?.[mat.id]) || {
+                      totalCards: 0,
+                      totalExercises: 0,
+                      progressPercent: 0
+                    };
                     return (
                       <article key={mat.id} className="material-card">
                         <div className="material-card-top">

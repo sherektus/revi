@@ -58,7 +58,8 @@ export default function ErrorNotebookModal({
 
   const filteredErrors = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return errors.filter((err) => {
+    return (errors || []).filter((err) => {
+      if (!err || typeof err !== 'object') return false;
       const matchesType =
         activeFilter === 'ALL' || err.errorType === activeFilter;
       const matchesStatus =
@@ -77,7 +78,7 @@ export default function ErrorNotebookModal({
   }, [errors, activeFilter, statusFilter, searchQuery]);
 
   const unresolvedCount = useMemo(
-    () => errors.filter((e) => !e.resolved).length,
+    () => (errors || []).filter((e) => e && !e.resolved).length,
     [errors]
   );
 
