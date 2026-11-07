@@ -15,7 +15,8 @@ const KEYS = {
   STUDY_PLANS: 'kordur_study_plans_v1',
   SPACED_REP: 'kordur_spaced_rep_v1',
   FONT_SIZE: 'revi_font_size_v1',
-  HIGH_CONTRAST: 'revi_high_contrast_v1'
+  HIGH_CONTRAST: 'revi_high_contrast_v1',
+  TIMER_SETTINGS: 'revi_timer_settings_v1'
 };
 
 const DB_NAME = 'kordur_files_db';
@@ -263,6 +264,30 @@ export function loadHighContrast() {
 export function saveHighContrast(enabled) {
   try {
     localStorage.setItem(KEYS.HIGH_CONTRAST, String(enabled));
+  } catch {
+    // ignore
+  }
+}
+
+export function loadTimerSettings() {
+  try {
+    const raw = localStorage.getItem(KEYS.TIMER_SETTINGS);
+    if (!raw) return { focusMinutes: 25, breakMinutes: 5 };
+    const parsed = JSON.parse(raw);
+    const focusMinutes = Number(parsed.focusMinutes) || 25;
+    const breakMinutes = Number(parsed.breakMinutes) || 5;
+    return {
+      focusMinutes: Math.min(180, Math.max(1, focusMinutes)),
+      breakMinutes: Math.min(60, Math.max(1, breakMinutes))
+    };
+  } catch {
+    return { focusMinutes: 25, breakMinutes: 5 };
+  }
+}
+
+export function saveTimerSettings(settings) {
+  try {
+    localStorage.setItem(KEYS.TIMER_SETTINGS, JSON.stringify(settings));
   } catch {
     // ignore
   }

@@ -89,18 +89,19 @@ export default function Navbar({
       </a>
       <header className="navbar">
         <div className="navbar-inner container">
-        <div className="navbar-left">
-          <button
-            type="button"
-            className="brand-btn"
-            onClick={() => onNavigate('home')}
-            aria-label={t.appName}
-          >
-            <span className="brand-icon">
-              <Layers size={19} strokeWidth={2.2} />
-            </span>
-            <span className="brand-text">{t.appName}</span>
-          </button>
+          <div className="navbar-brand-section">
+            <button
+              type="button"
+              className="brand-btn"
+              onClick={() => onNavigate('home')}
+              aria-label={t.appName}
+            >
+              <span className="brand-icon">
+                <Layers size={19} strokeWidth={2.2} />
+              </span>
+              <span className="brand-text">{t.appName}</span>
+            </button>
+          </div>
 
           <nav className="nav-links" aria-label="Primary Navigation">
             <button
@@ -144,7 +145,6 @@ export default function Navbar({
               <span className="nav-link-label">{t.nav.formulas}</span>
             </button>
           </nav>
-        </div>
 
         <div className="navbar-right">
           {/* Cozy Focus / Break Study Timer */}

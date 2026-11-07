@@ -268,26 +268,24 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 4.3rem;
-  padding-top: 0.45rem;
-  padding-bottom: 0.45rem;
-  gap: 0.85rem;
-  max-width: 1360px;
+  min-height: 4.1rem;
+  padding: 0.45rem 1.4rem;
+  gap: 0.65rem;
+  max-width: 100%;
 }
 
-.navbar-left {
+.navbar-brand-section {
   display: flex;
   align-items: center;
-  gap: 1.15rem;
-  min-width: 0;
+  flex-shrink: 0;
 }
 
 .brand-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.5rem;
   font-weight: 700;
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   color: var(--text-primary);
   white-space: nowrap;
   flex-shrink: 0;
@@ -297,29 +295,30 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.15rem;
-  height: 2.15rem;
-  border-radius: 0.65rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.6rem;
   background: var(--accent);
   color: var(--accent-contrast);
-  box-shadow: 0 4px 12px var(--accent-border);
+  box-shadow: 0 3px 10px var(--accent-border);
   flex-shrink: 0;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem;
   flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
 .nav-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.46rem 0.78rem;
+  gap: 0.35rem;
+  padding: 0.4rem 0.62rem;
   border-radius: 0.65rem;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 600;
   line-height: 1.2;
   color: var(--text-secondary);
@@ -342,7 +341,7 @@ button {
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.4rem;
   flex-shrink: 0;
   white-space: nowrap;
 }
@@ -351,14 +350,15 @@ button {
 .cozy-timer-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.26rem 0.55rem;
+  gap: 0.35rem;
+  padding: 0.22rem 0.5rem;
   border-radius: 999px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   box-shadow: var(--shadow-sm);
   transition: all 0.18s ease;
+  flex-shrink: 0;
 }
 
 .cozy-timer-pill.timer-active {
@@ -369,11 +369,11 @@ button {
 .timer-mode-tag {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.15rem 0.45rem;
+  gap: 0.25rem;
+  padding: 0.14rem 0.4rem;
   border-radius: 999px;
   font-weight: 700;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   color: var(--accent-text);
   background: var(--accent-soft);
 }
@@ -381,7 +381,7 @@ button {
 .timer-clock {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 600;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--text-primary);
   padding: 0 0.15rem;
 }
@@ -390,8 +390,8 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.55rem;
-  height: 1.55rem;
+  width: 1.45rem;
+  height: 1.45rem;
   border-radius: 50%;
   background: var(--bg-subtle);
   color: var(--text-primary);
@@ -403,19 +403,63 @@ button {
   color: #ffffff;
 }
 
+/* --- PRIVACY & PROFILE PILL --- */
+.privacy-device-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.32rem 0.6rem;
+  border-radius: 999px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.16s ease;
+  flex-shrink: 0;
+}
+
+.privacy-device-pill:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.privacy-shield-icon {
+  color: var(--success);
+}
+
+.nav-add-btn {
+  padding: 0.36rem 0.75rem;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+  gap: 0.35rem;
+}
+
+/* --- NAV UTILITY CONTROLS GROUP --- */
+.nav-controls-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 0.65rem;
+  padding: 0.12rem 0.22rem;
+  flex-shrink: 0;
+}
+
 .lang-switcher {
   display: inline-flex;
   align-items: center;
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
-  padding: 0.18rem;
-  border-radius: 0.6rem;
+  padding: 0.1rem;
+  border-radius: 0.5rem;
 }
 
 .lang-btn {
-  padding: 0.28rem 0.6rem;
-  border-radius: 0.45rem;
-  font-size: 0.78rem;
+  padding: 0.18rem 0.42rem;
+  border-radius: 0.38rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-secondary);
   transition: all 0.15s ease;
@@ -430,55 +474,56 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
-  padding: 0.42rem 0.65rem;
-  border-radius: 0.6rem;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-color);
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 0.45rem;
+  background: transparent;
+  border: 1px solid transparent;
   color: var(--text-secondary);
   transition: all 0.15s ease;
+  padding: 0;
 }
 
 .theme-toggle-btn:hover {
-  border-color: var(--accent-border);
+  background: var(--bg-subtle);
   color: var(--text-primary);
 }
 
 .theme-icon {
-  opacity: 0.42;
+  opacity: 0.45;
   transition: opacity 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
 .theme-icon.active {
   opacity: 1;
   color: var(--accent);
-  transform: scale(1.06);
+  transform: scale(1.05);
 }
 
 .a11y-action-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  padding: 0.42rem 0.65rem;
-  border-radius: 0.6rem;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-color);
+  gap: 0.25rem;
+  padding: 0.2rem 0.42rem;
+  height: 1.8rem;
+  border-radius: 0.45rem;
+  background: transparent;
+  border: 1px solid transparent;
   color: var(--text-secondary);
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 700;
   transition: all 0.16s ease;
 }
 
 .a11y-action-btn:hover {
-  border-color: var(--accent);
+  background: var(--bg-subtle);
   color: var(--text-primary);
-  background: var(--bg-card);
 }
 
 .a11y-action-btn.active {
-  background: var(--accent);
-  color: var(--accent-contrast);
+  background: var(--accent-soft);
+  color: var(--accent);
   border-color: var(--accent);
 }
 
@@ -2377,30 +2422,67 @@ button {
   border-radius: 0.75rem;
 }
 
-/* --- RESPONSIVE DESIGN (MOBILE & TABLET) --- */
-@media (max-width: 1140px) {
+/* --- RESPONSIVE DESIGN (MOBILE & TABLET NAVBAR) --- */
+@media (max-width: 1360px) {
+  .timer-mode-label {
+    display: none;
+  }
+}
+
+@media (max-width: 1240px) {
   .navbar-inner {
-    height: auto;
-    padding: 0.6rem 1.2rem;
+    padding: 0.4rem 1.15rem;
+    gap: 0.5rem;
+  }
+  .nav-link {
+    padding: 0.38rem 0.52rem;
+    font-size: 0.82rem;
+    gap: 0.28rem;
+  }
+  .privacy-device-label {
+    display: none;
+  }
+  .privacy-device-pill {
+    padding: 0.32rem 0.45rem;
+  }
+  .nav-add-label {
+    display: none;
+  }
+  .nav-add-btn {
+    padding: 0.36rem 0.55rem;
+  }
+}
+
+@media (max-width: 1040px) {
+  .navbar-inner {
     flex-wrap: wrap;
-    gap: 0.6rem;
+    min-height: auto;
+    padding: 0.5rem 1rem 0.55rem;
+    gap: 0.45rem;
   }
 
-  .navbar-left {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .nav-links {
-    overflow-x: auto;
-    max-width: 100%;
-    padding-bottom: 0.15rem;
+  .navbar-brand-section {
+    order: 1;
   }
 
   .navbar-right {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .nav-links {
+    order: 3;
     width: 100%;
-    justify-content: flex-end;
-    flex-wrap: wrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.2rem 0 0.1rem;
+    gap: 0.35rem;
+  }
+
+  .nav-links::-webkit-scrollbar {
+    display: none;
   }
 }
 
