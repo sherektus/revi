@@ -1161,3 +1161,59 @@ export function combineMaterialsIntoCollection({
     exercises: combinedExercises
   };
 }
+
+/**
+ * Exports all data for the active personal profile on this computer as a JSON object.
+ */
+export function exportPersonalWorkspace() {
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    deviceId: getOrCreateDeviceId(),
+    profileId: getActiveProfileId(),
+    materials: loadMaterials(),
+    progress: loadAllProgress(loadMaterials()),
+    calendarEvents: loadCalendarEvents(),
+    studyPlans: loadStudyPlans(),
+    spacedRepetition: loadSpacedRepetition()
+  };
+}
+
+/**
+ * Imports a backup JSON object into the active personal profile on this computer.
+ */
+export function importPersonalWorkspace(payload) {
+  if (!payload || !Array.isArray(payload.materials)) {
+    throw new Error('INVALID_BACKUP');
+  }
+  saveMaterials(payload.materials);
+  if (payload.progress && typeof payload.progress === 'object') {
+    saveAllProgress(payload.progress);
+  }
+  if (Array.isArray(payload.calendarEvents)) {
+    saveCalendarEvents(payload.calendarEvents);
+  }
+  if (Array.isArray(payload.studyPlans)) {
+    saveStudyPlans(payload.studyPlans);
+  }
+  if (payload.spacedRepetition && typeof payload.spacedRepetition === 'object') {
+    saveSpacedRepetition(payload.spacedRepetition);
+  }
+}
+
+/**
+ * Clears all user-uploaded materials in the active personal profile on this device,
+ * restoring only the built-in sample materials.
+ */
+export async function clearActiveProfileMaterials() {
+  const currentMats = loadMaterials();
+  for (const mat of currentMats) {
+    if (!mat.isSample) {
+      await deleteOriginalFileBlob(mat.id);
+    }
+  }
+  saveMaterials(sampleMaterials);
+  const freshProg = loadAllProgress(sampleMaterials);
+  saveAllProgress(freshProg);
+  saveLastSession(null);
+}

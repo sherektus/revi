@@ -12,7 +12,8 @@ import {
   Coffee,
   Play,
   Pause,
-  RotateCcw
+  RotateCcw,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function Navbar({
@@ -23,7 +24,9 @@ export default function Navbar({
   onToggleTheme,
   currentView,
   onNavigate,
-  onOpenUploadModal
+  onOpenUploadModal,
+  activeProfileName,
+  onOpenPrivacyModal
 }) {
   const [timerMode, setTimerMode] = useState('focus');
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
@@ -161,6 +164,16 @@ export default function Navbar({
               </button>
             )}
           </div>
+
+          <button
+            type="button"
+            className="privacy-device-pill"
+            onClick={onOpenPrivacyModal}
+            title={t.privacy?.modalTitle}
+          >
+            <ShieldCheck size={15} className="privacy-shield-icon" />
+            <span>{activeProfileName || t.privacy?.navBadge || 'Privaatne'}</span>
+          </button>
 
           <button
             type="button"

@@ -9,8 +9,14 @@ import FormulasView from './components/FormulasView';
 import DueTodayModal from './components/DueTodayModal';
 import UploadModal from './components/UploadModal';
 import SourceFileModal from './components/SourceFileModal';
+import PersonalWorkspaceModal from './components/PersonalWorkspaceModal';
 import { translations } from './i18n/translations';
 import {
+  getOrCreateDeviceId,
+  loadPersonalProfiles,
+  savePersonalProfiles,
+  getActiveProfileId,
+  setActiveProfileId,
   loadUILang,
   saveUILang,
   loadTheme,
@@ -38,6 +44,11 @@ import {
 import { CheckCircle2 } from 'lucide-react';
 
 export default function App() {
+  useState(() => getOrCreateDeviceId());
+  const [profiles, setProfiles] = useState(() => loadPersonalProfiles());
+  const [activeProfileId, setActiveProfileIdState] = useState(() =>
+    getActiveProfileId()
+  );
   const [uiLang, setUiLang] = useState(() => loadUILang());
   const [theme, setTheme] = useState(() => loadTheme());
   const [materials, setMaterials] = useState(() => loadMaterials());
@@ -64,6 +75,7 @@ export default function App() {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [uploadInitialFile, setUploadInitialFile] = useState(null);
   const [isDueTodayOpen, setIsDueTodayOpen] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
 
   const [sourceModalState, setSourceModalState] = useState({
     isOpen: false,
@@ -365,6 +377,55 @@ export default function App() {
     saveStudyPlans(nextPlans);
   }
 
+  function reloadActiveWorkspaceState() {
+    const nextMats = loadMaterials();
+    setMaterials(nextMats);
+    setProgressMap(loadAllProgress(nextMats));
+    setLastSession(loadLastSession());
+    setCalendarEvents(loadCalendarEvents());
+    setStudyPlans(loadStudyPlans());
+    setSrMap(loadSpacedRepetition());
+    const nav = loadNavState();
+    setCurrentView(nav.currentView || 'home');
+    setActiveMaterialId(nav.activeMaterialId || null);
+  }
+
+  function handleSwitchProfile(profileId) {
+    setActiveProfileId(profileId);
+    setActiveProfileIdState(profileId);
+    reloadActiveWorkspaceState();
+  }
+
+  function handleCreateProfile(name) {
+    const newProf = {
+      id: `prof-${Date.now()}`,
+      name,
+      isDefault: false,
+      createdAt: new Date().toISOString()
+    };
+    const nextProfiles = [...profiles, newProf];
+    setProfiles(nextProfiles);
+    savePersonalProfiles(nextProfiles);
+    handleSwitchProfile(newProf.id);
+  }
+
+  function handleDeleteProfile(profileId) {
+    if (profileId === 'default') return;
+    const nextProfiles = profiles.filter((p) => p.id !== profileId);
+    setProfiles(nextProfiles);
+    savePersonalProfiles(nextProfiles);
+    if (activeProfileId === profileId) {
+      handleSwitchProfile('default');
+    }
+  }
+
+  function handleWorkspaceDataChanged(toastType) {
+    reloadActiveWorkspaceState();
+    if (toastType) {
+      showNotification(toastType);
+    }
+  }
+
   function handleOpenSourceViewer(material, pageNumber = 1) {
     setSourceModalState({
       isOpen: true,
@@ -372,6 +433,13 @@ export default function App() {
       pageNumber
     });
   }
+
+  const activeProfileObj =
+    profiles.find((p) => p.id === activeProfileId) || profiles[0];
+  const activeProfileLabel =
+    activeProfileObj?.id === 'default'
+      ? t.privacy?.navBadge || 'Privaatne'
+      : activeProfileObj?.name;
 
   const activeMaterial =
     materials.find((m) => m.id === activeMaterialId) || materials[0];
@@ -386,6 +454,10 @@ export default function App() {
       ? t.material.resetNotification
       : toastKey === 'deleted'
       ? t.library.deletedNotification
+      : toastKey === 'importSuccess'
+      ? t.privacy?.importSuccessToast
+      : toastKey === 'cleared'
+      ? t.privacy?.clearedToast
       : null;
 
   return (
@@ -402,6 +474,8 @@ export default function App() {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         onOpenUploadModal={() => handleOpenUploadModal(null)}
+        activeProfileName={activeProfileLabel}
+        onOpenPrivacyModal={() => setIsPrivacyOpen(true)}
       />
 
       {toastMessage && (
@@ -521,6 +595,18 @@ export default function App() {
         onClose={() =>
           setSourceModalState((prev) => ({ ...prev, isOpen: false }))
         }
+      />
+
+      <PersonalWorkspaceModal
+        isOpen={isPrivacyOpen}
+        t={t}
+        profiles={profiles}
+        activeProfileId={activeProfileId}
+        onSwitchProfile={handleSwitchProfile}
+        onCreateProfile={handleCreateProfile}
+        onDeleteProfile={handleDeleteProfile}
+        onWorkspaceDataChanged={handleWorkspaceDataChanged}
+        onClose={() => setIsPrivacyOpen(false)}
       />
     </div>
   );
