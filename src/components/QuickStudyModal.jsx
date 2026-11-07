@@ -33,10 +33,12 @@ export default function QuickStudyModal({
   materials = [],
   t,
   uiLang = 'et',
+  isEN: isENProp,
+  initialMinutes = 15,
   onOpenMaterial
 }) {
-  const isEN = uiLang === 'en';
-  const [selectedMinutes, setSelectedMinutes] = useState(15);
+  const isEN = isENProp !== undefined ? isENProp : uiLang === 'en';
+  const [selectedMinutes, setSelectedMinutes] = useState(initialMinutes || 15);
   const [selectedMaterialId, setSelectedMaterialId] = useState('ALL');
   const [sessionState, setSessionState] = useState('config'); // 'config' | 'running' | 'completed'
 

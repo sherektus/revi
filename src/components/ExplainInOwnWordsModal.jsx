@@ -100,8 +100,10 @@ export default function ExplainInOwnWordsModal({
   initialConcept = null,
   initialSubject = null,
   t,
-  isEN = false
+  uiLang = 'et',
+  isEN: isENProp
 }) {
+  const isEN = isENProp !== undefined ? isENProp : uiLang === 'en';
   const [selectedConceptId, setSelectedConceptId] = useState(
     initialConcept || CONCEPT_KNOWLEDGE_BASE[0].id
   );
