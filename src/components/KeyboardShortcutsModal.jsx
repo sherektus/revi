@@ -1,43 +1,45 @@
 import React from 'react';
-import { X, Keyboard, Compass, Layers, Sparkles } from 'lucide-react';
+import { X, Keyboard, Compass, Layers, Sliders } from 'lucide-react';
 
-export default function KeyboardShortcutsModal({ isOpen, onClose, t }) {
+export default function KeyboardShortcutsModal({ isOpen, onClose, t, uiLang }) {
   if (!isOpen) return null;
+
+  const isEN = uiLang === 'en';
 
   const shortcutGroups = [
     {
       id: 'navigation',
-      title: 'Liikumine ja vaated',
+      title: isEN ? 'Navigation & Views' : 'Liikumine ja vaated',
       icon: <Compass size={14} />,
       items: [
-        { keys: ['H'], label: 'Avaleht', desc: 'Liigu kohe avalehele ja ülevaatesse' },
-        { keys: ['L'], label: 'Minu teek', desc: 'Ava õppematerjalide kogumik ja kaustad' },
-        { keys: ['C'], label: 'Kalender', desc: 'Ava kordamiskalender ja õpiplaanid' },
-        { keys: ['M'], label: 'Proovitöö', desc: 'Ava eksamite ja proovitööde keskkond' },
-        { keys: ['F'], label: 'Valemileht', desc: 'Ava teaduslik valemikogu ja reeglid' },
-        { keys: ['T'], label: 'Hele / tume režiim', desc: 'Vaheta silmasõbraliku teema vahel' }
+        { keys: ['H'], label: isEN ? 'Home' : 'Avaleht', desc: isEN ? 'Jump to home dashboard & overview' : 'Liigu kohe avalehele ja ülevaatesse' },
+        { keys: ['L'], label: isEN ? 'Library' : 'Minu teek', desc: isEN ? 'Open study materials & folders' : 'Ava õppematerjalide kogumik ja kaustad' },
+        { keys: ['C'], label: isEN ? 'Calendar' : 'Kalender', desc: isEN ? 'Open review calendar & study plans' : 'Ava kordamiskalender ja õpiplaanid' },
+        { keys: ['M'], label: isEN ? 'Mock Exam' : 'Proovitöö', desc: isEN ? 'Open exam simulator & timed tests' : 'Ava eksamite ja proovitööde keskkond' },
+        { keys: ['F'], label: isEN ? 'Formulas' : 'Valemileht', desc: isEN ? 'Open scientific formulas & theorems' : 'Ava teaduslik valemikogu ja reeglid' },
+        { keys: ['T'], label: isEN ? 'Theme Toggle' : 'Hele / tume režiim', desc: isEN ? 'Switch between light and dark themes' : 'Vaheta silmasõbraliku teema vahel' }
       ]
     },
     {
       id: 'study',
-      title: 'Mälukaardid ja harjutused',
+      title: isEN ? 'Flashcards & Practice' : 'Mälukaardid ja harjutused',
       icon: <Layers size={14} />,
       items: [
-        { keys: ['Space'], label: 'Pööra mälukaart', desc: 'Pööra aktiivne kaart küsimuse ja vastuse vahel' },
-        { keys: ['K', '2'], label: 'Tean vastust', desc: 'Märgi mälukaart selgeks (+1 punkt)' },
-        { keys: ['R', '1'], label: 'Vajab kordamist', desc: 'Märgi mälukaart uuesti kordamisele' },
-        { keys: ['←', '→'], label: 'Eelmine / järgmine', desc: 'Liigu kaartide vahel nooleklahvidega' },
-        { keys: ['1', '2', '3', '4'], label: 'Vali vastusevariant', desc: 'Vali harjutuses variant A, B, C või D' },
-        { keys: ['Enter'], label: 'Kinnita vastus', desc: 'Kontrolli harjutuse vastust ja liigu edasi' }
+        { keys: ['Space'], label: isEN ? 'Flip flashcard' : 'Pööra mälukaart', desc: isEN ? 'Flip active card between question and answer' : 'Pööra aktiivne kaart küsimuse ja vastuse vahel' },
+        { keys: ['K', '2'], label: isEN ? 'Knew it' : 'Tean vastust', desc: isEN ? 'Mark card mastered (+1 point)' : 'Märgi mälukaart selgeks (+1 punkt)' },
+        { keys: ['R', '1'], label: isEN ? 'Need review' : 'Vajab kordamist', desc: isEN ? 'Flag card for another review' : 'Märgi mälukaart uuesti kordamisele' },
+        { keys: ['←', '→'], label: isEN ? 'Prev / Next' : 'Eelmine / järgmine', desc: isEN ? 'Navigate cards with arrow keys' : 'Liigu kaartide vahel nooleklahvidega' },
+        { keys: ['1', '2', '3', '4'], label: isEN ? 'Choose option' : 'Vali vastusevariant', desc: isEN ? 'Pick option A, B, C, or D in exercises' : 'Vali harjutuses variant A, B, C või D' },
+        { keys: ['Enter'], label: isEN ? 'Confirm & next' : 'Kinnita vastus', desc: isEN ? 'Check exercise answer and advance' : 'Kontrolli harjutuse vastust ja liigu edasi' }
       ]
     },
     {
       id: 'general',
-      title: 'Üldised kiirklahvid',
-      icon: <Sparkles size={14} />,
+      title: isEN ? 'General Shortcuts' : 'Üldised kiirklahvid',
+      icon: <Sliders size={14} />,
       items: [
-        { keys: ['?'], label: 'Kiirklahvid', desc: 'Ava või sulge see abistav otseteede aken' },
-        { keys: ['Esc'], label: 'Sulge aken', desc: 'Sulge mistahes aktiivne dialoogiaken või hüpik' }
+        { keys: ['?'], label: isEN ? 'Shortcuts help' : 'Kiirklahvid', desc: isEN ? 'Toggle this keyboard shortcut helper' : 'Ava või sulge see abistav otseteede aken' },
+        { keys: ['Esc'], label: isEN ? 'Close modal' : 'Sulge aken', desc: isEN ? 'Close any open dialog or popup' : 'Sulge mistahes aktiivne dialoogiaken või hüpik' }
       ]
     }
   ];
@@ -61,10 +63,12 @@ export default function KeyboardShortcutsModal({ isOpen, onClose, t }) {
             </div>
             <div>
               <h2 id="shortcuts-modal-title" className="modal-title">
-                Klaviatuuri kiirklahvid
+                {isEN ? 'Keyboard Shortcuts' : 'Klaviatuuri kiirklahvid'}
               </h2>
               <p className="modal-subtitle">
-                Õpi ja korda kiiremini ilma hiirt kasutamata
+                {isEN
+                  ? 'Study and review faster without touching the mouse'
+                  : 'Õpi ja korda kiiremini ilma hiirt kasutamata'}
               </p>
             </div>
           </div>
@@ -72,7 +76,7 @@ export default function KeyboardShortcutsModal({ isOpen, onClose, t }) {
             type="button"
             className="icon-btn"
             onClick={onClose}
-            aria-label="Sulge"
+            aria-label={isEN ? 'Close' : 'Sulge'}
           >
             <X size={18} />
           </button>
@@ -113,7 +117,7 @@ export default function KeyboardShortcutsModal({ isOpen, onClose, t }) {
             className="btn btn-primary btn-sm"
             onClick={onClose}
           >
-            <span>Selge, sain aru</span>
+            <span>{isEN ? 'Got it' : 'Selge, sain aru'}</span>
           </button>
         </div>
       </div>

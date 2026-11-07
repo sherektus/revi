@@ -5914,6 +5914,283 @@ button {
   margin-bottom: 0.75rem;
 }
 
+/* Mistake Journal Modal & Entry Cards */
+.error-notebook-modal {
+  max-width: 920px;
+  width: 95vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.error-notebook-toolbar {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.error-filters-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filter-chips-group {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.filter-chips-group .chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filter-chips-group .chip-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+  background: var(--bg-elevated);
+}
+
+.filter-chips-group .chip-btn.chip-active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+}
+
+.error-notebook-body {
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.errors-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.mistake-entry-card {
+  padding: 1.25rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mistake-entry-card:hover {
+  border-color: var(--border-strong);
+}
+
+.mistake-entry-card.mistake-resolved {
+  opacity: 0.75;
+  border-color: rgba(16, 185, 129, 0.25);
+  background: var(--bg-subtle);
+}
+
+.mistake-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.mistake-meta-left {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.mistake-mat-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.mistake-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mistake-question-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+}
+
+.mistake-comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 640px) {
+  .mistake-comparison-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.comparison-card {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-subtle);
+}
+
+.comparison-card.card-wrong {
+  border-color: rgba(239, 68, 68, 0.28);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.comparison-card.card-correct {
+  border-color: rgba(16, 185, 129, 0.28);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.comp-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+}
+
+.comp-label.label-wrong {
+  color: #F87171;
+}
+
+.comp-label.label-correct {
+  color: #34D399;
+}
+
+.comp-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.mistake-pedagogy-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.95rem 1.1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-subtle);
+  margin-bottom: 1rem;
+}
+
+.pedagogy-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pedagogy-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.pedagogy-tag.tag-diagnosis {
+  color: var(--accent-amber);
+}
+
+.pedagogy-tag.tag-thinking {
+  color: var(--accent);
+}
+
+.pedagogy-text {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.similar-task-box {
+  padding: 0.95rem 1.1rem;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border-strong);
+  background: var(--bg-card);
+}
+
+.similar-task-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.similar-task-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.similar-task-question {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.similar-task-solution {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.similar-task-solution strong {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
 /* --- 3. PROGRESSIVE 3-TIER HINTS (VIHJED ENNE VASTUST) --- */
 .progressive-hints-block {
   border-radius: var(--radius-md);

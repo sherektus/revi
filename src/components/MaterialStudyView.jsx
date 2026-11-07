@@ -949,9 +949,9 @@ export default function MaterialStudyView({
                   material.subject
                 )
               }
-              title="Selgita oma sõnadega (Feynmani meetod)"
+              title={material.contentLang === 'en' ? 'Explain in your own words (Feynman technique)' : 'Selgita oma sõnadega (Feynmani meetod)'}
             >
-              <Sparkles size={14} className="accent-text" />
+              <MessageSquare size={14} className="accent-text" />
               <span>
                 {material.contentLang === 'en'
                   ? 'Explain in own words'
@@ -965,7 +965,7 @@ export default function MaterialStudyView({
               type="button"
               className="btn btn-secondary btn-sm"
               onClick={onOpenErrorNotebook}
-              title="Vigade märkmik ja harjutused"
+              title={material.contentLang === 'en' ? 'Mistake Journal & targeted practice' : 'Vigade märkmik ja harjutused'}
             >
               <BookmarkPlus size={14} className="accent-text" />
               <span>
@@ -2570,7 +2570,7 @@ export default function MaterialStudyView({
                             onClick={() =>
                               setUnlockedHintTier((prev) => (prev === 1 ? 0 : 1))
                             }
-                            title="Aste 1: Väike suunav küsimus"
+                            title={material.contentLang === 'en' ? 'Tier 1: Guiding question' : 'Aste 1: Väike suunav küsimus'}
                           >
                             <span>1. {material.contentLang === 'en' ? 'Guiding question' : 'Suunav küsimus'}</span>
                           </button>
@@ -2582,7 +2582,7 @@ export default function MaterialStudyView({
                             onClick={() =>
                               setUnlockedHintTier((prev) => (prev === 2 ? 1 : 2))
                             }
-                            title="Aste 2: Sobiv meetod või valem"
+                            title={material.contentLang === 'en' ? 'Tier 2: Method or formula' : 'Aste 2: Sobiv meetod või valem'}
                           >
                             <span>2. {material.contentLang === 'en' ? 'Method / Formula' : 'Sobiv valem'}</span>
                           </button>
@@ -2594,7 +2594,7 @@ export default function MaterialStudyView({
                             onClick={() =>
                               setUnlockedHintTier((prev) => (prev === 3 ? 2 : 3))
                             }
-                            title="Aste 3: Täielik lahendus ja sammud"
+                            title={material.contentLang === 'en' ? 'Tier 3: Full solution and steps' : 'Aste 3: Täielik lahendus ja sammud'}
                           >
                             <span>3. {material.contentLang === 'en' ? 'Full solution' : 'Täielik lahendus'}</span>
                           </button>
@@ -2606,7 +2606,7 @@ export default function MaterialStudyView({
                           onClick={handleTrySimilarProblem}
                           title={t.material.exercises.trySimilarBtn}
                         >
-                          <Sparkles size={13} />
+                          <RotateCcw size={13} />
                           <span>{t.material.exercises.trySimilarBtn}</span>
                         </button>
                       </div>
@@ -2614,7 +2614,9 @@ export default function MaterialStudyView({
                       {unlockedHintTier >= 1 && (
                         <div className="hint-tier-card tier-1-card">
                           <div className="tier-badge-label">
-                            <span className="badge badge-neutral">Aste 1</span>
+                            <span className="badge badge-neutral">
+                              {material.contentLang === 'en' ? 'Tier 1' : 'Aste 1'}
+                            </span>
                             <strong>
                               {material.contentLang === 'en'
                                 ? 'Guiding question for self-reflection:'
@@ -2628,7 +2630,9 @@ export default function MaterialStudyView({
                       {unlockedHintTier >= 2 && (
                         <div className="hint-tier-card tier-2-card">
                           <div className="tier-badge-label">
-                            <span className="badge badge-warning">Aste 2</span>
+                            <span className="badge badge-warning">
+                              {material.contentLang === 'en' ? 'Tier 2' : 'Aste 2'}
+                            </span>
                             <strong>
                               {material.contentLang === 'en'
                                 ? 'Applicable method or formula:'
@@ -2642,7 +2646,9 @@ export default function MaterialStudyView({
                       {unlockedHintTier >= 3 && (
                         <div className="hint-tier-card tier-3-card">
                           <div className="tier-badge-label">
-                            <span className="badge badge-success">Aste 3</span>
+                            <span className="badge badge-success">
+                              {material.contentLang === 'en' ? 'Tier 3' : 'Aste 3'}
+                            </span>
                             <strong>
                               {material.contentLang === 'en'
                                 ? 'Complete solution & steps:'
@@ -2807,7 +2813,7 @@ export default function MaterialStudyView({
                         className="btn btn-secondary btn-sm"
                         onClick={handleTrySimilarProblem}
                       >
-                        <Sparkles size={14} />
+                        <RotateCcw size={14} />
                         <span>{t.material.exercises.trySimilarBtn}</span>
                       </button>
                     </div>
@@ -3164,7 +3170,7 @@ export default function MaterialStudyView({
           }}
         >
           <div className="ctx-pill-label">
-            <Sparkles size={13} className="accent-text" />
+            <HelpCircle size={13} className="accent-text" />
             <span>{material.contentLang === 'en' ? 'Ask Revi:' : 'Küsi Revi käest:'}</span>
           </div>
           <button
@@ -3180,7 +3186,7 @@ export default function MaterialStudyView({
             className="ctx-action-btn"
             onClick={() => handleAskContextual('example')}
           >
-            <Sparkles size={13} />
+            <FileText size={13} />
             <span>{material.contentLang === 'en' ? 'Give example' : 'Too näide'}</span>
           </button>
           <button
@@ -3264,7 +3270,7 @@ export default function MaterialStudyView({
 
                 <div className="revi-explanation-content">
                   <div className="explanation-title font-bold mb-2 flex items-center gap-1.5 accent-text">
-                    <Sparkles size={16} />
+                    <BookOpen size={16} />
                     <span>{material.contentLang === 'en' ? 'Revi’s Answer:' : 'Revi selgitus:'}</span>
                   </div>
                   <p className="explanation-prose">

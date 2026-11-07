@@ -672,6 +672,7 @@ export default function App() {
         {currentView === 'calendar' && (
           <CalendarView
             t={t}
+            uiLang={uiLang}
             materials={materials}
             calendarEvents={calendarEvents}
             studyPlans={studyPlans}
@@ -769,6 +770,7 @@ export default function App() {
       <KeyboardShortcutsModal
         isOpen={isShortcutsOpen}
         t={t}
+        uiLang={uiLang}
         onClose={() => setIsShortcutsOpen(false)}
       />
 
@@ -777,6 +779,8 @@ export default function App() {
         initialMinutes={quickStudyState.minutes}
         materials={materials}
         t={t}
+        uiLang={uiLang}
+        isEN={uiLang === 'en'}
         onClose={() =>
           setQuickStudyState((prev) => ({ ...prev, isOpen: false }))
         }
@@ -787,6 +791,7 @@ export default function App() {
         isOpen={isErrorNotebookOpen}
         onClose={() => setIsErrorNotebookOpen(false)}
         t={t}
+        uiLang={uiLang}
         isEN={uiLang === 'en'}
       />
 
@@ -798,6 +803,7 @@ export default function App() {
           setExplainModalState((prev) => ({ ...prev, isOpen: false }))
         }
         t={t}
+        uiLang={uiLang}
         isEN={uiLang === 'en'}
       />
     </div>

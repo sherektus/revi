@@ -390,7 +390,7 @@ export default function UploadModal({
         <div className="modal-header">
           <div className="modal-title-wrap">
             <span className="modal-icon-badge">
-              <Sparkles size={18} />
+              <UploadCloud size={18} />
             </span>
             <h2 id="upload-modal-title">{t.upload.modalTitle}</h2>
           </div>
@@ -548,7 +548,7 @@ export default function UploadModal({
             <div className="academic-suggestion-box">
               <div className="academic-rec-header">
                 <div className="academic-rec-badge">
-                  <Sparkles size={14} />
+                  <BookOpen size={14} />
                   <span>{t.upload.academicSuggestionTitle}</span>
                 </div>
                 <span className="academic-confidence-chip">
@@ -717,7 +717,7 @@ export default function UploadModal({
               className="btn btn-primary"
               disabled={selectedFiles.length === 0 || isProcessing}
             >
-              <Sparkles size={16} />
+              <Plus size={16} />
               <span>{t.upload.createBtn}</span>
             </button>
           </div>

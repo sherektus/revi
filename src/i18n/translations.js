@@ -350,9 +350,9 @@ export const translations = {
       }
     },
     calendar: {
-      title: 'Õppekalender ja kordamisplaanid',
+      title: 'Õppekalender ja kordamiskavad',
       subtitle:
-        'Pane kirja kontrolltööd, eksamid, kodutööd ja projektid, seo need oma materjalidega ning jaota kordamine rahulikult päevade peale.',
+        'Hoia kontrolltööd, eksamid ja projektid silme ees, seo need oma konspektidega ning jaga kordamine rahulikeks igapäevasteks sammudeks, et vältida viimase öö tuupimist.',
       addEventBtn: 'Lisa tähtaeg',
       editEventTitle: 'Muuda tähtaega',
       newEventTitle: 'Lisa uus tähtaeg kalendrisse',
@@ -540,8 +540,8 @@ export const translations = {
       quickTest: '5-Minute Quick Test',
       shortCalc: 'Short-Answer & Calculation Problems',
       formulaSheet: 'Formula Sheet',
-      spacedRepetition: 'Include in “Review Today”',
-      mockExam: 'Include in “Mock Exam” pool'
+      spacedRepetition: 'Include in “Review today”',
+      mockExam: 'Include in “Mock exam” pool'
     },
     hero: {
       badge: 'Cozy & effective study workflows for students',
@@ -556,7 +556,7 @@ export const translations = {
       supportedFormats: 'Multiple Slide Decks (PPTX) • Handouts (PDF) • Notes (TXT) → One Unified Collection'
     },
     dueToday: {
-      title: 'Review Today',
+      title: 'Review today',
       subtitle:
         'Combined flashcards and questions across your library and study plans. Harder questions reappear sooner while mastered ones take a longer break.',
       emptyTitle: 'All caught up for today!',
@@ -567,15 +567,15 @@ export const translations = {
       tagHard: 'Needs review',
       tagPlanned: 'Today’s study plan',
       tagDue: 'Scheduled review',
-      modalTitle: 'Review Today — Unified Session',
+      modalTitle: 'Review today — unified session',
       completedTitle: 'Today’s review session complete!',
       completedSub: 'Review intervals have been updated based on your answers.',
-      closeBtn: 'Back to Home'
+      closeBtn: 'Back to home'
     },
     upcomingDeadlines: {
-      title: 'Upcoming Deadlines',
+      title: 'Upcoming deadlines',
       subtitle: 'Your tests, exams, homework, and projects with linked study materials',
-      viewCalendarBtn: 'Open Calendar',
+      viewCalendarBtn: 'Open calendar',
       addEventBtn: 'Add deadline',
       emptyText: 'No upcoming deadlines scheduled.',
       daysLeft: 'days left',
@@ -643,7 +643,7 @@ export const translations = {
       openMaterial: 'Open material'
     },
     library: {
-      title: 'My Library',
+      title: 'My library',
       subtitle: 'All your uploaded study materials, original files, and saved learning progress',
       searchPlaceholder: 'Search by title...',
       subjectFilterAll: 'All subjects',
@@ -847,9 +847,9 @@ export const translations = {
       }
     },
     calendar: {
-      title: 'Study Calendar & Revision Plans',
+      title: 'Study calendar & revision plans',
       subtitle:
-        'Schedule tests, exams, homework, and projects, link materials from your library, and generate bite-sized daily study plans.',
+        'Keep track of tests, exams, and projects, link your notes, and get a realistic daily rhythm so you never have to cram.',
       addEventBtn: 'Add deadline',
       editEventTitle: 'Edit deadline',
       newEventTitle: 'Add deadline to calendar',
@@ -905,27 +905,27 @@ export const translations = {
       weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     },
     mockExam: {
-      title: 'Mock Exam',
+      title: 'Mock exam',
       subtitle:
         'Combine questions from multiple library materials into a comprehensive practice test with detailed end-of-exam feedback.',
       selectMaterialsLabel: '1. Select materials to include:',
       questionCountLabel: '2. Number of questions:',
       allQuestionsOption: 'All questions',
-      startExamBtn: 'Start Mock Exam',
-      submitExamBtn: 'Submit Exam & View Feedback',
+      startExamBtn: 'Start mock exam',
+      submitExamBtn: 'Submit exam & view feedback',
       noMaterialsSelected: 'Please select at least one material.',
-      inProgressTitle: 'Mock Exam in Progress',
+      inProgressTitle: 'Mock exam in progress',
       unansweredWarning: 'Unanswered questions:',
-      resultsTitle: 'Mock Exam Results & Feedback',
+      resultsTitle: 'Mock exam results & feedback',
       scoreLabel: 'Score',
-      byMaterialHeader: 'Performance by Material',
-      reviewQuestionsHeader: 'Detailed Question Review & Explanations',
+      byMaterialHeader: 'Performance by material',
+      reviewQuestionsHeader: 'Detailed question review & explanations',
       yourAnswer: 'Your answer:',
       notAnswered: 'Not answered',
       newMockExamBtn: 'Create new mock exam'
     },
     formulasView: {
-      title: 'Formula Sheet',
+      title: 'Formula sheet',
       subtitle:
         'All formulas across your materials with variable symbols, units, worked examples, and source references.',
       filterByMaterial: 'All materials',

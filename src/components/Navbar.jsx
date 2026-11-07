@@ -21,7 +21,8 @@ import {
   SlidersHorizontal,
   Keyboard,
   BookmarkPlus,
-  Zap
+  Zap,
+  Info
 } from 'lucide-react';
 import { loadTimerSettings, saveTimerSettings } from '../utils/storage';
 
@@ -286,7 +287,7 @@ export default function Navbar({
                 type="button"
                 className="timer-clock-btn"
                 onClick={() => setIsTimerSettingsOpen((prev) => !prev)}
-                title={`${t.nav.timerSettingsTitle || 'Õpirütm'}: ${timerSettings.focusMinutes}m / ${timerSettings.breakMinutes}m (Klõpsa või keri hiirerulliga)`}
+                title={`${t.nav.timerSettingsTitle || (uiLang === 'en' ? 'Study Rhythm' : 'Õpirütm')}: ${timerSettings.focusMinutes}m / ${timerSettings.breakMinutes}m (${uiLang === 'en' ? 'Click to configure or scroll with wheel' : 'Klõpsa või keri hiirerulliga'})`}
               >
                 <span className="timer-clock">
                   {mins}:{secs}
@@ -309,8 +310,8 @@ export default function Navbar({
                   isTimerSettingsOpen ? 'active' : ''
                 }`}
                 onClick={() => setIsTimerSettingsOpen((prev) => !prev)}
-                title={t.nav.timerSettingsTitle || 'Õpirütmi seaded'}
-                aria-label={t.nav.timerSettingsTitle}
+                title={t.nav.timerSettingsTitle || (uiLang === 'en' ? 'Study rhythm settings' : 'Õpirütmi seaded')}
+                aria-label={t.nav.timerSettingsTitle || (uiLang === 'en' ? 'Study rhythm settings' : 'Õpirütmi seaded')}
                 aria-expanded={isTimerSettingsOpen}
               >
                 <SlidersHorizontal size={12} />
@@ -339,18 +340,22 @@ export default function Navbar({
               <div
                 className="timer-settings-popover"
                 role="dialog"
-                aria-label="Õpirütmi seaded"
+                aria-label={uiLang === 'en' ? 'Study rhythm settings' : 'Õpirütmi seaded'}
               >
                 <div className="timer-settings-header">
                   <div className="timer-header-title-box">
-                    <span className="timer-settings-title">Õpirütm</span>
-                    <span className="timer-settings-sub">Vali sobiv tempo või kohanda vabalt</span>
+                    <span className="timer-settings-title">
+                      {uiLang === 'en' ? 'Study Rhythm' : 'Õpirütm'}
+                    </span>
+                    <span className="timer-settings-sub">
+                      {uiLang === 'en' ? 'Choose your pacing or customize freely' : 'Vali sobiv tempo või kohanda vabalt'}
+                    </span>
                   </div>
                   <button
                     type="button"
                     className="icon-btn-xs"
                     onClick={() => setIsTimerSettingsOpen(false)}
-                    aria-label="Sulge"
+                    aria-label={uiLang === 'en' ? 'Close' : 'Sulge'}
                   >
                     ✕
                   </button>
@@ -369,10 +374,14 @@ export default function Navbar({
                     onClick={() => updateDurations(25, 5)}
                   >
                     <div className="rhythm-card-header">
-                      <strong>Klassikaline</strong>
+                      <strong>{uiLang === 'en' ? 'Classic' : 'Klassikaline'}</strong>
                       <span className="rhythm-tag">25 / 5 min</span>
                     </div>
-                    <span className="rhythm-desc">Hea lühikeseks kordamiseks ja fookuse hoidmiseks</span>
+                    <span className="rhythm-desc">
+                      {uiLang === 'en'
+                        ? 'Great for quick reviews and holding focus'
+                        : 'Hea lühikeseks kordamiseks ja fookuse hoidmiseks'}
+                    </span>
                   </button>
 
                   <button
@@ -386,10 +395,14 @@ export default function Navbar({
                     onClick={() => updateDurations(50, 10)}
                   >
                     <div className="rhythm-card-header">
-                      <strong>Süvaõpe</strong>
+                      <strong>{uiLang === 'en' ? 'Deep Study' : 'Süvaõpe'}</strong>
                       <span className="rhythm-tag">50 / 10 min</span>
                     </div>
-                    <span className="rhythm-desc">Pikemate peatükkide ja ülesannete lahendamiseks</span>
+                    <span className="rhythm-desc">
+                      {uiLang === 'en'
+                        ? 'For longer chapters and problem solving'
+                        : 'Pikemate peatükkide ja ülesannete lahendamiseks'}
+                    </span>
                   </button>
 
                   <button
@@ -403,10 +416,14 @@ export default function Navbar({
                     onClick={() => updateDurations(90, 15)}
                   >
                     <div className="rhythm-card-header">
-                      <strong>Loengurütm</strong>
+                      <strong>{uiLang === 'en' ? 'Lecture Rhythm' : 'Loengurütm'}</strong>
                       <span className="rhythm-tag">90 / 15 min</span>
                     </div>
-                    <span className="rhythm-desc">Akadeemiline paaristund mahukate materjalide läbitöötamiseks</span>
+                    <span className="rhythm-desc">
+                      {uiLang === 'en'
+                        ? 'Academic double block for extensive materials'
+                        : 'Akadeemiline paaristund mahukate materjalide läbitöötamiseks'}
+                    </span>
                   </button>
                 </div>
 
@@ -414,15 +431,15 @@ export default function Navbar({
                 <div className="timer-stepper-section">
                   <div className="timer-stepper-row">
                     <div className="stepper-label-box">
-                      <span className="stepper-title">Õppimine</span>
-                      <span className="stepper-meta">Fookusaeg</span>
+                      <span className="stepper-title">{uiLang === 'en' ? 'Focus time' : 'Õppimine'}</span>
+                      <span className="stepper-meta">{uiLang === 'en' ? 'Study session' : 'Fookusaeg'}</span>
                     </div>
                     <div className="stepper-controls">
                       <button
                         type="button"
                         className="stepper-btn"
                         onClick={() => stepFocus(-5)}
-                        aria-label="Vähenda 5 minutit"
+                        aria-label={uiLang === 'en' ? 'Decrease 5 minutes' : 'Vähenda 5 minutit'}
                       >
                         −5m
                       </button>
@@ -431,7 +448,7 @@ export default function Navbar({
                         type="button"
                         className="stepper-btn"
                         onClick={() => stepFocus(5)}
-                        aria-label="Suurenda 5 minutit"
+                        aria-label={uiLang === 'en' ? 'Increase 5 minutes' : 'Suurenda 5 minutit'}
                       >
                         +5m
                       </button>
@@ -440,15 +457,15 @@ export default function Navbar({
 
                   <div className="timer-stepper-row">
                     <div className="stepper-label-box">
-                      <span className="stepper-title">Paus</span>
-                      <span className="stepper-meta">Puhkehetk</span>
+                      <span className="stepper-title">{uiLang === 'en' ? 'Break' : 'Paus'}</span>
+                      <span className="stepper-meta">{uiLang === 'en' ? 'Rest time' : 'Puhkehetk'}</span>
                     </div>
                     <div className="stepper-controls">
                       <button
                         type="button"
                         className="stepper-btn"
                         onClick={() => stepBreak(-1)}
-                        aria-label="Vähenda 1 minut"
+                        aria-label={uiLang === 'en' ? 'Decrease 1 minute' : 'Vähenda 1 minut'}
                       >
                         −1m
                       </button>
@@ -457,7 +474,7 @@ export default function Navbar({
                         type="button"
                         className="stepper-btn"
                         onClick={() => stepBreak(1)}
-                        aria-label="Suurenda 1 minut"
+                        aria-label={uiLang === 'en' ? 'Increase 1 minute' : 'Suurenda 1 minut'}
                       >
                         +1m
                       </button>
@@ -466,7 +483,12 @@ export default function Navbar({
                 </div>
 
                 <div className="timer-hint-caption">
-                  <span>💡 Nipp: kellaajal hiirerulliga kerides saab aega muuta otse päisest.</span>
+                  <Info size={12} className="inline-icon" />
+                  <span>
+                    {uiLang === 'en'
+                      ? 'Tip: scroll with the mouse wheel on the clock to adjust time directly.'
+                      : 'Nipp: kellaajal hiirerulliga kerides saab aega muuta otse päisest.'}
+                  </span>
                 </div>
 
                 {onOpenQuickStudy && (
@@ -480,7 +502,7 @@ export default function Navbar({
                       }}
                     >
                       <Zap size={13} />
-                      <span>{uiLang === 'en' ? 'Start 15-min Quick Study' : '⚡ Alusta 15 min kiirõpet'}</span>
+                      <span>{uiLang === 'en' ? 'Start 15-min Quick Study' : 'Alusta 15 min kiirõpet'}</span>
                     </button>
                   </div>
                 )}
@@ -494,7 +516,7 @@ export default function Navbar({
               className="nav-error-notebook-btn"
               onClick={onOpenErrorNotebook}
               title={uiLang === 'en' ? 'Mistake Journal' : 'Vigade märkmik'}
-              aria-label="Vigade märkmik"
+              aria-label={uiLang === 'en' ? 'Mistake Journal' : 'Vigade märkmik'}
             >
               <BookmarkPlus size={15} />
               <span className="nav-tool-label">{uiLang === 'en' ? 'Mistakes' : 'Vead'}</span>
@@ -652,8 +674,8 @@ export default function Navbar({
               type="button"
               className="shortcuts-hub-btn"
               onClick={onOpenShortcutsModal}
-              title="Klaviatuuri kiirklahvid (?)"
-              aria-label="Klaviatuuri kiirklahvid"
+              title={uiLang === 'en' ? 'Keyboard shortcuts (?)' : 'Klaviatuuri kiirklahvid (?)'}
+              aria-label={uiLang === 'en' ? 'Keyboard shortcuts' : 'Klaviatuuri kiirklahvid'}
             >
               <Keyboard size={16} />
               <span className="shortcuts-k-badge">?</span>

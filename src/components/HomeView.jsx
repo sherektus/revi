@@ -7,7 +7,6 @@ import {
   Layers,
   CheckSquare,
   ArrowRight,
-  Sparkles,
   RefreshCw,
   Calendar,
   Clock,
@@ -21,6 +20,9 @@ import {
   RotateCcw,
   AlertCircle,
   HelpCircle,
+  Compass,
+  Calculator,
+  MessageSquare,
   Zap,
   BookmarkPlus,
   Palette,
@@ -63,14 +65,18 @@ class WidgetErrorBoundary extends React.Component {
           color: '#F87171',
           fontSize: '0.88rem'
         }}>
-          <span>Ploki „{this.props.label || this.props.widgetId}” kuvamisel tekkis tõrge.</span>
+          <span>
+            {this.props.uiLang === 'en'
+              ? `An error occurred while rendering “${this.props.label || this.props.widgetId}”.`
+              : `Ploki „${this.props.label || this.props.widgetId}” kuvamisel tekkis tõrge.`}
+          </span>
           <button
             type="button"
             className="btn btn-ghost btn-sm"
             onClick={() => this.setState({ hasError: false })}
             style={{ color: '#F87171' }}
           >
-            Proovi uuesti
+            {this.props.uiLang === 'en' ? 'Retry' : 'Proovi uuesti'}
           </button>
         </div>
       );
@@ -201,7 +207,7 @@ export default function HomeView({
               type="button"
               className="btn btn-secondary btn-sm customize-dashboard-btn"
               onClick={() => setIsCustomizerOpen(true)}
-              title="Kohanda töölaua paigutust ja aktsentvärve"
+              title={uiLang === 'en' ? 'Customize dashboard layout & accent colors' : 'Kohanda töölaua paigutust ja aktsentvärve'}
             >
               <Palette size={14} className="accent-text" />
               <span>{uiLang === 'en' ? 'Customize Dashboard' : 'Oma töölaud'}</span>
@@ -378,9 +384,18 @@ export default function HomeView({
                     </p>
 
                     <div className="error-types-pills mt-2">
-                      <span className="badge badge-neutral">📐 Valemi valik</span>
-                      <span className="badge badge-neutral">🔢 Arvutusviga</span>
-                      <span className="badge badge-neutral">💡 Mõisteline arusaam</span>
+                      <span className="badge badge-neutral">
+                        <Compass size={12} className="mr-1" />
+                        <span>{uiLang === 'en' ? 'Formula selection' : 'Valemi valik'}</span>
+                      </span>
+                      <span className="badge badge-neutral">
+                        <Calculator size={12} className="mr-1" />
+                        <span>{uiLang === 'en' ? 'Calculation slip' : 'Arvutusviga'}</span>
+                      </span>
+                      <span className="badge badge-neutral">
+                        <HelpCircle size={12} className="mr-1" />
+                        <span>{uiLang === 'en' ? 'Conceptual understanding' : 'Mõisteline arusaam'}</span>
+                      </span>
                     </div>
                   </div>
 
@@ -391,7 +406,7 @@ export default function HomeView({
                         className="btn btn-secondary"
                         onClick={() => onOpenExplainModal(null, null)}
                       >
-                        <Sparkles size={15} />
+                        <MessageSquare size={15} />
                         <span>{uiLang === 'en' ? 'Explain in own words' : 'Selgita oma sõnadega'}</span>
                       </button>
                     )}
@@ -735,6 +750,7 @@ export default function HomeView({
           <WidgetErrorBoundary
             key={widget.id}
             widgetId={widget.id}
+            uiLang={uiLang}
             label={uiLang === 'en' ? widget.labelEN : widget.labelET}
           >
             {content}
@@ -843,7 +859,7 @@ export default function HomeView({
                           className="icon-btn-xs"
                           disabled={idx === 0}
                           onClick={() => moveWidget(idx, -1)}
-                          title="Liiguta üles"
+                          title={uiLang === 'en' ? 'Move up' : 'Liiguta üles'}
                         >
                           <ArrowUp size={14} />
                         </button>
@@ -852,7 +868,7 @@ export default function HomeView({
                           className="icon-btn-xs"
                           disabled={idx === widgets.length - 1}
                           onClick={() => moveWidget(idx, 1)}
-                          title="Liiguta alla"
+                          title={uiLang === 'en' ? 'Move down' : 'Liiguta alla'}
                         >
                           <ArrowDown size={14} />
                         </button>
@@ -860,7 +876,7 @@ export default function HomeView({
                           type="button"
                           className={`btn btn-sm ${w.visible ? 'btn-ghost' : 'btn-secondary'}`}
                           onClick={() => toggleWidgetVisibility(w.id)}
-                          title={w.visible ? 'Peida plokk' : 'Näita plokki'}
+                          title={w.visible ? (uiLang === 'en' ? 'Hide block' : 'Peida plokk') : (uiLang === 'en' ? 'Show block' : 'Näita plokki')}
                         >
                           {w.visible ? <Eye size={14} /> : <EyeOff size={14} />}
                           <span>{w.visible ? (uiLang === 'en' ? 'Visible' : 'Nähtav') : (uiLang === 'en' ? 'Hidden' : 'Peidetud')}</span>

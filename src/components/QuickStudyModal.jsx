@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Clock,
-  Sparkles,
+  Compass,
   CheckCircle2,
   X,
   Play,
@@ -10,6 +10,7 @@ import {
   Layers,
   CheckSquare,
   HelpCircle,
+  FileText,
   Award,
   ChevronRight,
   ChevronLeft,
@@ -448,7 +449,7 @@ export default function QuickStudyModal({
                         className={`hint-tier-btn ${hintTier >= 2 ? 'active' : ''}`}
                         onClick={() => setHintTier((prev) => (prev === 2 ? 0 : 2))}
                       >
-                        <Sparkles size={13} />
+                        <Compass size={13} />
                         <span>{isEN ? 'Hint 2: Method & Formula' : 'Vihje 2: Meetod ja valem'}</span>
                       </button>
 
@@ -457,27 +458,37 @@ export default function QuickStudyModal({
                         className={`hint-tier-btn ${hintTier >= 3 ? 'active' : ''}`}
                         onClick={() => setHintTier((prev) => (prev === 3 ? 0 : 3))}
                       >
+                        <FileText size={13} />
                         <span>{isEN ? 'Hint 3: Full Solution' : 'Vihje 3: Täislahendus'}</span>
                       </button>
                     </div>
 
                     {hintTier === 1 && (
                       <div className="hint-tier-card tier-1">
-                        <strong>💡 {isEN ? 'Guiding Question:' : 'Suunav küsimus:'}</strong>
+                        <div className="flex items-center gap-1.5 font-bold mb-1">
+                          <HelpCircle size={14} className="accent-text" />
+                          <span>{isEN ? 'Guiding Question:' : 'Suunav küsimus:'}</span>
+                        </div>
                         <p>{currentStep.data.hint || (isEN ? 'What physical or mathematical quantity changes here, and what is its rate of change?' : 'Milline seos või reegel kirjeldab antud funktsiooni muutumist selles punktis?')}</p>
                       </div>
                     )}
 
                     {hintTier === 2 && (
                       <div className="hint-tier-card tier-2">
-                        <strong>📐 {isEN ? 'Applicable Formula / Rule:' : 'Sobiv valem või meetod:'}</strong>
+                        <div className="flex items-center gap-1.5 font-bold mb-1">
+                          <Compass size={14} className="accent-text" />
+                          <span>{isEN ? 'Applicable Formula / Rule:' : 'Sobiv valem või meetod:'}</span>
+                        </div>
                         <p>{currentStep.data.steps?.[0] || currentStep.data.hint || (isEN ? 'Apply the general power/product rule term-by-term.' : 'Kasuta diferentseerimise põhireegleid või tuletise geomeetrilist seost k = f\'(x₀).')}</p>
                       </div>
                     )}
 
                     {hintTier === 3 && (
                       <div className="hint-tier-card tier-3">
-                        <strong>📝 {isEN ? 'Step-by-step Solution:' : 'Täielik lahenduskäik:'}</strong>
+                        <div className="flex items-center gap-1.5 font-bold mb-1">
+                          <CheckSquare size={14} className="accent-text" />
+                          <span>{isEN ? 'Step-by-step Solution:' : 'Täielik lahenduskäik:'}</span>
+                        </div>
                         {currentStep.data.steps?.length > 0 ? (
                           <ol className="hint-steps-list">
                             {currentStep.data.steps.map((st, sIdx) => (

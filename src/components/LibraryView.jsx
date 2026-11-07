@@ -813,7 +813,7 @@ export default function LibraryView({
                   className="btn btn-primary"
                   disabled={selectedCombineIds.length < 2}
                 >
-                  <Sparkles size={16} />
+                  <Layers size={16} />
                   <span>{t.library.combineCreateBtn}</span>
                 </button>
               </div>

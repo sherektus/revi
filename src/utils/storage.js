@@ -1601,18 +1601,27 @@ export const INITIAL_SAMPLE_MISTAKE = {
   id: 'err-sample-1',
   materialId: 'mat-derivatives',
   materialTitle: 'Tuletised – funktsiooni muutumiskiirus ja diferentseerimine',
+  materialTitleEN: 'Derivatives – Rate of change & differentiation',
   subject: 'Matemaatiline analüüs',
+  subjectEN: 'Calculus',
   question: "Arvutusülesanne: leia funktsiooni f(x) = 3x⁴ - 5x² + 7x - 12 tuletis f'(x) ja arvuta selle täpne väärtus kohal x = 1.",
+  questionEN: "Calculus problem: find the derivative f'(x) of f(x) = 3x⁴ - 5x² + 7x - 12 and evaluate at x = 1.",
   userAnswer: "f'(x) = 12x³ - 5x + 7  ning  f'(1) = 14",
+  userAnswerEN: "f'(x) = 12x³ - 5x + 7  and  f'(1) = 14",
   correctAnswer: "f'(x) = 12x³ - 10x + 7  ning  f'(1) = 9",
+  correctAnswerEN: "f'(x) = 12x³ - 10x + 7  and  f'(1) = 9",
   errorType: 'calculation', // 'formula_selection' | 'calculation' | 'conceptual' | 'condition_missed'
   errorTypeLabelET: 'Arvutus- või kordajaviga',
   errorTypeLabelEN: 'Calculation / coefficient error',
   diagnosis: 'Liikme (-5x²) tuletise võtmisel unustati kordaja 5 korrutada astmenäitajaga 2: (5x²)\' = 10x, mitte 5x.',
+  diagnosisEN: 'When differentiating (-5x²), coefficient 5 was not multiplied by exponent 2: (5x²)\' = 10x, not 5x.',
   howToThink: 'Rakenda astmefunktsiooni reeglit järjekindlalt: d/dx [c · xⁿ] = c · n · xⁿ⁻¹. Seega (-5) · 2 · x¹ = -10x. Seejärel asenda x = 1: 12(1) - 10(1) + 7 = 9.',
+  howToThinkEN: 'Consistently apply the power rule: d/dx [c · xⁿ] = c · n · xⁿ⁻¹. Thus (-5) · 2 · x¹ = -10x. Then substitute x = 1: 12(1) - 10(1) + 7 = 9.',
   similarTask: {
     question: "Arvutusülesanne kordamiseks: leia funktsiooni g(x) = 2x³ - 4x² + 3x - 5 tuletis g'(x) ja arvuta g'(1).",
-    solution: "1. Tuletis g'(x) = 6x² - 8x + 3.  2. Kohal x = 1: g'(1) = 6(1) - 8(1) + 3 = 1."
+    questionEN: "Practice problem: find the derivative g'(x) of g(x) = 2x³ - 4x² + 3x - 5 and calculate g'(1).",
+    solution: "1. Tuletis g'(x) = 6x² - 8x + 3.  2. Kohal x = 1: g'(1) = 6(1) - 8(1) + 3 = 1.",
+    solutionEN: "1. Derivative g'(x) = 6x² - 8x + 3.  2. At x = 1: g'(1) = 6(1) - 8(1) + 3 = 1."
   },
   resolved: false,
   createdAt: new Date().toISOString()

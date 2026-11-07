@@ -45,6 +45,7 @@ function formatCalendarPillTitle(title) {
 
 export default function CalendarView({
   t,
+  uiLang,
   materials,
   calendarEvents,
   studyPlans,
@@ -55,6 +56,7 @@ export default function CalendarView({
   onToggleSessionCompleted,
   onOpenMaterial
 }) {
+  const isEN = uiLang === 'en' || t?.nav?.home === 'Home';
   const initialDate = new Date();
   const [viewYear, setViewYear] = useState(initialDate.getFullYear());
   const [viewMonth, setViewMonth] = useState(initialDate.getMonth()); // 0..11
@@ -306,7 +308,7 @@ export default function CalendarView({
                     setIsYearOpen(false);
                   }}
                   onWheel={handleMonthWheel}
-                  title="Klõpsa kuude nimekirja avamiseks või keri hiirerulliga"
+                  title={isEN ? 'Click to open month list or scroll with mouse wheel' : 'Klõpsa kuude nimekirja avamiseks või keri hiirerulliga'}
                   aria-haspopup="listbox"
                   aria-expanded={isMonthOpen}
                 >
@@ -353,7 +355,7 @@ export default function CalendarView({
                     setIsMonthOpen(false);
                   }}
                   onWheel={handleYearWheel}
-                  title="Klõpsa aastate nimekirja avamiseks või keri hiirerulliga"
+                  title={isEN ? 'Click to open year list or scroll with mouse wheel' : 'Klõpsa aastate nimekirja avamiseks või keri hiirerulliga'}
                   aria-haspopup="listbox"
                   aria-expanded={isYearOpen}
                 >
@@ -478,7 +480,8 @@ export default function CalendarView({
                           style={sessionStyle}
                           title={`${sess.topicTitle} (${sess.minutes} min)`}
                         >
-                          📚 {shortTopic}
+                          <BookOpen size={11} className="mr-1 inline-block" />
+                          <span>{shortTopic}</span>
                         </span>
                       );
                     })}
@@ -623,7 +626,7 @@ export default function CalendarView({
 
                     <div className="plan-builder-header">
                       <span className="plan-builder-badge">
-                        <Sparkles size={13} />
+                        <Clock size={13} />
                         {t.calendar.planSettingsTitle}
                       </span>
                     </div>
@@ -756,7 +759,7 @@ export default function CalendarView({
                           </>
                         ) : (
                           <>
-                            <Sparkles size={14} />
+                            <Plus size={14} />
                             <span>{t.calendar.createPlanBtn}</span>
                           </>
                         )}

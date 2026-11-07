@@ -322,7 +322,7 @@ export default function ExplainInOwnWordsModal({
         <div className="modal-header">
           <div className="modal-header-left">
             <div className="feynman-badge">
-              <Sparkles size={16} />
+              <BookOpen size={16} />
               <span>{isEN ? 'Feynman Technique' : 'Feynmani meetod'}</span>
             </div>
             <h2 className="modal-title">
@@ -466,7 +466,7 @@ export default function ExplainInOwnWordsModal({
                   disabled={!explanationText.trim()}
                   onClick={handleEvaluate}
                 >
-                  <Sparkles size={16} />
+                  <ArrowRight size={16} />
                   <span>
                     {isEN ? 'Compare with study material' : 'Võrdle õppematerjaliga'}
                   </span>
@@ -480,7 +480,7 @@ export default function ExplainInOwnWordsModal({
             <div className="explain-analysis-card mt-4">
               <div className="analysis-header">
                 <div className="badge badge-primary">
-                  <Sparkles size={13} />
+                  <HelpCircle size={13} />
                   <span>{isEN ? 'Revi Feedback' : 'Revi võrdlus ja analüüs'}</span>
                 </div>
                 <h3 className="analysis-title">{analysisResult.conceptName}</h3>

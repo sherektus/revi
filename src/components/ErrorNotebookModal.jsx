@@ -1,14 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import {
   AlertTriangle,
+  AlertCircle,
   X,
   CheckCircle2,
+  XCircle,
   Trash2,
   Search,
   BookOpen,
   Filter,
   RotateCcw,
-  Sparkles,
   ArrowRight,
   HelpCircle,
   Calculator,
@@ -26,9 +27,10 @@ export default function ErrorNotebookModal({
   onClose,
   t,
   uiLang = 'et',
+  isEN: isENProp,
   onOpenMaterial
 }) {
-  const isEN = uiLang === 'en';
+  const isEN = isENProp !== undefined ? isENProp : uiLang === 'en';
   const [errors, setErrors] = useState(() => loadErrorNotebook());
   const [activeFilter, setActiveFilter] = useState('ALL'); // 'ALL' | 'formula_selection' | 'calculation' | 'conceptual' | 'condition_missed'
   const [statusFilter, setStatusFilter] = useState('unresolved'); // 'unresolved' | 'resolved' | 'all'
@@ -147,21 +149,24 @@ export default function ErrorNotebookModal({
                 className={`chip-btn ${activeFilter === 'formula_selection' ? 'chip-active' : ''}`}
                 onClick={() => setActiveFilter('formula_selection')}
               >
-                📐 {isEN ? 'Formula Choice' : 'Valemi valimise viga'}
+                <Compass size={14} />
+                <span>{isEN ? 'Formula Choice' : 'Valemi valimise viga'}</span>
               </button>
               <button
                 type="button"
                 className={`chip-btn ${activeFilter === 'calculation' ? 'chip-active' : ''}`}
                 onClick={() => setActiveFilter('calculation')}
               >
-                🔢 {isEN ? 'Calculation / Sign' : 'Arvutus- või märgierinevus'}
+                <Calculator size={14} />
+                <span>{isEN ? 'Calculation / Sign' : 'Arvutus- või märgierinevus'}</span>
               </button>
               <button
                 type="button"
                 className={`chip-btn ${activeFilter === 'conceptual' ? 'chip-active' : ''}`}
                 onClick={() => setActiveFilter('conceptual')}
               >
-                💡 {isEN ? 'Conceptual' : 'Mõiste vääritimõistmine'}
+                <HelpCircle size={14} />
+                <span>{isEN ? 'Conceptual' : 'Mõiste vääritimõistmine'}</span>
               </button>
             </div>
 
@@ -194,6 +199,16 @@ export default function ErrorNotebookModal({
             <div className="errors-feed">
               {filteredErrors.map((err) => {
                 const isSolRevealed = Boolean(revealedSolutions[err.id]);
+                const displayQuestion = isEN ? (err.questionEN || err.question) : err.question;
+                const displayUserAnswer = isEN ? (err.userAnswerEN || err.userAnswer) : err.userAnswer;
+                const displayCorrectAnswer = isEN ? (err.correctAnswerEN || err.correctAnswer) : err.correctAnswer;
+                const displayDiagnosis = isEN ? (err.diagnosisEN || err.diagnosis) : err.diagnosis;
+                const displayHowToThink = isEN ? (err.howToThinkEN || err.howToThink) : err.howToThink;
+                const displaySubject = isEN ? (err.subjectEN || err.subject) : err.subject;
+                const displayMaterialTitle = isEN ? (err.materialTitleEN || err.materialTitle) : err.materialTitle;
+                const displaySimilarQuestion = isEN ? (err.similarTask?.questionEN || err.similarTask?.question) : err.similarTask?.question;
+                const displaySimilarSolution = isEN ? (err.similarTask?.solutionEN || err.similarTask?.solution) : err.similarTask?.solution;
+
                 return (
                   <article
                     key={err.id}
@@ -202,13 +217,14 @@ export default function ErrorNotebookModal({
                     {/* Top Row */}
                     <div className="mistake-header-row">
                       <div className="mistake-meta-left">
-                        {err.subject && <span className="badge badge-violet">{err.subject}</span>}
+                        {displaySubject && <span className="badge badge-violet">{displaySubject}</span>}
                         <span className={`badge ${err.errorType === 'calculation' ? 'badge-amber' : err.errorType === 'formula_selection' ? 'badge-coral' : 'badge-neutral'}`}>
                           {isEN ? err.errorTypeLabelEN || err.errorType : err.errorTypeLabelET || 'Analüüsitud viga'}
                         </span>
-                        {err.materialTitle && (
-                          <span className="mistake-mat-title" title={err.materialTitle}>
-                            📚 {err.materialTitle}
+                        {displayMaterialTitle && (
+                          <span className="mistake-mat-title" title={displayMaterialTitle}>
+                            <BookOpen size={13} />
+                            <span>{displayMaterialTitle}</span>
                           </span>
                         )}
                       </div>
@@ -238,35 +254,43 @@ export default function ErrorNotebookModal({
                     </div>
 
                     {/* Question text */}
-                    <h3 className="mistake-question-title">{err.question}</h3>
+                    <h3 className="mistake-question-title">{displayQuestion}</h3>
 
                     {/* Comparison Callouts: Wrong vs Correct */}
                     <div className="mistake-comparison-grid">
                       <div className="comparison-card card-wrong">
-                        <span className="comp-label label-wrong">❌ {isEN ? 'Your answer:' : 'Sinu antud vastus:'}</span>
-                        <p className="comp-value">{err.userAnswer}</p>
+                        <div className="comp-label label-wrong">
+                          <XCircle size={14} />
+                          <span>{isEN ? 'Your answer:' : 'Sinu antud vastus:'}</span>
+                        </div>
+                        <p className="comp-value">{displayUserAnswer}</p>
                       </div>
 
                       <div className="comparison-card card-correct">
-                        <span className="comp-label label-correct">✅ {isEN ? 'Correct answer:' : 'Õige vastus:'}</span>
-                        <p className="comp-value">{err.correctAnswer}</p>
+                        <div className="comp-label label-correct">
+                          <CheckCircle2 size={14} />
+                          <span>{isEN ? 'Correct answer:' : 'Õige vastus:'}</span>
+                        </div>
+                        <p className="comp-value">{displayCorrectAnswer}</p>
                       </div>
                     </div>
 
                     {/* Pedagogical Diagnosis & How to Think */}
                     <div className="mistake-pedagogy-box">
                       <div className="pedagogy-row">
-                        <span className="pedagogy-tag tag-diagnosis">
-                          🔍 {isEN ? 'Where the mistake occurred:' : 'Milles viga seisnes:'}
-                        </span>
-                        <p className="pedagogy-text">{err.diagnosis}</p>
+                        <div className="pedagogy-tag tag-diagnosis">
+                          <AlertCircle size={14} />
+                          <span>{isEN ? 'Where the mistake occurred:' : 'Milles viga seisnes:'}</span>
+                        </div>
+                        <p className="pedagogy-text">{displayDiagnosis}</p>
                       </div>
 
                       <div className="pedagogy-row mt-2">
-                        <span className="pedagogy-tag tag-thinking">
-                          🧠 {isEN ? 'How to think correctly:' : 'Kuidas õigesti mõelda:'}
-                        </span>
-                        <p className="pedagogy-text">{err.howToThink}</p>
+                        <div className="pedagogy-tag tag-thinking">
+                          <Compass size={14} />
+                          <span>{isEN ? 'How to think correctly:' : 'Kuidas õigesti mõelda:'}</span>
+                        </div>
+                        <p className="pedagogy-text">{displayHowToThink}</p>
                       </div>
                     </div>
 
@@ -274,10 +298,10 @@ export default function ErrorNotebookModal({
                     {err.similarTask && (
                       <div className="similar-task-box">
                         <div className="similar-task-header">
-                          <span className="similar-task-badge">
-                            <Sparkles size={13} />
-                            <span>{isEN ? 'Targeted Follow-up Practice:' : 'Sarnane ülesanne proovimiseks:'}</span>
-                          </span>
+                          <div className="similar-task-badge">
+                            <RotateCcw size={13} />
+                            <span>{isEN ? 'Targeted Follow-up Practice:' : 'Sarnane harjutus kinnistamiseks:'}</span>
+                          </div>
 
                           <button
                             type="button"
@@ -288,12 +312,12 @@ export default function ErrorNotebookModal({
                           </button>
                         </div>
 
-                        <p className="similar-task-question">{err.similarTask.question}</p>
+                        <p className="similar-task-question">{displaySimilarQuestion}</p>
 
                         {isSolRevealed && (
                           <div className="similar-task-solution">
                             <strong>{isEN ? 'Solution & walkthrough:' : 'Lahenduskäik ja vastus:'}</strong>
-                            <p>{err.similarTask.solution}</p>
+                            <p>{displaySimilarSolution}</p>
                           </div>
                         )}
                       </div>
