@@ -118,6 +118,7 @@ export default function App() {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     saveTheme(theme);
+    applyAccentTheme(loadAccentTheme());
   }, [theme]);
 
   useEffect(() => {

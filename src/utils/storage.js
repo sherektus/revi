@@ -1441,7 +1441,10 @@ export const ACCENT_PALETTES = [
     hover: '#2643D8',
     soft: 'rgba(59, 91, 246, 0.09)',
     border: 'rgba(59, 91, 246, 0.28)',
-    text: '#2643D8'
+    text: '#1E40AF',
+    darkText: '#60A5FA',
+    darkSoft: 'rgba(59, 91, 246, 0.16)',
+    darkBorder: 'rgba(96, 165, 250, 0.35)'
   },
   {
     id: 'emerald',
@@ -1451,7 +1454,10 @@ export const ACCENT_PALETTES = [
     hover: '#047857',
     soft: 'rgba(5, 150, 105, 0.09)',
     border: 'rgba(5, 150, 105, 0.28)',
-    text: '#047857'
+    text: '#065F46',
+    darkText: '#34D399',
+    darkSoft: 'rgba(16, 185, 129, 0.16)',
+    darkBorder: 'rgba(52, 211, 153, 0.35)'
   },
   {
     id: 'terracotta',
@@ -1461,7 +1467,10 @@ export const ACCENT_PALETTES = [
     hover: '#9A3412',
     soft: 'rgba(194, 65, 12, 0.09)',
     border: 'rgba(194, 65, 12, 0.28)',
-    text: '#9A3412'
+    text: '#9A3412',
+    darkText: '#FB923C',
+    darkSoft: 'rgba(249, 115, 22, 0.16)',
+    darkBorder: 'rgba(251, 146, 60, 0.35)'
   },
   {
     id: 'amethyst',
@@ -1471,7 +1480,10 @@ export const ACCENT_PALETTES = [
     hover: '#6D28D9',
     soft: 'rgba(124, 58, 237, 0.09)',
     border: 'rgba(124, 58, 237, 0.28)',
-    text: '#6D28D9'
+    text: '#5B21B6',
+    darkText: '#C084FC',
+    darkSoft: 'rgba(168, 85, 247, 0.16)',
+    darkBorder: 'rgba(192, 132, 252, 0.35)'
   },
   {
     id: 'teal',
@@ -1481,7 +1493,10 @@ export const ACCENT_PALETTES = [
     hover: '#0F766E',
     soft: 'rgba(13, 148, 136, 0.09)',
     border: 'rgba(13, 148, 136, 0.28)',
-    text: '#0F766E'
+    text: '#115E59',
+    darkText: '#2DD4BF',
+    darkSoft: 'rgba(20, 184, 166, 0.16)',
+    darkBorder: 'rgba(45, 212, 191, 0.35)'
   },
   {
     id: 'ochre',
@@ -1491,7 +1506,10 @@ export const ACCENT_PALETTES = [
     hover: '#92400E',
     soft: 'rgba(180, 83, 9, 0.09)',
     border: 'rgba(180, 83, 9, 0.28)',
-    text: '#92400E'
+    text: '#78350F',
+    darkText: '#FBBF24',
+    darkSoft: 'rgba(245, 158, 11, 0.16)',
+    darkBorder: 'rgba(251, 191, 36, 0.35)'
   }
 ];
 
@@ -1521,11 +1539,12 @@ export function applyAccentTheme(paletteId) {
     ACCENT_PALETTES.find((p) => p.id === paletteId) || ACCENT_PALETTES[0];
   if (typeof document !== 'undefined' && document.documentElement) {
     const root = document.documentElement;
-    root.style.setProperty('--accent', palette.hex);
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    root.style.setProperty('--accent', isDark ? (palette.darkText || palette.hex) : palette.hex);
     root.style.setProperty('--accent-hover', palette.hover);
-    root.style.setProperty('--accent-soft', palette.soft);
-    root.style.setProperty('--accent-border', palette.border);
-    root.style.setProperty('--accent-text', palette.text);
+    root.style.setProperty('--accent-soft', isDark ? (palette.darkSoft || 'rgba(255,255,255,0.08)') : palette.soft);
+    root.style.setProperty('--accent-border', isDark ? (palette.darkBorder || 'rgba(255,255,255,0.16)') : palette.border);
+    root.style.setProperty('--accent-text', isDark ? (palette.darkText || palette.hex) : palette.text);
   }
 }
 
