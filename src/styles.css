@@ -84,38 +84,38 @@
 }
 
 [data-theme='dark'] {
-  /* Revi Emerald & Twilight Palette (Dark Mode) */
-  --bg-main: #101C1A;
-  --bg-card: #1A2B27;
-  --bg-subtle: #152421;
-  --bg-elevated: #223732;
-  --bg-selected: #25413B;
+  /* Revi Modern Obsidian & Emerald Palette (Dark Mode) */
+  --bg-main: #0D1112;
+  --bg-card: #141A1C;
+  --bg-subtle: #1A2225;
+  --bg-elevated: #212C30;
+  --bg-selected: rgba(16, 185, 129, 0.14);
 
-  --text-primary: #F1F5EC;
-  --text-secondary: #ADBCB3;
-  --text-muted: #82948B;
+  --text-primary: #F4F6F5;
+  --text-secondary: #96A4A8;
+  --text-muted: #66777C;
 
-  --border-color: #354C43;
-  --border-strong: #456157;
+  --border-color: #242F33;
+  --border-strong: #324147;
 
-  /* Peamised nupud tumedas režiimis: #75D9BA, tekst #101C1A */
-  --accent: #75D9BA;
-  --accent-hover: #91E5CB;
-  --accent-contrast: #101C1A;
-  --accent-soft: rgba(117, 217, 186, 0.14);
-  --accent-border: rgba(117, 217, 186, 0.32);
-  --accent-text: #75D9BA;
+  /* Peamised nupud tumedas režiimis: puhas smaragdroheline #10B981, kontrastne tume tekst #032017 */
+  --accent: #10B981;
+  --accent-hover: #34D399;
+  --accent-contrast: #032017;
+  --accent-soft: rgba(16, 185, 129, 0.14);
+  --accent-border: rgba(16, 185, 129, 0.32);
+  --accent-text: #34D399;
 
   /* Revi Laimiroheline & Soe Kollane Aktsendid */
   --accent-lime: #D7EF78;
   --accent-lime-text: #182B29;
-  --accent-lime-soft: rgba(215, 239, 120, 0.22);
-  --accent-lime-border: rgba(215, 239, 120, 0.45);
+  --accent-lime-soft: rgba(215, 239, 120, 0.18);
+  --accent-lime-border: rgba(215, 239, 120, 0.38);
 
   --accent-gold: #F2C879;
   --accent-gold-text: #182B29;
-  --accent-gold-soft: rgba(242, 200, 121, 0.20);
-  --accent-gold-border: rgba(242, 200, 121, 0.42);
+  --accent-gold-soft: rgba(242, 200, 121, 0.18);
+  --accent-gold-border: rgba(242, 200, 121, 0.38);
 
   /* Logo süsteem (Tume režiim) */
   --brand-logo-gradient: linear-gradient(135deg, #087F6D 0%, #15AA82 100%);
@@ -123,15 +123,15 @@
   --brand-logo-shadow: 0 4px 18px rgba(21, 170, 130, 0.35), 0 2px 8px rgba(242, 200, 121, 0.25);
 
   /* Multi-Hue Aktsendid tumedas režiimis */
-  --accent-cyan: #75D9BA;
-  --accent-cyan-soft: rgba(117, 217, 186, 0.16);
-  --accent-cyan-border: rgba(117, 217, 186, 0.35);
-  --accent-cyan-text: #9BF0D6;
+  --accent-cyan: #2DD4BF;
+  --accent-cyan-soft: rgba(45, 212, 191, 0.14);
+  --accent-cyan-border: rgba(45, 212, 191, 0.30);
+  --accent-cyan-text: #5EEAD4;
 
   --accent-purple: #C4B5FD;
   --accent-purple-soft: rgba(196, 181, 253, 0.14);
   --accent-purple-border: rgba(196, 181, 253, 0.30);
-  --accent-purple-text: #E0E7FF;
+  --accent-purple-text: #DDD6FE;
 
   --accent-coral: #FDA4AF;
   --accent-coral-soft: rgba(253, 164, 175, 0.14);
@@ -144,10 +144,10 @@
   --accent-amber-text: #FEF3C7;
 
   /* Tagasiside värvid tumedas režiimis */
-  --success: #75D9BA;
-  --success-text: #A7F3D0;
-  --success-soft: rgba(117, 217, 186, 0.16);
-  --success-border: rgba(117, 217, 186, 0.35);
+  --success: #10B981;
+  --success-text: #6EE7B7;
+  --success-soft: rgba(16, 185, 129, 0.16);
+  --success-border: rgba(16, 185, 129, 0.35);
 
   --warning: #F2C879;
   --warning-text: #FDE68A;
@@ -163,8 +163,8 @@
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.55);
 
-  --focus-outline: 2px solid #75D9BA;
-  --focus-ring: 0 0 0 3px rgba(117, 217, 186, 0.35);
+  --focus-outline: 2px solid #10B981;
+  --focus-ring: 0 0 0 3px rgba(16, 185, 129, 0.35);
 }
 
 /* --- ACCESSIBILITY & TEXT SIZING --- */
@@ -940,11 +940,11 @@ button {
 }
 
 [data-theme='dark'] .nav-add-btn {
-  box-shadow: 0 2px 8px rgba(117, 217, 186, 0.25);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
 }
 
 [data-theme='dark'] .nav-add-btn:hover {
-  box-shadow: 0 4px 14px rgba(117, 217, 186, 0.35);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
 }
 
 /* --- PRIVACY & PROFILE PILL --- */
