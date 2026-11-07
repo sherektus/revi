@@ -1531,7 +1531,7 @@ export function applyAccentTheme(paletteId) {
 
 export const DEFAULT_DASHBOARD_WIDGETS = [
   { id: 'deadlines', visible: true, labelET: 'Tähtajad ja kontrolltööd', labelEN: 'Upcoming Deadlines' },
-  { id: 'quickStudy', visible: true, labelET: '„Mul on aega” kiirõpe', labelEN: 'Quick Study Session' },
+  { id: 'quickStudy', visible: true, labelET: 'Konkreetne õppimine', labelEN: 'Targeted Study' },
   { id: 'continueStudy', visible: true, labelET: 'Pooleliolev õppimine', labelEN: 'Continue Study' },
   { id: 'errorNotebook', visible: true, labelET: 'Vigade märkmik', labelEN: 'Mistake Journal' },
   { id: 'dueToday', visible: true, labelET: 'Igapäevane kordamine', labelEN: 'Daily Review' },

@@ -319,10 +319,7 @@ export default function HomeView({
                   <div className="banner-left">
                     <div className="continue-banner-eyebrow">
                       <Clock size={15} className="accent-text" />
-                      <span>{uiLang === 'en' ? 'Quick Micro-Sessions' : '1. „Mul on aega” kiirõpe'}</span>
-                      <span className="badge badge-accent">
-                        {uiLang === 'en' ? 'Focused' : 'Konkreetne õppimiskord'}
-                      </span>
+                      <span>{uiLang === 'en' ? 'Targeted Study' : 'Konkreetne õppimine'}</span>
                     </div>
                     <h2 className="quick-study-headline">
                       {uiLang === 'en'
@@ -332,16 +329,16 @@ export default function HomeView({
                     <p className="quick-study-desc">
                       {uiLang === 'en'
                         ? 'Revi curates an exact, timed session: recall questions, core explanations, and practice exercises with hints.'
-                        : 'Revi koostab valitud ajaks konkreetse kava: kordamisküsimused, põhiselgitused ja harjutused koos vihjetega.'}
+                        : 'Revi koostab valitud ajaks konkreetse õppekava: kordamisküsimused, põhiselgitused ja harjutused koos vihjetega.'}
                     </p>
                   </div>
 
                   <div className="banner-right quick-time-buttons-grid">
                     {[
-                      { mins: 5, label: '5 min', descET: '2 küsimust', descEN: '2 questions' },
-                      { mins: 15, label: '15 min', descET: '2 kordamist + 3 harjutust', descEN: '2 recall + 3 exercises', primary: true },
-                      { mins: 30, label: '30 min', descET: 'Põhjalikum tsükkel', descEN: 'In-depth cycle' },
-                      { mins: 60, label: '60 min', descET: 'Täielik kordamiskord', descEN: 'Full master session' }
+                      { mins: 5, label: '5 min', descET: '2 kordamisküsimust', descEN: '2 recall questions' },
+                      { mins: 15, label: '15 min', descET: '2 küsimust + 3 harjutust', descEN: '2 questions + 3 exercises', primary: true },
+                      { mins: 30, label: '30 min', descET: 'Põhjalik harjutamine', descEN: 'In-depth practice' },
+                      { mins: 60, label: '60 min', descET: 'Täielik materjali läbitöötamine', descEN: 'Full comprehensive study' }
                     ].map((item) => (
                       <button
                         key={item.mins}
@@ -368,7 +365,7 @@ export default function HomeView({
                   <div className="error-banner-info">
                     <div className="continue-banner-eyebrow">
                       <BookmarkPlus size={15} className="accent-text" />
-                      <span>{uiLang === 'en' ? 'Mistake Journal' : '2. Vigade märkmik'}</span>
+                      <span>{uiLang === 'en' ? 'Mistake Journal' : 'Vigade märkmik'}</span>
                       <span className="badge badge-warning">
                         {unresolvedMistakes.length}{' '}
                         {uiLang === 'en' ? 'to review' : 'ootab kinnistamist'}

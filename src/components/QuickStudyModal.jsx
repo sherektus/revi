@@ -23,7 +23,7 @@ export const QUICK_TIME_OPTIONS = [
   { minutes: 5, labelET: '5 minutit', labelEN: '5 minutes', tagET: 'Kiirkordamine', tagEN: 'Quick Recall', planET: '2 kordamisküsimust • 1 põhimõte • 1 harjutus' },
   { minutes: 15, labelET: '15 minutit', labelEN: '15 minutes', tagET: 'Fookussessioon (Soovitatav)', tagEN: 'Focus Session (Recommended)', planET: '2 kordamisküsimust • 1 selgitus • 3 harjutust' },
   { minutes: 30, labelET: '30 minutit', labelEN: '30 minutes', tagET: 'Süvaõppe tsükkel', tagEN: 'Deep Study Cycle', planET: '4 kordamisküsimust • 2 selgitust • 5 harjutust' },
-  { minutes: 60, labelET: '60 minutit', labelEN: '60 minutes', tagET: 'Täielik eksamiks kordamine', tagEN: 'Full Exam Prep', planET: '8 küsimust • 3 selgitust • 8 harjutust' }
+  { minutes: 60, labelET: '60 minutit', labelEN: '60 minutes', tagET: 'Täielik materjali läbitöötamine', tagEN: 'Comprehensive Review', planET: '8 küsimust • 3 selgitust • 8 harjutust' }
 ];
 
 export default function QuickStudyModal({
