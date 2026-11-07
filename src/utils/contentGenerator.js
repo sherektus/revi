@@ -1,7 +1,37 @@
 /**
- * Generates structured study views (Topics/Summary points, Flashcards, Exercises, and Formula Sheet items)
+ * Generates structured study views (Topics/Summary points, Slide Figures, Flashcards, Exercises, and Formula Sheet items)
  * from parsed file pages/slides in the user-selected language ('et' or 'en').
  */
+function buildSchematicSvgForTopic({ heading, keyFormula, concepts, refLabel }) {
+  const safeHeading = (heading || '').replace(/[<>&"]/g, '').slice(0, 44);
+  const safeFormula = (keyFormula || '').replace(/[<>&"]/g, '').slice(0, 48);
+  const c1 = (concepts[0]?.term || safeHeading).replace(/[<>&"]/g, '').slice(0, 26);
+  const c2 = (concepts[1]?.term || safeFormula || refLabel).replace(/[<>&"]/g, '').slice(0, 26);
+
+  return `<svg viewBox="0 0 520 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${safeHeading}">
+    <rect width="520" height="240" rx="12" fill="#FBF8F3"/>
+    <g stroke="#E6DEC8" stroke-width="1">
+      <line x1="40" y1="195" x2="480" y2="195"/>
+      <line x1="55" y1="35" x2="55" y2="205"/>
+    </g>
+    <!-- Header banner -->
+    <rect x="75" y="26" width="370" height="38" rx="8" fill="#EFE9DC" stroke="#D8CEB8"/>
+    <text x="260" y="50" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#2F241D">${safeHeading}</text>
+    <!-- Left node -->
+    <rect x="75" y="92" width="160" height="54" rx="8" fill="#F4EFE6" stroke="#3F6A52" stroke-width="1.8"/>
+    <text x="155" y="123" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#3F6A52">${c1}</text>
+    <!-- Arrow -->
+    <line x1="238" y1="119" x2="278" y2="119" stroke="#8C5A3C" stroke-width="2.2"/>
+    <polygon points="282,119 273,114 273,124" fill="#8C5A3C"/>
+    <!-- Right node -->
+    <rect x="285" y="92" width="160" height="54" rx="8" fill="#F4EFE6" stroke="#8C5A3C" stroke-width="1.8"/>
+    <text x="365" y="123" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#8C5A3C">${c2}</text>
+    <!-- Bottom relation bar -->
+    <rect x="95" y="162" width="330" height="28" rx="6" fill="#E9F0EC"/>
+    <text x="260" y="180" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#2D5A40">${safeFormula || refLabel}</text>
+  </svg>`;
+}
+
 export function generateStudyContent({ pages, fileType, contentLang = 'et', title = '' }) {
   const isEN = contentLang === 'en';
   const unitType = fileType === 'PPTX' ? 'slide' : 'page';
@@ -14,6 +44,7 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
   };
 
   const topics = [];
+  const figures = [];
   const allConcepts = [];
   const allFormulas = [];
   const allFacts = [];
@@ -39,7 +70,7 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
       .replace(/^#+\s*/, '')
       .trim();
     if (!rawHeading || rawHeading.length < 3) {
-      rawHeading = isEN ? `${title || 'Material'} — Part ${idx + 1}` : `${title || 'Materjal'} — Osa ${idx + 1}`;
+      rawHeading = isEN ? `${title || 'Material'} – Part ${idx + 1}` : `${title || 'Materjal'} – ${idx + 1}. osa`;
     }
     if (rawHeading.length > 75) {
       rawHeading = rawHeading.slice(0, 72) + '...';
@@ -59,14 +90,14 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
       if (formulaRegex.test(line) && line.length <= 130) {
         const parts = line.split(/[:—–-]\s+(?=[^0-9])/);
         const label =
-          parts.length >= 2 && formulaRegex.test(parts.slice(1).join(' - '))
+          parts.length >= 2 && formulaRegex.test(parts.slice(1).join(' – '))
             ? parts[0].replace(/^[•\-*]\s*/, '').trim()
             : isEN
             ? `Formula / Relation (${refLabel})`
-            : `Valem / seos (${refLabel})`;
+            : `Valem või seos (${refLabel})`;
         const expression =
-          parts.length >= 2 && formulaRegex.test(parts.slice(1).join(' - '))
-            ? parts.slice(1).join(' - ').trim()
+          parts.length >= 2 && formulaRegex.test(parts.slice(1).join(' – '))
+            ? parts.slice(1).join(' – ').trim()
             : line.replace(/^[•\-*]\s*/, '').trim();
 
         extractedFormulas.push({
@@ -75,13 +106,13 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
           expression,
           symbols: isEN
             ? `Variables and quantities defined in "${rawHeading}"`
-            : `Teemas „${rawHeading}“ esinevad suurused ja muutujad`,
-          units: isEN ? 'Standard SI / dimensionless' : 'SI põhiühikud / ühikuta',
+            : `Teemas „${rawHeading}“ esinevad suurused ja tähised`,
+          units: isEN ? 'Standard SI / dimensionless' : 'SI-ühikud või ühikuta suurus',
           example:
             sentences.find((s) => /näide|example|nt\b|kui\b|if\b/i.test(s)) ||
             (isEN
-              ? `Direct application of ${expression} in ${rawHeading}.`
-              : `Valemi ${expression} rakendamine teema „${rawHeading}“ ülesannetes.`),
+              ? `Application of ${expression} in "${rawHeading}".`
+              : `Seose ${expression} rakendamine teema „${rawHeading}“ ülesannetes.`),
           sourceRef
         });
       }
@@ -92,7 +123,7 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
     for (const line of rawLines) {
       const cleaned = line.replace(/^[•\-*]\s*/, '').trim();
       const colonMatch = cleaned.match(/^([A-ZÕÄÖÜŠŽa-zõäöüšž0-9\s()Δ]{3,42})\s*(?::|—|–|-)\s*(.{12,180})$/);
-      if (colonMatch && !/^(?:Slaid|Slide|Lk|Page|Näide|Example|Loeng|Lecture)\b/i.test(colonMatch[1])) {
+      if (colonMatch && !/^(?:Slaid|Slide|Lk|Page|Näide|Example|Loeng|Lecture|Joonis|Figure)\b/i.test(colonMatch[1])) {
         extractedConcepts.push({
           term: colonMatch[1].trim(),
           definition: colonMatch[2].trim(),
@@ -102,7 +133,7 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
         continue;
       }
 
-      const defMatchET = cleaned.match(/^(.{3,45}?)\s+(?:nimetatakse|tähendab|on defineeritud kui|väljendab)\s+(.{12,160})$/i);
+      const defMatchET = cleaned.match(/^(.{3,45}?)\s+(?:nimetatakse|tähendab|defineeritakse kui|väljendab)\s+(.{12,160})$/i);
       if (defMatchET) {
         extractedConcepts.push({
           term: defMatchET[1].trim(),
@@ -143,8 +174,8 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
         id: `form-${idx + 1}-1`,
         label: isEN ? `Core relation (${refLabel})` : `Põhiseos (${refLabel})`,
         expression: candidate.length > 95 ? candidate.slice(0, 92) + '...' : candidate,
-        symbols: isEN ? `Key terms from ${rawHeading}` : `Põhitähised teemast „${rawHeading}“`,
-        units: isEN ? 'Context-dependent' : 'Vastavalt kontekstile',
+        symbols: isEN ? `Key terms from ${rawHeading}` : `Olulised tähised teemast „${rawHeading}“`,
+        units: isEN ? 'Context-dependent' : 'Sõltub ülesande kontekstist',
         example: sentences[1] || candidate,
         sourceRef
       });
@@ -158,6 +189,81 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
     const summaryText =
       sentences.slice(0, 2).join(' ') ||
       page.content.trim().slice(0, 220);
+
+    // Build figures for this slide/page:
+    // 1. Any embedded images extracted directly from PPTX/PDF
+    if (Array.isArray(page.extractedFigures) && page.extractedFigures.length > 0) {
+      page.extractedFigures.forEach((ef) => {
+        const figNum = figures.length + 1;
+        const figTitle = ef.title
+          ? ef.title.startsWith('Joonis') || ef.title.startsWith('Figure')
+            ? ef.title
+            : isEN
+            ? `Figure ${figNum}. ${ef.title}`
+            : `Joonis ${figNum}. ${ef.title}`
+          : isEN
+          ? `Figure ${figNum}. ${rawHeading}`
+          : `Joonis ${figNum}. ${rawHeading}`;
+
+        figures.push({
+          id: `fig-${figNum}`,
+          figureNumber: figNum,
+          topicId,
+          title: figTitle,
+          description: ef.description || summaryText,
+          callouts: extractedConcepts.slice(0, 3).map((c) => `${c.term} – ${c.definition.slice(0, 80)}`),
+          imageUrl: ef.imageUrl || null,
+          svgMarkup: ef.imageUrl
+            ? null
+            : buildSchematicSvgForTopic({
+                heading: rawHeading,
+                keyFormula: extractedFormulas[0]?.expression,
+                concepts: extractedConcepts,
+                refLabel
+              }),
+          sourceRef
+        });
+      });
+    } else {
+      // 2. Check if text explicitly mentions a figure/diagram/graph OR generate a schematic overview figure for key slides
+      const explicitFigLine = rawLines.find((l) =>
+        /\b(?:joonis|skeem|graafik|diagramm|fig(?:ure)?\.?)\b/i.test(l)
+      );
+      if (explicitFigLine || idx < 4) {
+        const figNum = figures.length + 1;
+        const cleanCaption = explicitFigLine
+          ? explicitFigLine.replace(/^[•\-*]\s*/, '').trim()
+          : rawHeading;
+        const figTitle =
+          /^(?:joonis|figure|fig\.?)\s*\d+/i.test(cleanCaption)
+            ? cleanCaption
+            : isEN
+            ? `Figure ${figNum}. ${cleanCaption}`
+            : `Joonis ${figNum}. ${cleanCaption}`;
+
+        figures.push({
+          id: `fig-${figNum}`,
+          figureNumber: figNum,
+          topicId,
+          title: figTitle,
+          description:
+            summaryText ||
+            (isEN
+              ? `Schematic diagram illustrating the core relations in "${rawHeading}" (${refLabel}).`
+              : `Joonis võtab kokku teema „${rawHeading}“ (${refLabel}) olulisemad seosed ja tähised.`),
+          callouts: extractedConcepts
+            .slice(0, 3)
+            .map((c) => `${c.term} – ${c.definition.slice(0, 85)}`),
+          svgMarkup: buildSchematicSvgForTopic({
+            heading: rawHeading,
+            keyFormula: extractedFormulas[0]?.expression,
+            concepts: extractedConcepts,
+            refLabel
+          }),
+          sourceRef
+        });
+      }
+    }
 
     const topicObj = {
       id: topicId,
@@ -188,8 +294,8 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
   for (const concept of allConcepts) {
     if (flashcards.length >= 12) break;
     const question = isEN
-      ? `How is "${concept.term}" defined or explained in the context of ${concept.topicTitle}?`
-      : `Kuidas on mõiste „${concept.term}“ selgitatud teema „${concept.topicTitle}“ juures?`;
+      ? `How is "${concept.term}" defined in the context of ${concept.topicTitle}?`
+      : `Mida tähendab mõiste „${concept.term}“ teemas „${concept.topicTitle}“?`;
     flashcards.push({
       id: `fc-${flashcards.length + 1}`,
       topicId: concept.topicId,
@@ -205,8 +311,8 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
     const alreadyAdded = flashcards.some((f) => f.answer === formula.expression);
     if (alreadyAdded) continue;
     const question = isEN
-      ? `Which formula or key relation describes "${formula.label}" (${formula.topicTitle})?`
-      : `Milline valem või põhiseos kehtib seose „${formula.label}“ (${formula.topicTitle}) kohta?`;
+      ? `Which formula or relation describes "${formula.label}" (${formula.topicTitle})?`
+      : `Milline valem või seos kirjeldab suurust „${formula.label}“ (${formula.topicTitle})?`;
     flashcards.push({
       id: `fc-${flashcards.length + 1}`,
       topicId: formula.topicId,
@@ -223,7 +329,7 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
     if (alreadyAdded) continue;
     const question = isEN
       ? `What is the key takeaway regarding "${factItem.topicTitle}" (${factItem.sourceRef.label})?`
-      : `Milline oluline tähelepanek kehtib teema „${factItem.topicTitle}“ (${factItem.sourceRef.label}) kohta?`;
+      : `Milline põhiväide kehtib teema „${factItem.topicTitle}“ (${factItem.sourceRef.label}) kohta?`;
     flashcards.push({
       id: `fc-${flashcards.length + 1}`,
       topicId: factItem.topicId,
@@ -247,9 +353,9 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
           'This relationship holds exclusively for discrete negative integers.'
         ]
       : [
-          'Väärtus jääb alati konstantseks sõltumata sisendparameetrite või argumendi muutumisest.',
-          'See seos kehtib ainult juhul, kui funktsiooni väärtus läheneb lõpmatusele.',
-          'Antud omadus kirjeldab üksnes pöördvõrdelist kahanemist negatiivsetel väärtustel.'
+          'Väärtus püsib muutumatuna sõltumata algandmetest või argumendi väärtusest.',
+          'See seos kehtib üksnes juhul, kui argument läheneb lõpmatusele.',
+          'See omadus kirjeldab vaid pöördvõrdelist kahanemist negatiivsete täisarvude korral.'
         ])
   ];
 
@@ -291,7 +397,7 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
     while (wrongOptions.length < 3) {
       const fallback = isEN
         ? `Alternative interpretation #${wrongOptions.length + 1} that does not match ${fc.sourceRef.label}.`
-        : `Alternatiivne väide #${wrongOptions.length + 1}, mis ei vasta allikale (${fc.sourceRef.label}).`;
+        : `Väide ${wrongOptions.length + 1}, mis ei ole kooskõlas allikaga (${fc.sourceRef.label}).`;
       wrongOptions.push(fallback);
     }
 
@@ -308,7 +414,7 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
         type: 'short_answer',
         question: isEN
           ? `Short Answer (${fc.sourceRef.label}): Which concept or term is defined as: "${fc.answer}"?`
-          : `Lühivastus (${fc.sourceRef.label}): Millist mõistet või seost kirjeldab järgmine definitsioon: „${fc.answer}“?`,
+          : `Lühivastus (${fc.sourceRef.label}): millist mõistet või seost kirjeldab määratlus „${fc.answer}“?`,
         hint: isEN
           ? `Starts with "${shortTerm.slice(0, 2)}..." (${fc.sourceRef.label}).`
           : `Mõiste algab tähtedega „${shortTerm.slice(0, 2)}...“ (${fc.sourceRef.label}).`,
@@ -323,20 +429,19 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
               `3. Full explanation: ${fc.answer}`
             ]
           : [
-              `1. Vaata allika (${fc.sourceRef.label}) põhimõisteid.`,
-              `2. Antud seletusele vastab mõiste „${shortTerm}“.`,
+              `1. Tutvu allika (${fc.sourceRef.label}) põhimõistetega.`,
+              `2. Sellele kirjeldusele vastab mõiste „${shortTerm}“.`,
               `3. Täpne selgitus: ${fc.answer}`
             ],
         explanation: isEN
           ? `According to ${fc.sourceRef.label}, the term is "${shortTerm}": ${fc.answer}`
-          : `Vastavalt viitele ${fc.sourceRef.label} on see mõiste „${shortTerm}“: ${fc.answer}`,
+          : `Allika (${fc.sourceRef.label}) põhjal on see mõiste „${shortTerm}“: ${fc.answer}`,
         sourceRef: fc.sourceRef
       });
       return;
     }
 
     if (exType === 'calculation') {
-      // Generate a concrete numerical calculation problem tied to the topic
       const a = (idx % 4) + 2; // 2..5
       const b = (idx % 3) + 3; // 3..5
       const x0 = 2;
@@ -347,8 +452,8 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
         type: 'calculation',
         templateType: 'linear_quad_rate',
         question: isEN
-          ? `Calculation Problem (${fc.sourceRef.label}): Given the model f(x) = ${a}x² + ${b}x, calculate the instantaneous rate of change f'(x₀) at x₀ = ${x0}.`
-          : `Arvutusülesanne (${fc.sourceRef.label}): Olgu antud seos f(x) = ${a}x² + ${b}x. Arvuta hetkeline muutumiskiirus (tuletis) f'(x₀) kohal x₀ = ${x0}.`,
+          ? `Calculation Problem (${fc.sourceRef.label}): Given the function f(x) = ${a}x² + ${b}x, calculate the instantaneous rate of change f'(x₀) at x₀ = ${x0}.`
+          : `Arvutusülesanne (${fc.sourceRef.label}): on teada funktsioon f(x) = ${a}x² + ${b}x. Arvuta hetkeline muutumiskiirus (tuletis) f'(x₀) kohal x₀ = ${x0}.`,
         hint: isEN
           ? `Use (ax² + bx)' = 2ax + b and substitute x = ${x0}.`
           : `Kasuta reeglit (ax² + bx)' = 2ax + b ning asenda x = ${x0}.`,
@@ -374,7 +479,7 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
             ],
         explanation: isEN
           ? `f'(x) = ${2 * a}x + ${b}, so at x₀ = ${x0} the result is ${resultVal}.`
-          : `Tuletis on f'(x) = ${2 * a}x + ${b}, seega kohal x₀ = ${x0} on vastus ${resultVal}.`,
+          : `Tuletis on f'(x) = ${2 * a}x + ${b}, seega kohal x₀ = ${x0} on väärtus ${resultVal}.`,
         sourceRef: fc.sourceRef
       });
       return;
@@ -384,16 +489,16 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
     const questionText = isApplication
       ? isEN
         ? `Application Problem (${fc.sourceRef.label}): Apply the material to determine the right conclusion or formula for: ${fc.question}`
-        : `Rakendusülesanne (${fc.sourceRef.label}): Rakenda õpitud materjali ja leia õige seos või järeldus küsimusele: ${fc.question}`
+        : `Rakendusülesanne (${fc.sourceRef.label}): leia materjali põhjal õige seos või järeldus küsimusele: ${fc.question}`
       : fc.question;
 
     const explanationText = isEN
       ? `Based on ${fc.sourceRef.label}, the accurate statement/formula is: "${correctAnswer}".`
-      : `Vastavalt materjalile (${fc.sourceRef.label}) on õige seisukoht või valem: „${correctAnswer}“.`;
+      : `Allika (${fc.sourceRef.label}) põhjal on õige seisukoht või valem: „${correctAnswer}“.`;
 
     const hintText = isEN
       ? `Review the section on ${fc.sourceRef.label} carefully.`
-      : `Vaata meeldetuletuseks materjali kohta viitel ${fc.sourceRef.label}.`;
+      : `Tuleta meelde vastav teema allika kohal ${fc.sourceRef.label}.`;
 
     exercises.push({
       id: `ex-${idx + 1}`,
@@ -419,13 +524,14 @@ export function generateStudyContent({ pages, fileType, contentLang = 'et', titl
 
   return {
     topics,
+    figures,
     flashcards,
     exercises
   };
 }
 
 /**
- * Generates a fresh similar problem ("Proovi uut sarnast ülesannet") with new numbers/parameters!
+ * Generates a fresh similar problem ("Proovi sarnast ülesannet uute andmetega") with new numbers/parameters!
  */
 export function generateSimilarExercise(exercise, contentLang = 'et') {
   const isEN = contentLang === 'en';
@@ -437,7 +543,6 @@ export function generateSimilarExercise(exercise, contentLang = 'et') {
   const x0 = randInt(1, 3);
 
   if (exercise.templateType === 'poly_deriv_eval') {
-    // f(x) = a*x^3 - b*x^2 + c*x at x = x0
     const derivAtX0 = 3 * a * x0 * x0 - 2 * b * x0 + c;
     const wrong1 = derivAtX0 + b;
     const wrong2 = a * x0 * x0 * x0 - b * x0 * x0 + c * x0;
@@ -448,10 +553,10 @@ export function generateSimilarExercise(exercise, contentLang = 'et') {
       type: 'calculation',
       question: isEN
         ? `Calculation Problem (New Variant): Find the derivative of f(x) = ${a}x³ − ${b}x² + ${c}x and compute f'(${x0}).`
-        : `Arvutusülesanne (Uus sarnane ülesanne): Leia funktsiooni f(x) = ${a}x³ − ${b}x² + ${c}x tuletis f'(x) ning arvuta tuletise täpne väärtus kohal x = ${x0}.`,
+        : `Arvutusülesanne (uus sarnane ülesanne): leia funktsiooni f(x) = ${a}x³ − ${b}x² + ${c}x tuletis f'(x) ja arvuta selle täpne väärtus kohal x = ${x0}.`,
       hint: isEN
         ? `Use (xⁿ)' = n·xⁿ⁻¹ term by term, then substitute x = ${x0}.`
-        : `Kasuta valemit (xⁿ)' = n·xⁿ⁻¹ liikmete kaupa ja asenda lõpus x = ${x0}.`,
+        : `Kasuta valemit (xⁿ)' = n·xⁿ⁻¹ liikmete kaupa ning asenda lõpus x = ${x0}.`,
       expectedAnswer: String(derivAtX0),
       acceptedAnswers: [String(derivAtX0), `f'(${x0})=${derivAtX0}`],
       options: [
@@ -465,12 +570,12 @@ export function generateSimilarExercise(exercise, contentLang = 'et') {
         ? [
             `1. Differentiate term by term: (${a}x³)' = ${3 * a}x², (−${b}x²)' = −${2 * b}x, (${c}x)' = ${c}.`,
             `2. Combine into derivative function: f'(x) = ${3 * a}x² − ${2 * b}x + ${c}.`,
-            `3. Evaluate at x = ${x0}: f'(${x0}) = ${3 * a}·(${x0})² − ${2 * b}·(${x0}) + ${c} = ${derivAtX0}.`
+            `3. Evaluate at x = ${x0}: f'(${x0}) = ${3 * a}·${x0}² − ${2 * b}·${x0} + ${c} = ${derivAtX0}.`
           ]
         : [
             `1. Diferentseerime liikmete kaupa: (${a}x³)' = ${3 * a}x², (−${b}x²)' = −${2 * b}x, (${c}x)' = ${c}.`,
             `2. Saame tuletisfunktsiooni: f'(x) = ${3 * a}x² − ${2 * b}x + ${c}.`,
-            `3. Asendame x = ${x0}: f'(${x0}) = ${3 * a}·(${x0})² − ${2 * b}·(${x0}) + ${c} = ${derivAtX0}.`
+            `3. Asendame x = ${x0}: f'(${x0}) = ${3 * a}·${x0}² − ${2 * b}·${x0} + ${c} = ${derivAtX0}.`
           ],
       explanation: isEN
         ? `f'(x) = ${3 * a}x² − ${2 * b}x + ${c}, and substituting x = ${x0} gives f'(${x0}) = ${derivAtX0}.`
@@ -487,7 +592,7 @@ export function generateSimilarExercise(exercise, contentLang = 'et') {
       type: 'calculation',
       question: isEN
         ? `Calculation Problem (New Variant): An object moves according to s(t) = t³ − ${a}t² + ${b}t (meters). Calculate its instantaneous velocity v(${t0}) (m/s) at t = ${t0} s.`
-        : `Arvutusülesanne (Uus sarnane ülesanne): Punktmass liigub seaduse s(t) = t³ − ${a}t² + ${b}t (meetrit) järgi. Arvuta keha hetkkiirus v(${t0}) (m/s) ajahetkel t = ${t0} s.`,
+        : `Arvutusülesanne (uus sarnane ülesanne): punktmass liigub seaduse s(t) = t³ − ${a}t² + ${b}t (meetrit) järgi. Arvuta keha hetkkiirus v(${t0}) (m/s) ajahetkel t = ${t0} s.`,
       hint: isEN
         ? `Velocity is v(t) = s'(t). Differentiate and substitute t = ${t0}.`
         : `Hetkkiirus on v(t) = s'(t). Leia tuletis ja asenda t = ${t0}.`,
@@ -503,17 +608,17 @@ export function generateSimilarExercise(exercise, contentLang = 'et') {
       steps: isEN
         ? [
             `1. Differentiate position s(t): v(t) = s'(t) = 3t² − ${2 * a}t + ${b}.`,
-            `2. Substitute t = ${t0}: v(${t0}) = 3·(${t0})² − ${2 * a}·(${t0}) + ${b}.`,
+            `2. Substitute t = ${t0}: v(${t0}) = 3·${t0}² − ${2 * a}·${t0} + ${b}.`,
             `3. Compute result: v(${t0}) = ${vVal} m/s.`
           ]
         : [
             `1. Leiame kiiruse funktsiooni: v(t) = s'(t) = 3t² − ${2 * a}t + ${b}.`,
-            `2. Asendame ajahetke t = ${t0} s: v(${t0}) = 3·(${t0})² − ${2 * a}·(${t0}) + ${b}.`,
+            `2. Asendame ajahetke t = ${t0} s: v(${t0}) = 3·${t0}² − ${2 * a}·${t0} + ${b}.`,
             `3. Arvutame tulemuse: v(${t0}) = ${vVal} m/s.`
           ],
       explanation: isEN
         ? `v(t) = 3t² − ${2 * a}t + ${b} ⇒ v(${t0}) = ${vVal} m/s.`
-        : `Kiirus v(t) = 3t² − ${2 * a}t + ${b}, seega ajahetkel t = ${t0} s on kiirus ${vVal} m/s.`
+        : `Kiirus on v(t) = 3t² − ${2 * a}t + ${b}, seega ajahetkel t = ${t0} s on kiirus ${vVal} m/s.`
     };
   }
 
@@ -526,10 +631,10 @@ export function generateSimilarExercise(exercise, contentLang = 'et') {
       type: 'calculation',
       question: isEN
         ? `Calculation Problem (New Variant): Find the x-coordinate x₀ of the local minimum of f(x) = x² − ${linCoeff}x + ${c}.`
-        : `Arvutusülesanne (Uus sarnane ülesanne): Leia funktsiooni f(x) = x² − ${linCoeff}x + ${c} lokaalse miinimumi abstsiss x₀ (kus f'(x₀) = 0).`,
+        : `Arvutusülesanne (uus sarnane ülesanne): leia funktsiooni f(x) = x² − ${linCoeff}x + ${c} lokaalse miinimumi abstsiss x₀ (kus f'(x₀) = 0).`,
       hint: isEN
         ? `Solve f'(x) = 2x − ${linCoeff} = 0.`
-        : `Leia tuletis f'(x) = 2x − ${linCoeff} ja võrdsusta nulliga.`,
+        : `Leia tuletis f'(x) = 2x − ${linCoeff} ja võrdsusta see nulliga.`,
       expectedAnswer: String(minX),
       acceptedAnswers: [String(minX), `x=${minX}`, `x = ${minX}`],
       options: [
@@ -547,12 +652,12 @@ export function generateSimilarExercise(exercise, contentLang = 'et') {
           ]
         : [
             `1. Leiame esimese tuletise: f'(x) = 2x − ${linCoeff}.`,
-            `2. Võrdsustame nulliga: 2x − ${linCoeff} = 0 ⇒ x₀ = ${minX}.`,
-            `3. Kuna f''(x) = 2 > 0, on punktis x₀ = ${minX} lokaalne miinimum.`
+            `2. Võrdsustame tuletise nulliga: 2x − ${linCoeff} = 0 ⇒ x₀ = ${minX}.`,
+            `3. Kuna f''(x) = 2 > 0, paikneb kohal x₀ = ${minX} lokaalne miinimum.`
           ],
       explanation: isEN
         ? `Setting f'(x) = 2x − ${linCoeff} = 0 gives x₀ = ${minX}.`
-        : `Tuletis f'(x) = 2x − ${linCoeff} = 0 annab miinimumkohaks x₀ = ${minX}.`
+        : `Võrrand f'(x) = 2x − ${linCoeff} = 0 annab miinimumkohaks x₀ = ${minX}.`
     };
   }
 
@@ -565,7 +670,7 @@ export function generateSimilarExercise(exercise, contentLang = 'et') {
       type: 'calculation',
       question: isEN
         ? `Calculation Problem (New Variant): Find the slope k = f'(${x0}) of the tangent line to f(x) = ${a}x² + ${b}x − ${c} at x₀ = ${x0}.`
-        : `Arvutusülesanne (Uus sarnane ülesanne): Leia funktsiooni f(x) = ${a}x² + ${b}x − ${c} graafiku puutuja tõus k = f'(${x0}) punktis x₀ = ${x0}.`,
+        : `Arvutusülesanne (uus sarnane ülesanne): leia funktsiooni f(x) = ${a}x² + ${b}x − ${c} graafiku puutuja tõus k = f'(${x0}) kohal x₀ = ${x0}.`,
       hint: isEN
         ? `Compute f'(x) = ${2 * a}x + ${b} and evaluate at x = ${x0}.`
         : `Leia tuletis f'(x) = ${2 * a}x + ${b} ja arvuta väärtus kohal x = ${x0}.`,
@@ -604,7 +709,7 @@ export function generateSimilarExercise(exercise, contentLang = 'et') {
       id: `${exercise.id}-sim-${Date.now()}`,
       question: isEN
         ? `${exercise.question} (Practice Variant)`
-        : `${exercise.question} (Kordamisvariant)`,
+        : `${exercise.question} (kordamisvariant)`,
       options: shuffled,
       correctIndex: newCorrectIdx >= 0 ? newCorrectIdx : 0
     };

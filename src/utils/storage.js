@@ -33,15 +33,30 @@ function openFilesDB() {
   });
 }
 
-export async function saveOriginalFileBlob(materialId, file) {
+export async function saveOriginalFileBlob(materialId, fileOrFiles) {
   try {
     const db = await openFilesDB();
-    if (!db) return;
-    const buffer = await file.arrayBuffer();
+    if (!db || !fileOrFiles) return;
+    const filesArray = Array.isArray(fileOrFiles)
+      ? fileOrFiles.filter(Boolean)
+      : [fileOrFiles];
+    if (filesArray.length === 0) return;
+
+    const firstFile = filesArray[0];
+    const buffer = await firstFile.arrayBuffer();
+    const filesMeta = await Promise.all(
+      filesArray.map(async (f) => ({
+        name: f.name,
+        type: f.type || 'application/octet-stream',
+        buffer: await f.arrayBuffer()
+      }))
+    );
+
     const record = {
-      name: file.name,
-      type: file.type || 'application/octet-stream',
-      buffer
+      name: filesArray.map((f) => f.name).join(', '),
+      type: firstFile.type || 'application/octet-stream',
+      buffer,
+      files: filesMeta
     };
     await new Promise((resolve) => {
       const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -64,7 +79,14 @@ export async function getOriginalFileBlob(materialId) {
       req.onsuccess = () => {
         if (req.result && req.result.buffer) {
           const blob = new Blob([req.result.buffer], { type: req.result.type });
-          resolve({ blob, name: req.result.name, type: req.result.type });
+          const files = Array.isArray(req.result.files)
+            ? req.result.files.map((f) => ({
+                name: f.name,
+                type: f.type,
+                blob: new Blob([f.buffer], { type: f.type })
+              }))
+            : [{ name: req.result.name, type: req.result.type, blob }];
+          resolve({ blob, name: req.result.name, type: req.result.type, files });
         } else {
           resolve(null);
         }
@@ -172,22 +194,25 @@ export function loadMaterials() {
       };
 
       if (sampleMatch) {
-        // Preserve any user-edited or newly added cards/exercises, while upgrading base items with new fields
-        const mergedTopics = (mat.topics || sampleMatch.topics).map((tp, idx) => {
-          const sTopic = sampleMatch.topics[idx] || {};
+        // Preserve any user-edited or newly added cards/exercises, while upgrading base sample items
+        const mergedTopics = (sampleMatch.topics || mat.topics).map((sTopic, idx) => {
+          const tp = (mat.topics || [])[idx] || {};
           return {
-            ...sTopic,
             ...tp,
+            ...sTopic,
             formulas: (sTopic.formulas || tp.formulas || []).map((f, fIdx) => ({
-              ...(sTopic.formulas?.[fIdx] || {}),
+              ...(tp.formulas?.[fIdx] || {}),
               ...f
             }))
           };
         });
 
         const mergedFlashcards = (mat.flashcards || sampleMatch.flashcards).map((fc) => {
-          const sCard = sampleMatch.flashcards.find((sc) => sc.id === fc.id) || {};
-          return { ...sCard, ...fc };
+          const sCard = sampleMatch.flashcards.find((sc) => sc.id === fc.id);
+          if (sCard && !fc.isUserEdited) {
+            return { ...fc, ...sCard };
+          }
+          return { ...(sCard || {}), ...fc };
         });
 
         const mergedExercises = (sampleMatch.exercises || []).map((sEx) => {
@@ -207,6 +232,9 @@ export function loadMaterials() {
         return {
           ...sampleMatch,
           ...mat,
+          title: sampleMatch.title,
+          pages: sampleMatch.pages,
+          figures: sampleMatch.figures || mat.figures || [],
           enabledFeatures: mergedFeatures,
           topics: mergedTopics,
           flashcards: mergedFlashcards,
@@ -216,6 +244,7 @@ export function loadMaterials() {
 
       return {
         ...mat,
+        figures: mat.figures || [],
         enabledFeatures: mergedFeatures
       };
     });
@@ -643,12 +672,12 @@ export function getTopicMasteryBreakdown(material, matProgress) {
 const DEFAULT_SAMPLE_EVENTS = [
   {
     id: 'evt-sample-1',
-    title: 'Matemaatilise analüüsi kontrolltöö: Tuletised',
+    title: 'Matemaatilise analüüsi kontrolltöö: tuletised',
     type: 'test', // 'test' | 'exam' | 'homework' | 'project' | 'other'
     subject: 'Matemaatiline analüüs',
     date: '2026-11-13',
     time: '10:15',
-    notes: 'Slaidid 1–5: tuletise definitsioon, puutuja võrrand, korrutise/jagatise reegel, ahelreegel ja ekstreemumid.',
+    notes: 'Slaidid 1–5: tuletise definitsioon, puutuja võrrand, korrutise ja jagatise reegel, ahelreegel ning ekstreemumid.',
     completed: false,
     linkedMaterialIds: ['sample-tuletised-et'],
     dailyMinutes: 25
@@ -773,7 +802,7 @@ export function generateStudyPlanForEvent(event, materials, startDateStr = null)
         materialTitle: assignedUnit.materialTitle,
         topicId: assignedUnit.topicId,
         topicTitle: isFinalReview
-          ? `${assignedUnit.topicTitle} (Kinnistamine / Üldkordamine)`
+          ? `${assignedUnit.topicTitle} (kinnistamine ja üldkordamine)`
           : assignedUnit.topicTitle,
         questionCount: Math.max(3, Math.min(10, Math.round(dailyMinutes / 3))),
         completed: false
@@ -862,5 +891,160 @@ export function calculateMaterialStats(material, matProgress) {
     answeredExercises,
     progressPercent,
     hasStarted
+  };
+}
+
+/**
+ * Combines 2 or more materials (or parsed file results) into a single unified study collection
+ * with sequential page numbering and clear per-file sourceRef labels.
+ */
+export function combineMaterialsIntoCollection({
+  materialsToCombine,
+  title,
+  subject,
+  contentLang = 'et',
+  enabledFeatures = DEFAULT_ENABLED_FEATURES
+}) {
+  const now = new Date().toISOString();
+  const colId = `col-${Date.now()}`;
+
+  const combinedPages = [];
+  const combinedTopics = [];
+  const combinedFlashcards = [];
+  const combinedExercises = [];
+  const sourceFileNames = [];
+
+  let pageOffset = 0;
+
+  materialsToCombine.forEach((mat, matIdx) => {
+    const shortSource =
+      mat.fileName || mat.title || `Materjal ${matIdx + 1}`;
+    sourceFileNames.push(shortSource);
+
+    const matPages = mat.pages || [];
+    const pageNumMap = {};
+
+    matPages.forEach((p, pIdx) => {
+      const newPageNum = pageOffset + pIdx + 1;
+      pageNumMap[p.pageNumber] = newPageNum;
+      combinedPages.push({
+        ...p,
+        pageNumber: newPageNum,
+        sourceFileName: shortSource,
+        originalPageNumber: p.pageNumber,
+        title: `${shortSource} • ${p.title || `Lk ${p.pageNumber}`}`
+      });
+    });
+
+    const topicIdMap = {};
+    (mat.topics || []).forEach((tp, tIdx) => {
+      const newTopicId = `${colId}-tp-${matIdx + 1}-${tIdx + 1}`;
+      topicIdMap[tp.id] = newTopicId;
+
+      const origNum = tp.sourceRef?.number || 1;
+      const mappedNum = pageNumMap[origNum] || pageOffset + 1;
+      const origLabel = tp.sourceRef?.label || `Slaid ${origNum}`;
+      const newLabel = origLabel.includes(shortSource)
+        ? origLabel
+        : `${shortSource} • ${origLabel}`;
+
+      const updatedFormulas = (tp.formulas || []).map((f) => {
+        if (typeof f === 'string') return f;
+        return {
+          ...f,
+          sourceRef: {
+            ...(f.sourceRef || {}),
+            number: pageNumMap[f.sourceRef?.number] || mappedNum,
+            label: f.sourceRef?.label?.includes(shortSource)
+              ? f.sourceRef.label
+              : `${shortSource} • ${f.sourceRef?.label || origLabel}`
+          }
+        };
+      });
+
+      combinedTopics.push({
+        ...tp,
+        id: newTopicId,
+        title:
+          materialsToCombine.length > 1
+            ? `${tp.title} (${shortSource.replace(/\.[^/.]+$/, '')})`
+            : tp.title,
+        sourceRef: {
+          ...(tp.sourceRef || { type: 'slide' }),
+          number: mappedNum,
+          label: newLabel
+        },
+        formulas: updatedFormulas
+      });
+    });
+
+    (mat.flashcards || []).forEach((fc, fcIdx) => {
+      if (fc.hidden) return;
+      const origNum = fc.sourceRef?.number || 1;
+      const mappedNum = pageNumMap[origNum] || pageOffset + 1;
+      const origLabel = fc.sourceRef?.label || `Slaid ${origNum}`;
+      const newLabel = origLabel.includes(shortSource)
+        ? origLabel
+        : `${shortSource} • ${origLabel}`;
+
+      combinedFlashcards.push({
+        ...fc,
+        id: `${colId}-fc-${matIdx + 1}-${fcIdx + 1}`,
+        topicId: topicIdMap[fc.topicId] || combinedTopics[combinedTopics.length - 1]?.id,
+        sourceRef: {
+          ...(fc.sourceRef || { type: 'slide' }),
+          number: mappedNum,
+          label: newLabel
+        }
+      });
+    });
+
+    (mat.exercises || []).forEach((ex, exIdx) => {
+      if (ex.hidden) return;
+      const origNum = ex.sourceRef?.number || 1;
+      const mappedNum = pageNumMap[origNum] || pageOffset + 1;
+      const origLabel = ex.sourceRef?.label || `Slaid ${origNum}`;
+      const newLabel = origLabel.includes(shortSource)
+        ? origLabel
+        : `${shortSource} • ${origLabel}`;
+
+      combinedExercises.push({
+        ...ex,
+        id: `${colId}-ex-${matIdx + 1}-${exIdx + 1}`,
+        topicId: topicIdMap[ex.topicId] || combinedTopics[combinedTopics.length - 1]?.id,
+        sourceRef: {
+          ...(ex.sourceRef || { type: 'slide' }),
+          number: mappedNum,
+          label: newLabel
+        }
+      });
+    });
+
+    pageOffset += Math.max(1, matPages.length);
+  });
+
+  return {
+    id: colId,
+    isSample: false,
+    isCollection: materialsToCombine.length > 1,
+    sourceFileNames,
+    title: title || sourceFileNames.join(' + '),
+    subject: subject || materialsToCombine[0]?.subject || 'Matemaatiline analüüs',
+    fileName: sourceFileNames.join(', '),
+    fileType:
+      materialsToCombine.length > 1
+        ? 'KOGUM'
+        : materialsToCombine[0]?.fileType || 'DOC',
+    contentLang,
+    createdAt: now,
+    lastOpenedAt: now,
+    enabledFeatures: {
+      ...DEFAULT_ENABLED_FEATURES,
+      ...(enabledFeatures || {})
+    },
+    pages: combinedPages,
+    topics: combinedTopics,
+    flashcards: combinedFlashcards,
+    exercises: combinedExercises
   };
 }

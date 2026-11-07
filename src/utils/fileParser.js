@@ -5,8 +5,8 @@ import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 /**
- * Extracts structured pages/slides/sections from PDF, PPTX, or TXT files.
- * Returns { fileType: 'PDF' | 'PPTX' | 'TXT', pages: Array<{ pageNumber, unitType, title, content }> }
+ * Extracts structured pages/slides/sections and embedded slide figures/diagrams from PDF, PPTX, or TXT files.
+ * Returns { fileType: 'PDF' | 'PPTX' | 'TXT', pages: Array<{ pageNumber, unitType, title, content, extractedFigures }> }
  */
 export async function parseUploadedFile(file, contentLang = 'et') {
   const name = file.name || '';
@@ -33,9 +33,20 @@ export async function parseUploadedFile(file, contentLang = 'et') {
   throw new Error('UNSUPPORTED_FORMAT');
 }
 
+function getMimeFromExt(path) {
+  const ext = (path || '').split('.').pop().toLowerCase();
+  if (ext === 'png') return 'image/png';
+  if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
+  if (ext === 'svg') return 'image/svg+xml';
+  if (ext === 'gif') return 'image/gif';
+  if (ext === 'webp') return 'image/webp';
+  return null;
+}
+
 async function parsePdfFile(file, contentLang) {
   const arrayBuffer = await file.arrayBuffer();
   const pagePrefix = contentLang === 'en' ? 'Page' : 'Lk';
+  const isEN = contentLang === 'en';
 
   try {
     const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
@@ -68,6 +79,40 @@ async function parsePdfFile(file, contentLang) {
       }
 
       const content = lines.filter(Boolean).join('\n').trim();
+      const extractedFigures = [];
+
+      // Check if page mentions a figure/graph/diagram and try to capture a page visual snapshot
+      const figureCaptionLine = lines.find((l) =>
+        /\b(?:joonis|skeem|graafik|diagramm|fig(?:ure)?\.?)\s*\d*/i.test(l)
+      );
+
+      if (figureCaptionLine && typeof document !== 'undefined') {
+        try {
+          const viewport = page.getViewport({ scale: 1.15 });
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.min(900, Math.round(viewport.width));
+          canvas.height = Math.min(650, Math.round(viewport.height));
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            const dataUrl = canvas.toDataURL('image/png');
+            if (dataUrl && dataUrl.startsWith('data:image/')) {
+              extractedFigures.push({
+                title: figureCaptionLine.slice(0, 90),
+                description:
+                  lines.find((l) => l !== figureCaptionLine && l.length > 25) ||
+                  (isEN
+                    ? `Visual figure extracted from ${pagePrefix} ${i}.`
+                    : `Leheküljelt (${pagePrefix} ${i}) leitud joonis.`),
+                imageUrl: dataUrl
+              });
+            }
+          }
+        } catch {
+          // Canvas snapshot is optional; contentGenerator will still generate an SVG figure card
+        }
+      }
+
       if (content.length > 0) {
         const firstLine = lines.find((l) => l.trim().length > 2) || `${pagePrefix} ${i}`;
         const cleanTitle = firstLine.length > 70 ? firstLine.slice(0, 67) + '...' : firstLine;
@@ -75,7 +120,8 @@ async function parsePdfFile(file, contentLang) {
           pageNumber: i,
           unitType: 'page',
           title: `${pagePrefix} ${i}: ${cleanTitle}`,
-          content
+          content,
+          extractedFigures
         });
       }
     }
@@ -113,6 +159,7 @@ async function parsePdfFile(file, contentLang) {
 async function parsePptxFile(file, contentLang) {
   const arrayBuffer = await file.arrayBuffer();
   const slidePrefix = contentLang === 'en' ? 'Slide' : 'Slaid';
+  const isEN = contentLang === 'en';
 
   try {
     const zip = await JSZip.loadAsync(arrayBuffer);
@@ -129,6 +176,7 @@ async function parsePptxFile(file, contentLang) {
 
     for (let idx = 0; idx < slideFiles.length; idx++) {
       const slidePath = slideFiles[idx];
+      const slideFileName = slidePath.split('/').pop();
       const slideNumber = idx + 1;
       const xmlStr = await zip.files[slidePath].async('string');
       const xmlDoc = parser.parseFromString(xmlStr, 'application/xml');
@@ -145,15 +193,77 @@ async function parsePptxFile(file, contentLang) {
         }
       }
 
+      // Extract embedded images & diagrams from slide relationships (ppt/slides/_rels/slideN.xml.rels)
+      const extractedFigures = [];
+      const relsPath = `ppt/slides/_rels/${slideFileName}.rels`;
+      const relMap = {};
+
+      if (zip.files[relsPath]) {
+        try {
+          const relsStr = await zip.files[relsPath].async('string');
+          const relsDoc = parser.parseFromString(relsStr, 'application/xml');
+          const relNodes = Array.from(relsDoc.getElementsByTagName('Relationship'));
+          for (const rNode of relNodes) {
+            const id = rNode.getAttribute('Id');
+            const target = rNode.getAttribute('Target') || '';
+            if (id && target) {
+              relMap[id] = target.replace(/^\.\.\//, 'ppt/');
+            }
+          }
+        } catch {
+          // ignore malformed rels
+        }
+      }
+
+      // Find <p:pic> elements on the slide
+      const picElements = Array.from(xmlDoc.getElementsByTagName('p:pic'));
+      for (let pIdx = 0; pIdx < picElements.length; pIdx++) {
+        const pic = picElements[pIdx];
+        const cNvPr = pic.getElementsByTagName('p:cNvPr')[0];
+        const picName = cNvPr?.getAttribute('name') || '';
+        const picDescr = cNvPr?.getAttribute('descr') || cNvPr?.getAttribute('title') || '';
+        const blip = pic.getElementsByTagName('a:blip')[0];
+        const embedId = blip?.getAttribute('r:embed');
+        const mediaPath = embedId ? relMap[embedId] : null;
+
+        if (mediaPath && zip.files[mediaPath]) {
+          const mime = getMimeFromExt(mediaPath);
+          if (mime) {
+            try {
+              const base64 = await zip.files[mediaPath].async('base64');
+              const firstLineTitle = lines[0] || `${slidePrefix} ${slideNumber}`;
+              const captionCandidate =
+                picDescr ||
+                lines.find((l) => /\b(?:joonis|skeem|graafik|fig|diagram)/i.test(l)) ||
+                (picName && !/^picture\s*\d+$/i.test(picName) ? picName : '') ||
+                firstLineTitle;
+
+              extractedFigures.push({
+                title: captionCandidate,
+                description:
+                  lines.slice(1, 3).join(' ') ||
+                  (isEN
+                    ? `Visual figure from ${slidePrefix} ${slideNumber} (${firstLineTitle}).`
+                    : `Slaidil ${slideNumber} („${firstLineTitle}“) esinenud joonis.`),
+                imageUrl: `data:${mime};base64,${base64}`
+              });
+            } catch {
+              // ignore unreadable media item
+            }
+          }
+        }
+      }
+
       const content = lines.join('\n').trim();
-      if (content) {
+      if (content || extractedFigures.length > 0) {
         const firstLine = lines[0] || `${slidePrefix} ${slideNumber}`;
         const cleanTitle = firstLine.length > 70 ? firstLine.slice(0, 67) + '...' : firstLine;
         pages.push({
           pageNumber: slideNumber,
           unitType: 'slide',
           title: `${slidePrefix} ${slideNumber}: ${cleanTitle}`,
-          content
+          content: content || cleanTitle,
+          extractedFigures
         });
       }
     }
@@ -208,7 +318,8 @@ function splitTextIntoSections(rawText, defaultUnitType, contentLang) {
         pageNumber: idx + 1,
         unitType: defaultUnitType,
         title: `${unitPrefix} ${idx + 1}: ${cleanTitle}`,
-        content: block
+        content: block,
+        extractedFigures: []
       };
     });
   }
@@ -248,7 +359,8 @@ function splitTextIntoSections(rawText, defaultUnitType, contentLang) {
       pageNumber: idx + 1,
       unitType: defaultUnitType,
       title: `${unitPrefix} ${idx + 1}: ${cleanTitle}`,
-      content: chunk
+      content: chunk,
+      extractedFigures: []
     };
   });
 }

@@ -453,8 +453,11 @@ export default function CalendarView({
                           <div className="plan-sessions-header">
                             <strong>
                               {t.calendar.planCreatedBanner} (
-                              {existingPlan.sessions.length} päeva •{' '}
-                              {existingPlan.dailyMinutes}{' '}
+                              {existingPlan.sessions.length}{' '}
+                              {existingPlan.sessions.length === 1
+                                ? t.calendar.daySingular
+                                : t.calendar.dayPlural}{' '}
+                              • {existingPlan.dailyMinutes}{' '}
                               {t.calendar.minutesPerDay})
                             </strong>
                           </div>

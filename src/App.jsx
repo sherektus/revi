@@ -438,6 +438,7 @@ export default function App() {
             onOpenSourceViewer={handleOpenSourceViewer}
             onDeleteMaterial={handleDeleteMaterial}
             onOpenUploadModal={() => handleOpenUploadModal(null)}
+            onCombineMaterials={(newCol) => handleMaterialCreated(newCol, null)}
           />
         )}
 

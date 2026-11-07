@@ -40,9 +40,9 @@ export const translations = {
       addBtn: 'Lisa materjal',
       continueBtn: 'Jätka õppimist',
       trySampleBtn: 'Proovi näidismaterjali „Tuletised“',
-      dropzoneTitle: 'Lohista fail siia või klõpsa valimiseks',
-      dropzoneSubtitle: 'Sobivad PDF-, PPTX- ja TXT-failid (kuni 50 MB)',
-      supportedFormats: 'Loenguslaidid (PPTX) • Konspektid ja artiklid (PDF) • Märkmed (TXT)'
+      dropzoneTitle: 'Lohista üks või mitu faili siia või klõpsa valimiseks',
+      dropzoneSubtitle: 'Võid valida korraga mitu PDF-, PPTX- või TXT-faili, et luua neist ühine kogum',
+      supportedFormats: 'Mitu slaidiesitlust (PPTX) • Konspektid ja artiklid (PDF) • Märkmed (TXT) → Üks ühine kogum'
     },
     dueToday: {
       title: 'Täna korrata',
@@ -75,9 +75,13 @@ export const translations = {
       openPlanBtn: 'Kordamisplaan'
     },
     upload: {
-      modalTitle: 'Lisa uus õppematerjal',
-      selectedFile: 'Valitud fail',
-      changeFile: 'Vali teine fail',
+      modalTitle: 'Lisa õppematerjal või mitme faili ühine kogum',
+      selectedFile: 'Valitud failid',
+      addMoreFilesBtn: 'Lisa veel faile sellesse kogumisse',
+      removeFileBtn: 'Eemalda',
+      multiFileBadge: 'Ühine kogum',
+      filesCountSuffix: 'faili',
+      changeFile: 'Tühjenda valik',
       titleLabel: 'Materjali pealkiri',
       titlePlaceholder: 'nt Matemaatiline analüüs I – Tuletised',
       subjectLabel: 'Õppeaine või valdkond',
@@ -137,7 +141,16 @@ export const translations = {
       statsProgress: 'Edenemine',
       continueStudy: 'Jätka õppimist',
       startStudy: 'Alusta õppimist',
-      openSource: 'Algfail'
+      openSource: 'Algfail',
+      combineBtn: 'Loo ühine kogum',
+      combineModalTitle: 'Ühenda materjalid ühiseks kogumiks',
+      combineModalSubtitle:
+        'Vali olemasolevad slaidiesitlused, PDF-id või konspektid ning loo neist üks ühine kordamispunktide, mälukaartide ja harjutuste kogum.',
+      combineTitleLabel: 'Ühise kogumi pealkiri',
+      combineTitlePlaceholder: 'nt Matemaatiline analüüs — Loengud 1–5 koondkogum',
+      combineSelectLabel: 'Vali ühendatavad materjalid (vähemalt 2):',
+      combineCreateBtn: 'Ühenda ühiseks kogumiks',
+      collectionBadge: 'Ühine kogum'
     },
     material: {
       backToLibrary: 'Tagasi teeki',
@@ -438,9 +451,9 @@ export const translations = {
       addBtn: 'Add material',
       continueBtn: 'Continue studying',
       trySampleBtn: 'Try sample material “Tuletised / Derivatives”',
-      dropzoneTitle: 'Drag & drop a file here, or click to browse',
-      dropzoneSubtitle: 'Supported formats: PDF, PPTX, TXT (up to 50 MB)',
-      supportedFormats: 'Lecture Slides (PPTX) • Handouts & Papers (PDF) • Study Notes (TXT)'
+      dropzoneTitle: 'Drag & drop one or multiple files here, or click to browse',
+      dropzoneSubtitle: 'Select multiple PDF, PPTX, or TXT files at once to build a single unified study collection',
+      supportedFormats: 'Multiple Slide Decks (PPTX) • Handouts (PDF) • Notes (TXT) → One Unified Collection'
     },
     dueToday: {
       title: 'Review Today',
@@ -473,9 +486,13 @@ export const translations = {
       openPlanBtn: 'Study plan'
     },
     upload: {
-      modalTitle: 'Add new study material',
-      selectedFile: 'Selected file',
-      changeFile: 'Choose another file',
+      modalTitle: 'Add study material or multi-file collection',
+      selectedFile: 'Selected files',
+      addMoreFilesBtn: 'Add more files to this collection',
+      removeFileBtn: 'Remove',
+      multiFileBadge: 'Unified collection',
+      filesCountSuffix: 'files',
+      changeFile: 'Clear selection',
       titleLabel: 'Material title',
       titlePlaceholder: 'e.g., Calculus I – Derivatives',
       subjectLabel: 'Course / Subject',
@@ -535,7 +552,16 @@ export const translations = {
       statsProgress: 'Learning progress',
       continueStudy: 'Continue studying',
       startStudy: 'Start studying',
-      openSource: 'Original file'
+      openSource: 'Original file',
+      combineBtn: 'Create unified collection',
+      combineModalTitle: 'Combine materials into a unified collection',
+      combineModalSubtitle:
+        'Select multiple slide decks, PDFs, or notes from your library to merge them into a single collection of study points, flashcards, and exercises.',
+      combineTitleLabel: 'Collection title',
+      combineTitlePlaceholder: 'e.g., Calculus I — Lectures 1–5 Combined Collection',
+      combineSelectLabel: 'Select materials to combine (at least 2):',
+      combineCreateBtn: 'Create unified collection',
+      collectionBadge: 'Unified collection'
     },
     material: {
       backToLibrary: 'Back to library',

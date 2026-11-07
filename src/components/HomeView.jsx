@@ -70,9 +70,9 @@ export default function HomeView({
   function handleHomeDrop(e) {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer?.files?.[0];
-    if (file) {
-      onOpenUploadModal(file);
+    const files = Array.from(e.dataTransfer?.files || []);
+    if (files.length > 0) {
+      onOpenUploadModal(files);
     }
   }
 
@@ -142,12 +142,13 @@ export default function HomeView({
           <input
             ref={homeFileInputRef}
             type="file"
+            multiple
             accept=".pdf,.pptx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.presentationml.presentation"
             className="sr-only"
             onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                onOpenUploadModal(file);
+              const files = Array.from(e.target.files || []);
+              if (files.length > 0) {
+                onOpenUploadModal(files);
                 e.target.value = '';
               }
             }}
@@ -215,8 +216,11 @@ export default function HomeView({
               >
                 <Play size={17} />
                 <span>
-                  {t.dueToday.startBtnPrefix} {dueTodayQueue.length}{' '}
-                  {t.dueToday.startBtnSuffix}
+                  {t.dueToday.startBtnPrefix} ({dueTodayQueue.length}{' '}
+                  {dueTodayQueue.length === 1
+                    ? t.dueToday.questionSingular
+                    : t.dueToday.questionPlural}
+                  )
                 </span>
               </button>
             </div>
@@ -402,6 +406,9 @@ export default function HomeView({
                     <span className="badge badge-neutral">
                       {mat.fileType || 'DOC'} • {(mat.contentLang || 'et').toUpperCase()}
                     </span>
+                    {mat.isCollection && (
+                      <span className="badge badge-sample">{t.library.collectionBadge}</span>
+                    )}
                     {mat.isSample && (
                       <span className="badge badge-sample">{t.home.sampleBadge}</span>
                     )}

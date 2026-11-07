@@ -8,10 +8,14 @@ import {
   Sparkles,
   AlertCircle,
   CheckCircle2,
-  Sliders
+  Sliders,
+  Plus,
+  Trash2,
+  Layers
 } from 'lucide-react';
 import { parseUploadedFile } from '../utils/fileParser';
 import { generateStudyContent } from '../utils/contentGenerator';
+import { combineMaterialsIntoCollection } from '../utils/storage';
 import { DEFAULT_ENABLED_FEATURES } from '../data/sampleMaterial';
 
 export default function UploadModal({
@@ -23,7 +27,7 @@ export default function UploadModal({
   onClose,
   onMaterialCreated
 }) {
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('Matemaatiline analüüs');
   const [customSubject, setCustomSubject] = useState('');
@@ -36,6 +40,7 @@ export default function UploadModal({
   const [processingStep, setProcessingStep] = useState('reading');
   const [errorMsg, setErrorMsg] = useState('');
   const fileInputRef = useRef(null);
+  const addMoreFileInputRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -44,9 +49,12 @@ export default function UploadModal({
       setIsProcessing(false);
       setEnabledFeatures({ ...DEFAULT_ENABLED_FEATURES });
       if (initialFile) {
-        handleFileSelection(initialFile);
+        const initialList = Array.isArray(initialFile)
+          ? initialFile
+          : [initialFile];
+        handleFilesAddition(initialList, true);
       } else {
-        setSelectedFile(null);
+        setSelectedFiles([]);
         setTitle('');
       }
     }
@@ -58,25 +66,82 @@ export default function UploadModal({
     new Set([...(t.subjects || []), ...(existingSubjects || [])])
   );
 
-  function handleFileSelection(file) {
-    if (!file) return;
+  function handleFilesAddition(incomingFiles, replaceExisting = false) {
+    const fileList = Array.from(incomingFiles || []).filter(Boolean);
+    if (fileList.length === 0) return;
     setErrorMsg('');
-    const ext = (file.name || '').split('.').pop().toLowerCase();
-    if (!['pdf', 'pptx', 'txt'].includes(ext)) {
-      setErrorMsg(t.upload.errorUnsupported);
-      return;
+
+    const validFiles = [];
+    for (const file of fileList) {
+      const ext = (file.name || '').split('.').pop().toLowerCase();
+      if (!['pdf', 'pptx', 'txt'].includes(ext)) {
+        setErrorMsg(t.upload.errorUnsupported);
+        return;
+      }
+      validFiles.push(file);
     }
-    setSelectedFile(file);
-    const baseName = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ');
-    setTitle(baseName);
+
+    setSelectedFiles((prev) => {
+      const base = replaceExisting ? [] : prev;
+      const existingNames = new Set(base.map((f) => `${f.name}-${f.size}`));
+      const deduplicated = validFiles.filter(
+        (f) => !existingNames.has(`${f.name}-${f.size}`)
+      );
+      const next = [...base, ...deduplicated];
+
+      if (replaceExisting || !title.trim()) {
+        if (next.length === 1) {
+          const baseName = next[0].name
+            .replace(/\.[^/.]+$/, '')
+            .replace(/[_-]+/g, ' ');
+          setTitle(baseName);
+        } else if (next.length > 1) {
+          const names = next
+            .slice(0, 3)
+            .map((f) => f.name.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' '));
+          setTitle(
+            names.join(' + ') + (next.length > 3 ? ` (+${next.length - 3})` : '')
+          );
+        }
+      } else if (prev.length === 1 && next.length > 1) {
+        const prevDefault = prev[0].name
+          .replace(/\.[^/.]+$/, '')
+          .replace(/[_-]+/g, ' ');
+        if (title.trim() === prevDefault) {
+          const names = next
+            .slice(0, 3)
+            .map((f) => f.name.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' '));
+          setTitle(
+            names.join(' + ') + (next.length > 3 ? ` (+${next.length - 3})` : '')
+          );
+        }
+      }
+
+      return next;
+    });
+  }
+
+  function handleRemoveFile(indexToRemove) {
+    setSelectedFiles((prev) => {
+      const next = prev.filter((_, idx) => idx !== indexToRemove);
+      if (next.length === 0) {
+        setTitle('');
+      } else if (next.length === 1) {
+        const baseName = next[0].name
+          .replace(/\.[^/.]+$/, '')
+          .replace(/[_-]+/g, ' ');
+        setTitle(baseName);
+      }
+      return next;
+    });
   }
 
   function handleDrop(e) {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer?.files?.[0];
-    if (file) {
-      handleFileSelection(file);
+    const files = Array.from(e.dataTransfer?.files || []);
+    if (files.length > 0) {
+      handleFilesAddition(files, false);
     }
   }
 
@@ -89,16 +154,104 @@ export default function UploadModal({
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!selectedFile) return;
+    if (selectedFiles.length === 0) return;
 
     setErrorMsg('');
     setIsProcessing(true);
     setProcessingStep('reading');
 
     try {
-      const { fileType, pages } = await parseUploadedFile(selectedFile, contentLang);
+      const finalTitle =
+        title.trim() ||
+        selectedFiles
+          .map((f) => f.name.replace(/\.[^/.]+$/, ''))
+          .join(' + ');
+      const isCustom =
+        subject === 'Muu õppeaine' ||
+        subject === 'Other subject' ||
+        subject === '__custom__';
+      const finalSubject =
+        isCustom && customSubject.trim()
+          ? customSubject.trim()
+          : subject || 'Matemaatiline analüüs';
 
-      if (!pages || pages.length === 0) {
+      if (selectedFiles.length === 1) {
+        const singleFile = selectedFiles[0];
+        const { fileType, pages } = await parseUploadedFile(
+          singleFile,
+          contentLang
+        );
+
+        if (!pages || pages.length === 0) {
+          setErrorMsg(t.upload.errorEmpty);
+          setIsProcessing(false);
+          return;
+        }
+
+        setProcessingStep('segmenting');
+        await new Promise((r) => setTimeout(r, 200));
+
+        setProcessingStep('generating');
+        await new Promise((r) => setTimeout(r, 200));
+
+        const generated = generateStudyContent({
+          pages,
+          fileType,
+          contentLang,
+          title: finalTitle
+        });
+
+        const now = new Date().toISOString();
+        const newMaterial = {
+          id: `mat-${Date.now()}`,
+          isSample: false,
+          isCollection: false,
+          title: finalTitle,
+          subject: finalSubject,
+          fileName: singleFile.name,
+          fileType,
+          contentLang,
+          createdAt: now,
+          lastOpenedAt: now,
+          enabledFeatures,
+          pages,
+          topics: generated.topics,
+          flashcards: generated.flashcards,
+          exercises: generated.exercises
+        };
+
+        await onMaterialCreated(newMaterial, selectedFiles);
+        return;
+      }
+
+      // Multi-file unified study collection!
+      const parsedSingleMaterials = [];
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const { fileType, pages } = await parseUploadedFile(file, contentLang);
+        if (!pages || pages.length === 0) continue;
+
+        const fileBaseTitle = file.name.replace(/\.[^/.]+$/, '');
+        const generated = generateStudyContent({
+          pages,
+          fileType,
+          contentLang,
+          title: fileBaseTitle
+        });
+
+        parsedSingleMaterials.push({
+          id: `temp-${i}`,
+          title: fileBaseTitle,
+          fileName: file.name,
+          fileType,
+          pages,
+          topics: generated.topics,
+          flashcards: generated.flashcards,
+          exercises: generated.exercises
+        });
+      }
+
+      if (parsedSingleMaterials.length === 0) {
         setErrorMsg(t.upload.errorEmpty);
         setIsProcessing(false);
         return;
@@ -107,44 +260,18 @@ export default function UploadModal({
       setProcessingStep('segmenting');
       await new Promise((r) => setTimeout(r, 200));
 
-      const finalTitle =
-        title.trim() || selectedFile.name.replace(/\.[^/.]+$/, '');
-      const isCustom =
-        subject === 'Muu õppeaine' || subject === 'Other subject' || subject === '__custom__';
-      const finalSubject =
-        isCustom && customSubject.trim()
-          ? customSubject.trim()
-          : subject || 'Matemaatiline analüüs';
-
       setProcessingStep('generating');
       await new Promise((r) => setTimeout(r, 200));
 
-      const generated = generateStudyContent({
-        pages,
-        fileType,
-        contentLang,
-        title: finalTitle
-      });
-
-      const now = new Date().toISOString();
-      const newMaterial = {
-        id: `mat-${Date.now()}`,
-        isSample: false,
+      const unifiedCollection = combineMaterialsIntoCollection({
+        materialsToCombine: parsedSingleMaterials,
         title: finalTitle,
         subject: finalSubject,
-        fileName: selectedFile.name,
-        fileType,
         contentLang,
-        createdAt: now,
-        lastOpenedAt: now,
-        enabledFeatures,
-        pages,
-        topics: generated.topics,
-        flashcards: generated.flashcards,
-        exercises: generated.exercises
-      };
+        enabledFeatures
+      });
 
-      await onMaterialCreated(newMaterial, selectedFile);
+      await onMaterialCreated(unifiedCollection, selectedFiles);
     } catch (err) {
       console.error('Upload processing error:', err);
       if (err.message === 'UNSUPPORTED_FORMAT') {
@@ -203,7 +330,7 @@ export default function UploadModal({
             </div>
           )}
 
-          {!selectedFile ? (
+          {selectedFiles.length === 0 ? (
             <div
               className={`modal-dropzone ${isDragging ? 'dragging' : ''}`}
               onDragOver={(e) => {
@@ -217,9 +344,13 @@ export default function UploadModal({
               <input
                 ref={fileInputRef}
                 type="file"
+                multiple
                 accept=".pdf,.pptx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.presentationml.presentation"
                 className="sr-only"
-                onChange={(e) => handleFileSelection(e.target.files?.[0])}
+                onChange={(e) => {
+                  handleFilesAddition(e.target.files, true);
+                  e.target.value = '';
+                }}
               />
               <div className="dropzone-icon-circle">
                 <UploadCloud size={28} />
@@ -233,27 +364,79 @@ export default function UploadModal({
               </div>
             </div>
           ) : (
-            <div className="selected-file-banner">
-              <div className="file-info-left">
-                <div className="file-type-avatar">
-                  <FileText size={20} />
-                </div>
-                <div>
-                  <span className="file-label-caption">{t.upload.selectedFile}</span>
-                  <p className="file-name-strong">{selectedFile.name}</p>
-                </div>
+            <div className="selected-files-container">
+              <div className="selected-files-header">
+                <span className="file-label-caption">
+                  {t.upload.selectedFile} ({selectedFiles.length}{' '}
+                  {t.upload.filesCountSuffix})
+                </span>
+                {selectedFiles.length > 1 && (
+                  <span className="badge badge-violet">
+                    <Layers size={12} />
+                    <span>{t.upload.multiFileBadge}</span>
+                  </span>
+                )}
               </div>
+
+              <div className="selected-files-list">
+                {selectedFiles.map((file, idx) => (
+                  <div key={`${file.name}-${idx}`} className="selected-file-banner">
+                    <div className="file-info-left">
+                      <div className="file-type-avatar">
+                        <FileText size={18} />
+                      </div>
+                      <div>
+                        <p className="file-name-strong">{file.name}</p>
+                      </div>
+                    </div>
+                    {!isProcessing && (
+                      <button
+                        type="button"
+                        className="icon-btn danger-btn"
+                        onClick={() => handleRemoveFile(idx)}
+                        title={t.upload.removeFileBtn}
+                        aria-label={t.upload.removeFileBtn}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
               {!isProcessing && (
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  onClick={() => {
-                    setSelectedFile(null);
-                    setErrorMsg('');
-                  }}
-                >
-                  {t.upload.changeFile}
-                </button>
+                <div className="selected-files-actions mt-2">
+                  <input
+                    ref={addMoreFileInputRef}
+                    type="file"
+                    multiple
+                    accept=".pdf,.pptx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                    className="sr-only"
+                    onChange={(e) => {
+                      handleFilesAddition(e.target.files, false);
+                      e.target.value = '';
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => addMoreFileInputRef.current?.click()}
+                  >
+                    <Plus size={15} />
+                    <span>{t.upload.addMoreFilesBtn}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => {
+                      setSelectedFiles([]);
+                      setTitle('');
+                      setErrorMsg('');
+                    }}
+                  >
+                    {t.upload.changeFile}
+                  </button>
+                </div>
               )}
             </div>
           )}
@@ -389,7 +572,7 @@ export default function UploadModal({
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={!selectedFile || isProcessing}
+              disabled={selectedFiles.length === 0 || isProcessing}
             >
               <Sparkles size={16} />
               <span>{t.upload.createBtn}</span>

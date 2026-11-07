@@ -172,6 +172,50 @@ export default function SourceFileModal({
                       </p>
                     );
                   })}
+
+                  {(material.figures || []).filter(
+                    (fig) => fig.sourceRef?.number === activePage.pageNumber
+                  ).length > 0 && (
+                    <div className="source-slide-figures-section">
+                      <h4 className="subsection-title mt-3">
+                        {t.sourceViewer.slideFiguresHeading}
+                      </h4>
+                      <div className="source-slide-figures-grid">
+                        {(material.figures || [])
+                          .filter(
+                            (fig) =>
+                              fig.sourceRef?.number === activePage.pageNumber
+                          )
+                          .map((fig) => (
+                            <figure
+                              key={fig.id}
+                              className="slide-figure-card compact-figure-card"
+                            >
+                              <div className="figure-visual-frame">
+                                {fig.imageUrl ? (
+                                  <img
+                                    src={fig.imageUrl}
+                                    alt={fig.title}
+                                    className="figure-visual-img"
+                                  />
+                                ) : fig.svgMarkup ? (
+                                  <div
+                                    className="figure-visual-svg"
+                                    dangerouslySetInnerHTML={{
+                                      __html: fig.svgMarkup
+                                    }}
+                                  />
+                                ) : null}
+                              </div>
+                              <figcaption className="figure-caption-block">
+                                <strong>{fig.title}</strong>
+                                {fig.description && <p>{fig.description}</p>}
+                              </figcaption>
+                            </figure>
+                          ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

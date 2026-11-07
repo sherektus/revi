@@ -2822,3 +2822,69 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+/* --- MULTI-FILE UPLOAD & UNIFIED STUDY COLLECTION STYLES --- */
+.selected-files-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.selected-files-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.selected-files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+.selected-files-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.library-header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.combine-materials-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.combine-material-item {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0.65rem 0.85rem;
+}
+
+.combine-mat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  text-align: left;
+}
+
+.combine-mat-meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+

@@ -9,9 +9,16 @@ import {
   Layers,
   CheckSquare,
   BookOpen,
-  RotateCcw
+  RotateCcw,
+  Sparkles,
+  X,
+  Sliders
 } from 'lucide-react';
-import { calculateMaterialStats } from '../utils/storage';
+import {
+  calculateMaterialStats,
+  combineMaterialsIntoCollection
+} from '../utils/storage';
+import { DEFAULT_ENABLED_FEATURES } from '../data/sampleMaterial';
 
 export default function LibraryView({
   t,
@@ -20,11 +27,21 @@ export default function LibraryView({
   onOpenMaterial,
   onOpenSourceViewer,
   onDeleteMaterial,
-  onOpenUploadModal
+  onOpenUploadModal,
+  onCombineMaterials
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('ALL');
   const [sortBy, setSortBy] = useState('recent');
+
+  // Combine modal state ("Loo ühine kogum")
+  const [isCombineOpen, setIsCombineOpen] = useState(false);
+  const [selectedCombineIds, setSelectedCombineIds] = useState([]);
+  const [combineTitle, setCombineTitle] = useState('');
+  const [combineSubject, setCombineSubject] = useState('Matemaatiline analüüs');
+  const [combineFeatures, setCombineFeatures] = useState({
+    ...DEFAULT_ENABLED_FEATURES
+  });
 
   // Unique subjects present in library
   const allSubjects = useMemo(() => {
@@ -61,6 +78,74 @@ export default function LibraryView({
     });
   }, [materials, searchQuery, selectedSubject, sortBy, progressMap]);
 
+  function handleOpenCombineModal() {
+    setSelectedCombineIds([]);
+    setCombineTitle('');
+    setCombineSubject(allSubjects[0] || 'Matemaatiline analüüs');
+    setCombineFeatures({ ...DEFAULT_ENABLED_FEATURES });
+    setIsCombineOpen(true);
+  }
+
+  function toggleCombineMaterial(matId) {
+    setSelectedCombineIds((prev) => {
+      const next = prev.includes(matId)
+        ? prev.filter((id) => id !== matId)
+        : [...prev, matId];
+
+      const chosenMats = materials.filter((m) => next.includes(m.id));
+      if (chosenMats.length >= 2) {
+        setCombineTitle(
+          chosenMats.map((m) => m.title.split('—')[0].trim()).join(' + ')
+        );
+        if (chosenMats[0]?.subject) {
+          setCombineSubject(chosenMats[0].subject);
+        }
+      }
+      return next;
+    });
+  }
+
+  function toggleCombineFeature(key) {
+    setCombineFeatures((prev) => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  }
+
+  function handleCreateCombinedCollection(e) {
+    e.preventDefault();
+    const chosenMats = materials.filter((m) =>
+      selectedCombineIds.includes(m.id)
+    );
+    if (chosenMats.length < 2) return;
+
+    const newCol = combineMaterialsIntoCollection({
+      materialsToCombine: chosenMats,
+      title:
+        combineTitle.trim() ||
+        chosenMats.map((m) => m.title).join(' + '),
+      subject: combineSubject || chosenMats[0]?.subject,
+      contentLang: chosenMats[0]?.contentLang || 'et',
+      enabledFeatures: combineFeatures
+    });
+
+    setIsCombineOpen(false);
+    if (onCombineMaterials) {
+      onCombineMaterials(newCol);
+    }
+  }
+
+  const featureKeys = [
+    'summary',
+    'flashcards',
+    'exercises',
+    'quickTest',
+    'shortCalc',
+    'formulaSheet',
+    'spacedRepetition',
+    'mockExam'
+  ];
+
   return (
     <div className="library-view container">
       <div className="library-header">
@@ -69,14 +154,26 @@ export default function LibraryView({
           <p className="page-subtitle">{t.library.subtitle}</p>
         </div>
 
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => onOpenUploadModal()}
-        >
-          <Plus size={18} />
-          <span>{t.nav.addMaterial}</span>
-        </button>
+        <div className="library-header-actions">
+          {materials.length >= 2 && (
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleOpenCombineModal}
+            >
+              <Layers size={17} />
+              <span>{t.library.combineBtn}</span>
+            </button>
+          )}
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => onOpenUploadModal()}
+          >
+            <Plus size={18} />
+            <span>{t.nav.addMaterial}</span>
+          </button>
+        </div>
       </div>
 
       {/* Search and Subject Filter Controls */}
@@ -166,6 +263,9 @@ export default function LibraryView({
                     <span className="badge badge-neutral">
                       {mat.fileType || 'DOC'} • {(mat.contentLang || 'et').toUpperCase()}
                     </span>
+                    {mat.isCollection && (
+                      <span className="badge badge-sample">{t.library.collectionBadge}</span>
+                    )}
                     {mat.isSample && (
                       <span className="badge badge-sample">{t.home.sampleBadge}</span>
                     )}
@@ -261,6 +361,145 @@ export default function LibraryView({
               </article>
             );
           })}
+        </div>
+      )}
+
+      {/* Combine Existing Materials into Unified Collection Modal */}
+      {isCombineOpen && (
+        <div className="modal-backdrop" onClick={() => setIsCombineOpen(false)}>
+          <div
+            className="modal-card upload-modal"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="modal-header">
+              <div className="modal-title-wrap">
+                <span className="modal-icon-badge">
+                  <Layers size={18} />
+                </span>
+                <div>
+                  <h2>{t.library.combineModalTitle}</h2>
+                  <p className="modal-subtitle-caption">
+                    {t.library.combineModalSubtitle}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="icon-btn"
+                onClick={() => setIsCombineOpen(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateCombinedCollection} className="modal-body">
+              <div className="form-group">
+                <label className="form-label">
+                  {t.library.combineSelectLabel} ({selectedCombineIds.length})
+                </label>
+                <div className="combine-materials-checklist">
+                  {materials.map((mat) => {
+                    const checked = selectedCombineIds.includes(mat.id);
+                    return (
+                      <label
+                        key={mat.id}
+                        className={`feature-toggle-chip combine-material-item ${
+                          checked ? 'active' : ''
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleCombineMaterial(mat.id)}
+                        />
+                        <div className="combine-mat-info">
+                          <strong>{mat.title}</strong>
+                          <span className="combine-mat-meta">
+                            {mat.subject} • {(mat.topics || []).length}{' '}
+                            {t.home.topicsCount} • {(mat.flashcards || []).length}{' '}
+                            {t.home.cardsCount} • {(mat.exercises || []).length}{' '}
+                            {t.home.exercisesCount}
+                          </span>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  {t.library.combineTitleLabel}
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder={t.library.combineTitlePlaceholder}
+                  value={combineTitle}
+                  onChange={(e) => setCombineTitle(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  <BookOpen size={15} />
+                  <span>{t.upload.subjectLabel}</span>
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={combineSubject}
+                  onChange={(e) => setCombineSubject(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  <Sliders size={15} />
+                  <span>{t.featuresConfig.title}</span>
+                </label>
+                <div className="feature-checkbox-grid">
+                  {featureKeys.map((fKey) => (
+                    <label
+                      key={fKey}
+                      className={`feature-toggle-chip ${
+                        combineFeatures[fKey] ? 'active' : ''
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={Boolean(combineFeatures[fKey])}
+                        onChange={() => toggleCombineFeature(fKey)}
+                      />
+                      <span>{t.featuresConfig[fKey]}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setIsCombineOpen(false)}
+                >
+                  {t.upload.cancelBtn}
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={selectedCombineIds.length < 2}
+                >
+                  <Sparkles size={16} />
+                  <span>{t.library.combineCreateBtn}</span>
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
