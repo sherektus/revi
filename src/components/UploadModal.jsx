@@ -22,6 +22,7 @@ import { analyzeDocumentWithTextbooks } from '../utils/academicClassifier';
 export default function UploadModal({
   isOpen,
   initialFile,
+  initialSubject,
   uiLang,
   t,
   existingSubjects,
@@ -51,6 +52,10 @@ export default function UploadModal({
       setErrorMsg('');
       setIsProcessing(false);
       setEnabledFeatures({ ...DEFAULT_ENABLED_FEATURES });
+      if (initialSubject) {
+        setSubject(initialSubject);
+        setCustomSubject('');
+      }
       if (initialFile) {
         const initialList = Array.isArray(initialFile)
           ? initialFile
@@ -62,7 +67,7 @@ export default function UploadModal({
         setAcademicRecommendation(null);
       }
     }
-  }, [isOpen, initialFile, uiLang]);
+  }, [isOpen, initialFile, initialSubject, uiLang]);
 
   // Compare uploaded document text against textbooks & curricula to suggest subject (non-binding proposal)
   useEffect(() => {

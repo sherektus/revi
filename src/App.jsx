@@ -81,6 +81,7 @@ export default function App() {
   // Modals state
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [uploadInitialFile, setUploadInitialFile] = useState(null);
+  const [uploadInitialSubject, setUploadInitialSubject] = useState(null);
   const [isDueTodayOpen, setIsDueTodayOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
@@ -218,8 +219,9 @@ export default function App() {
     setUiLang(nextLang);
   }
 
-  function handleOpenUploadModal(file = null) {
+  function handleOpenUploadModal(file = null, prefillSubject = null) {
     setUploadInitialFile(file);
+    setUploadInitialSubject(prefillSubject);
     setIsUploadOpen(true);
   }
 
@@ -621,7 +623,7 @@ export default function App() {
             onOpenMaterial={handleOpenMaterial}
             onOpenSourceViewer={handleOpenSourceViewer}
             onDeleteMaterial={handleDeleteMaterial}
-            onOpenUploadModal={() => handleOpenUploadModal(null)}
+            onOpenUploadModal={(prefillSubject) => handleOpenUploadModal(null, prefillSubject)}
             onCombineMaterials={(newCol) => handleMaterialCreated(newCol, null)}
           />
         )}
@@ -687,12 +689,14 @@ export default function App() {
       <UploadModal
         isOpen={isUploadOpen}
         initialFile={uploadInitialFile}
+        initialSubject={uploadInitialSubject}
         uiLang={uiLang}
         t={t}
         existingSubjects={existingSubjects}
         onClose={() => {
           setIsUploadOpen(false);
           setUploadInitialFile(null);
+          setUploadInitialSubject(null);
         }}
         onMaterialCreated={handleMaterialCreated}
       />

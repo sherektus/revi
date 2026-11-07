@@ -12,7 +12,11 @@ import {
   RotateCcw,
   Sparkles,
   X,
-  Sliders
+  Sliders,
+  GraduationCap,
+  Sigma,
+  FolderTree,
+  LayoutGrid
 } from 'lucide-react';
 import {
   calculateMaterialStats,
@@ -30,6 +34,7 @@ export default function LibraryView({
   onOpenUploadModal,
   onCombineMaterials
 }) {
+  const [viewMode, setViewMode] = useState('categories'); // 'categories' | 'grid'
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('ALL');
   const [sortBy, setSortBy] = useState('recent');
@@ -60,7 +65,14 @@ export default function LibraryView({
       const matchesTitle = !q || (mat.title || '').toLowerCase().includes(q);
       const matchesSubject =
         selectedSubject === 'ALL' || mat.subject === selectedSubject;
-      return matchesTitle && matchesSubject;
+      const matchesTopic =
+        !q ||
+        (mat.topics || []).some(
+          (tp) =>
+            (tp.title || '').toLowerCase().includes(q) ||
+            (tp.summary || '').toLowerCase().includes(q)
+        );
+      return (matchesTitle || matchesTopic) && matchesSubject;
     });
 
     return filtered.sort((a, b) => {
@@ -77,6 +89,77 @@ export default function LibraryView({
       return tB - tA;
     });
   }, [materials, searchQuery, selectedSubject, sortBy, progressMap]);
+
+  // Subject Categories grouping with distinct Topic Areas
+  const subjectGroups = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const groupsMap = new Map();
+
+    for (const mat of filteredMaterials) {
+      const subj = mat.subject || 'Üldised õppematerjalid';
+      if (!groupsMap.has(subj)) {
+        groupsMap.set(subj, {
+          subject: subj,
+          materials: [],
+          topics: [],
+          totalCards: 0,
+          answeredCards: 0,
+          totalExercises: 0,
+          answeredExercises: 0
+        });
+      }
+      const grp = groupsMap.get(subj);
+      grp.materials.push(mat);
+
+      const stats = calculateMaterialStats(mat, progressMap[mat.id]);
+      grp.totalCards += stats.totalCards;
+      grp.answeredCards += stats.answeredCards;
+      grp.totalExercises += stats.totalExercises;
+      grp.answeredExercises += stats.answeredExercises;
+
+      for (const tp of mat.topics || []) {
+        const matchesTopic =
+          !q ||
+          (tp.title || '').toLowerCase().includes(q) ||
+          (tp.summary || '').toLowerCase().includes(q) ||
+          (mat.title || '').toLowerCase().includes(q) ||
+          (subj || '').toLowerCase().includes(q);
+
+        if (!matchesTopic) continue;
+
+        const topicCards = (mat.flashcards || []).filter(
+          (fc) => fc.topicId === tp.id
+        );
+        const topicExercises = (mat.exercises || []).filter(
+          (ex) => ex.topicId === tp.id
+        );
+        const topicFormulas = tp.formulas || [];
+
+        grp.topics.push({
+          ...tp,
+          materialId: mat.id,
+          materialTitle: mat.title,
+          materialLang: mat.contentLang || 'et',
+          cardsCount: topicCards.length,
+          exercisesCount: topicExercises.length,
+          formulasCount: topicFormulas.length,
+          bulletPointsCount: (tp.bulletPoints || []).length,
+          sourceRef: tp.sourceRef
+        });
+      }
+    }
+
+    return Array.from(groupsMap.values()).map((grp) => {
+      const totalItems = grp.totalCards + grp.totalExercises;
+      const answeredItems = grp.answeredCards + grp.answeredExercises;
+      const progressPercent =
+        totalItems > 0 ? Math.round((answeredItems / totalItems) * 100) : 0;
+      return {
+        ...grp,
+        progressPercent
+      };
+    });
+  }, [filteredMaterials, progressMap, searchQuery]);
 
   function handleOpenCombineModal() {
     setSelectedCombineIds([]);
@@ -147,6 +230,115 @@ export default function LibraryView({
     'mockExam'
   ];
 
+  function renderMaterialCard(mat) {
+    const stats = calculateMaterialStats(mat, progressMap[mat.id]);
+    return (
+      <article key={mat.id} className="library-card">
+        <div className="library-card-main">
+          <div className="material-badges">
+            <span className="badge badge-violet">{mat.subject}</span>
+            <span className="badge badge-neutral">
+              {mat.fileType || 'DOC'} • {(mat.contentLang || 'et').toUpperCase()}
+            </span>
+            {mat.isCollection && (
+              <span className="badge badge-sample">{t.library.collectionBadge}</span>
+            )}
+            {mat.isSample && (
+              <span className="badge badge-sample">{t.home.sampleBadge}</span>
+            )}
+          </div>
+
+          <h3
+            className="library-card-title"
+            onClick={() => onOpenMaterial(mat.id)}
+          >
+            {mat.title}
+          </h3>
+
+          <p className="library-file-meta">
+            <FileText size={14} />
+            <span>{mat.fileName}</span>
+          </p>
+
+          <div className="library-metrics-grid">
+            <div className="metric-box">
+              <span className="metric-label">
+                <Layers size={14} />
+                {t.library.statsCards}
+              </span>
+              <span className="metric-value">
+                {stats.answeredCards}/{stats.totalCards}
+              </span>
+            </div>
+
+            <div className="metric-box">
+              <span className="metric-label">
+                <CheckSquare size={14} />
+                {t.library.statsExercises}
+              </span>
+              <span className="metric-value">
+                {stats.answeredExercises}/{stats.totalExercises}
+              </span>
+            </div>
+
+            <div className="metric-box">
+              <span className="metric-label">
+                {t.library.statsProgress}
+              </span>
+              <span className="metric-value accent-text">
+                {stats.progressPercent}%
+              </span>
+            </div>
+          </div>
+
+          <div className="progress-track mt-3">
+            <div
+              className="progress-fill"
+              style={{ width: `${stats.progressPercent}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="library-card-footer">
+          <button
+            type="button"
+            className="btn btn-primary library-study-btn"
+            onClick={() => onOpenMaterial(mat.id)}
+          >
+            <Play size={15} />
+            <span>
+              {stats.hasStarted
+                ? t.library.continueStudy
+                : t.library.startStudy}
+            </span>
+          </button>
+
+          <div className="library-secondary-btns">
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => onOpenSourceViewer(mat, 1)}
+              title={t.material.openOriginalFile}
+            >
+              <FileText size={15} />
+              <span>{t.library.openSource}</span>
+            </button>
+
+            <button
+              type="button"
+              className="icon-btn danger-btn"
+              onClick={() => onDeleteMaterial(mat.id)}
+              title={t.library.deleteBtn}
+              aria-label={t.library.deleteBtn}
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        </div>
+      </article>
+    );
+  }
+
   return (
     <div className="library-view container">
       <div className="library-header">
@@ -177,7 +369,7 @@ export default function LibraryView({
         </div>
       </div>
 
-      {/* Search and Subject Filter Controls */}
+      {/* Search, Filter and View Mode Toolbar */}
       <div className="library-toolbar">
         <div className="search-input-wrap">
           <Search size={18} className="search-icon" />
@@ -192,6 +384,28 @@ export default function LibraryView({
         </div>
 
         <div className="filter-controls">
+          {/* View Mode Toggle: Categories vs Grid */}
+          <div className="view-mode-toggle" role="group" aria-label="Vaate valik">
+            <button
+              type="button"
+              className={`view-mode-btn ${viewMode === 'categories' ? 'active' : ''}`}
+              onClick={() => setViewMode('categories')}
+              title={t.library.viewModeCategories || 'Õppeained ja teemad'}
+            >
+              <FolderTree size={15} />
+              <span className="view-mode-label">{t.library.viewModeCategories || 'Õppeained ja teemad'}</span>
+            </button>
+            <button
+              type="button"
+              className={`view-mode-btn ${viewMode === 'grid' ? 'active' : ''}`}
+              onClick={() => setViewMode('grid')}
+              title={t.library.viewModeGrid || 'Kõik materjalid'}
+            >
+              <LayoutGrid size={15} />
+              <span className="view-mode-label">{t.library.viewModeGrid || 'Kõik materjalid'}</span>
+            </button>
+          </div>
+
           <div className="filter-select-wrap">
             <Filter size={16} className="filter-icon" />
             <select
@@ -222,7 +436,7 @@ export default function LibraryView({
         </div>
       </div>
 
-      {/* Materials Grid */}
+      {/* Main Content Area */}
       {filteredMaterials.length === 0 ? (
         <div className="empty-state-card">
           <BookOpen size={36} className="empty-icon" />
@@ -252,116 +466,186 @@ export default function LibraryView({
             </button>
           </div>
         </div>
-      ) : (
-        <div className="library-grid">
-          {filteredMaterials.map((mat) => {
-            const stats = calculateMaterialStats(mat, progressMap[mat.id]);
-            return (
-              <article key={mat.id} className="library-card">
-                <div className="library-card-main">
-                  <div className="material-badges">
-                    <span className="badge badge-violet">{mat.subject}</span>
-                    <span className="badge badge-neutral">
-                      {mat.fileType || 'DOC'} • {(mat.contentLang || 'et').toUpperCase()}
-                    </span>
-                    {mat.isCollection && (
-                      <span className="badge badge-sample">{t.library.collectionBadge}</span>
-                    )}
-                    {mat.isSample && (
-                      <span className="badge badge-sample">{t.home.sampleBadge}</span>
-                    )}
+      ) : viewMode === 'categories' ? (
+        /* Categorized View: Õppeainete kategooriad ja nende alla eraldi teemade alad */
+        <div className="subject-categories-container">
+          {subjectGroups.map((grp) => (
+            <section key={grp.subject} className="subject-category-block">
+              {/* Subject Category Header Card */}
+              <div className="subject-category-header">
+                <div className="subject-category-left">
+                  <div className="subject-icon-avatar">
+                    <GraduationCap size={22} />
                   </div>
-
-                  <h2
-                    className="library-card-title"
-                    onClick={() => onOpenMaterial(mat.id)}
-                  >
-                    {mat.title}
-                  </h2>
-
-                  <p className="library-file-meta">
-                    <FileText size={14} />
-                    <span>{mat.fileName}</span>
-                  </p>
-
-                  <div className="library-metrics-grid">
-                    <div className="metric-box">
-                      <span className="metric-label">
-                        <Layers size={14} />
-                        {t.library.statsCards}
+                  <div className="subject-title-box">
+                    <div className="subject-title-row">
+                      <h2 className="subject-category-name">{grp.subject}</h2>
+                      <span className="badge badge-neutral">
+                        {grp.materials.length} {t.library.materialsInSubject || 'materjali'}
                       </span>
-                      <span className="metric-value">
-                        {stats.answeredCards}/{stats.totalCards}
+                      <span className="badge badge-violet">
+                        {grp.topics.length} {t.library.topicsInSubject || 'teemat'}
                       </span>
                     </div>
 
-                    <div className="metric-box">
-                      <span className="metric-label">
-                        <CheckSquare size={14} />
-                        {t.library.statsExercises}
+                    <div className="subject-mastery-wrap">
+                      <span className="subject-mastery-label">
+                        {t.library.subjectMasteryLabel || 'Aine omandatus'}:
                       </span>
-                      <span className="metric-value">
-                        {stats.answeredExercises}/{stats.totalExercises}
-                      </span>
+                      <div className="subject-progress-bar">
+                        <div
+                          className="progress-fill"
+                          style={{ width: `${grp.progressPercent}%` }}
+                        />
+                      </div>
+                      <span className="subject-mastery-val">{grp.progressPercent}%</span>
                     </div>
-
-                    <div className="metric-box">
-                      <span className="metric-label">
-                        {t.library.statsProgress}
-                      </span>
-                      <span className="metric-value accent-text">
-                        {stats.progressPercent}%
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="progress-track mt-3">
-                    <div
-                      className="progress-fill"
-                      style={{ width: `${stats.progressPercent}%` }}
-                    />
                   </div>
                 </div>
 
-                <div className="library-card-footer">
+                <div className="subject-category-actions">
                   <button
                     type="button"
-                    className="btn btn-primary library-study-btn"
-                    onClick={() => onOpenMaterial(mat.id)}
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => onOpenUploadModal(grp.subject)}
                   >
-                    <Play size={15} />
-                    <span>
-                      {stats.hasStarted
-                        ? t.library.continueStudy
-                        : t.library.startStudy}
-                    </span>
+                    <Plus size={14} />
+                    <span>{t.library.addMaterialToSubject || 'Lisa materjal siia ainesse'}</span>
                   </button>
-
-                  <div className="library-secondary-btns">
-                    <button
-                      type="button"
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => onOpenSourceViewer(mat, 1)}
-                      title={t.material.openOriginalFile}
-                    >
-                      <FileText size={15} />
-                      <span>{t.library.openSource}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      className="icon-btn danger-btn"
-                      onClick={() => onDeleteMaterial(mat.id)}
-                      title={t.library.deleteBtn}
-                      aria-label={t.library.deleteBtn}
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
                 </div>
-              </article>
-            );
-          })}
+              </div>
+
+              {/* Eraldi teemade alad (Topic Areas Grid) */}
+              <div className="subject-topics-section">
+                <div className="section-mini-heading">
+                  <Layers size={15} />
+                  <span>
+                    {t.library.topicAreasTitle || 'Selle aine teemade alad'} ({grp.topics.length})
+                  </span>
+                </div>
+
+                {grp.topics.length === 0 ? (
+                  <p className="empty-topics-text">
+                    {t.library.emptyTopicsInSubject || 'Teemasid ei leitud.'}
+                  </p>
+                ) : (
+                  <div className="subject-topics-grid">
+                    {grp.topics.map((tp, tpIdx) => (
+                      <article
+                        key={`${tp.materialId}-${tp.id || tpIdx}`}
+                        className="topic-area-card"
+                      >
+                        <div className="topic-area-top">
+                          <div className="topic-area-badge-row">
+                            <span className="topic-source-pill">
+                              <FileText size={11} />
+                              <span>{tp.sourceRef?.label || `Teema ${tpIdx + 1}`}</span>
+                            </span>
+                            <span className="topic-material-tag" title={tp.materialTitle}>
+                              {tp.materialTitle}
+                            </span>
+                          </div>
+                          <h3
+                            className="topic-area-title"
+                            onClick={() => onOpenMaterial(tp.materialId, 'summary')}
+                          >
+                            {tp.title}
+                          </h3>
+                        </div>
+
+                        {tp.summary && (
+                          <p className="topic-area-summary">
+                            {tp.summary}
+                          </p>
+                        )}
+
+                        <div className="topic-area-features-pills">
+                          {tp.bulletPointsCount > 0 && (
+                            <span className="feature-count-tag" title="Kordamispunktid">
+                              <BookOpen size={12} />
+                              <span>{tp.bulletPointsCount} {t.library.pointsTag || 'punkti'}</span>
+                            </span>
+                          )}
+                          {tp.formulasCount > 0 && (
+                            <span className="feature-count-tag formula-tag" title="Valemid">
+                              <Sigma size={12} />
+                              <span>{tp.formulasCount} {t.library.formulasTag || 'valemit'}</span>
+                            </span>
+                          )}
+                          {tp.cardsCount > 0 && (
+                            <span className="feature-count-tag" title="Mälukaardid">
+                              <Layers size={12} />
+                              <span>{tp.cardsCount} {t.library.cardsTag || 'kaarti'}</span>
+                            </span>
+                          )}
+                          {tp.exercisesCount > 0 && (
+                            <span className="feature-count-tag" title="Harjutused">
+                              <CheckSquare size={12} />
+                              <span>{tp.exercisesCount} {t.library.exercisesTag || 'ülesannet'}</span>
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="topic-area-footer">
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm topic-study-btn"
+                            onClick={() => onOpenMaterial(tp.materialId, 'summary')}
+                          >
+                            <Play size={13} />
+                            <span>{t.library.reviewTopicBtn || 'Korda teemat'}</span>
+                          </button>
+
+                          <div className="topic-quick-shortcuts">
+                            {tp.cardsCount > 0 && (
+                              <button
+                                type="button"
+                                className="topic-shortcut-chip"
+                                onClick={() => onOpenMaterial(tp.materialId, 'flashcards')}
+                                title={t.library.practiceCardsBtn || 'Mälukaardid'}
+                              >
+                                <Layers size={12} />
+                                <span>{t.library.practiceCardsBtn || 'Kaardid'}</span>
+                              </button>
+                            )}
+                            {tp.formulasCount > 0 && (
+                              <button
+                                type="button"
+                                className="topic-shortcut-chip"
+                                onClick={() => onOpenMaterial(tp.materialId, 'formulas')}
+                                title={t.library.formulasBtn || 'Valemid'}
+                              >
+                                <Sigma size={12} />
+                                <span>{t.library.formulasBtn || 'Valemid'}</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selle aine materjalid (Material Shelf) */}
+              <div className="subject-materials-shelf mt-4">
+                <div className="section-mini-heading">
+                  <BookOpen size={15} />
+                  <span>
+                    {t.home.recentTitle || 'Õppematerjalid'} ({grp.materials.length})
+                  </span>
+                </div>
+                <div className="subject-materials-grid">
+                  {grp.materials.map((mat) => renderMaterialCard(mat))}
+                </div>
+              </div>
+            </section>
+          ))}
+        </div>
+      ) : (
+        /* Classic Flat Grid View */
+        <div className="library-grid">
+          {filteredMaterials.map((mat) => renderMaterialCard(mat))}
         </div>
       )}
 
