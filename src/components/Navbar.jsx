@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReviLogo from './ReviLogo';
 import {
   BookOpen,
   Library,
@@ -209,7 +210,7 @@ export default function Navbar({
               aria-label={t.appName}
             >
               <span className="brand-icon">
-                <Layers size={24} strokeWidth={2.4} />
+                <ReviLogo size={36} />
               </span>
               <span className="brand-text">{t.appName}</span>
             </button>

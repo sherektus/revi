@@ -1,140 +1,158 @@
 :root,
 [data-theme='light'] {
-  /* Revi Prismatic Slate Palette (Light Mode) — Studio Clarity without 1:1 Canva Clones */
-  --bg-main: #F8FAFC;
+  /* Revi Emerald & Warm Ivory Palette (Light Mode) */
+  --bg-main: #F7F8F2;
   --bg-card: #FFFFFF;
-  --bg-subtle: #F1F5F9;
+  --bg-subtle: #EEF2EB;
   --bg-elevated: #FFFFFF;
-  --bg-selected: #EFF6FF;
+  --bg-selected: #D7EF78;
 
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #64748B;
+  --text-primary: #182B29;
+  --text-secondary: #526660;
+  --text-muted: #738882;
 
-  --border-color: #E2E8F0;
-  --border-strong: #CBD5E1;
+  --border-color: #DCE5DC;
+  --border-strong: #C4D3C4;
 
-  /* Revi Signature Brand Gradient & Royal Sapphire Accent */
-  --accent: #3B5BF6;
-  --accent-hover: #2643D8;
+  /* Peamised nupud: #087F6D, tekst valge #FFFFFF */
+  --accent: #087F6D;
+  --accent-hover: #066657;
   --accent-contrast: #FFFFFF;
-  --accent-gradient: linear-gradient(135deg, #0D9488 0%, #059669 46%, #F59E0B 100%);
-  --accent-gradient-hover: linear-gradient(135deg, #0F766E 0%, #047857 46%, #D97706 100%);
-  --accent-soft: rgba(59, 91, 246, 0.08);
-  --accent-border: rgba(59, 91, 246, 0.25);
-  --accent-text: #2643D8;
+  --accent-soft: rgba(8, 127, 109, 0.08);
+  --accent-border: rgba(8, 127, 109, 0.25);
+  --accent-text: #087F6D;
 
-  /* Revi Signature Brand Logo Emblem: Sea Teal -> Living Emerald -> Luminous Solar Amber */
-  --brand-logo-gradient: linear-gradient(135deg, #0D9488 0%, #059669 46%, #F59E0B 100%);
-  --brand-logo-gradient-hover: linear-gradient(135deg, #0F766E 0%, #047857 46%, #D97706 100%);
-  --brand-logo-shadow: 0 4px 14px rgba(5, 150, 105, 0.28), 0 2px 6px rgba(245, 158, 11, 0.2);
+  /* Revi Laimiroheline & Soe Kollane Aktsendid */
+  --accent-lime: #D7EF78;
+  --accent-lime-text: #182B29;
+  --accent-lime-soft: rgba(215, 239, 120, 0.35);
+  --accent-lime-border: #C2DE5A;
 
-  /* Revi Multi-Hue Jewel Accents (Harmonious, distinct study domains) */
-  --accent-cyan: #0D9488; /* Mint Teal for formulas & engineering */
-  --accent-cyan-soft: rgba(13, 148, 136, 0.10);
-  --accent-cyan-border: rgba(13, 148, 136, 0.28);
-  --accent-cyan-text: #0F766E;
+  --accent-gold: #F2C879;
+  --accent-gold-text: #182B29;
+  --accent-gold-soft: rgba(242, 200, 121, 0.25);
+  --accent-gold-border: #E5B45A;
 
-  --accent-purple: #8B5CF6; /* Royal Amethyst for flashcards & active recall */
-  --accent-purple-soft: rgba(139, 92, 246, 0.10);
-  --accent-purple-border: rgba(139, 92, 246, 0.28);
+  /* Logo süsteem: roheline üleminek #087F6D -> #15AA82 ja kuldne kuma #F2C879 */
+  --brand-logo-gradient: linear-gradient(135deg, #087F6D 0%, #15AA82 100%);
+  --brand-logo-gradient-hover: linear-gradient(135deg, #066657 0%, #0F8E6C 100%);
+  --brand-logo-shadow: 0 4px 16px rgba(8, 127, 109, 0.28), 0 2px 6px rgba(242, 200, 121, 0.22);
+
+  /* Multi-Hue Teemad akadeemilistele jaotustele */
+  --accent-cyan: #087F6D;
+  --accent-cyan-soft: rgba(8, 127, 109, 0.10);
+  --accent-cyan-border: rgba(8, 127, 109, 0.28);
+  --accent-cyan-text: #066657;
+
+  --accent-purple: #7C3AED;
+  --accent-purple-soft: rgba(124, 58, 237, 0.08);
+  --accent-purple-border: rgba(124, 58, 237, 0.25);
   --accent-purple-text: #6D28D9;
 
-  --accent-coral: #F43F5E; /* Sunset Rose / Coral for calendar deadlines & focus timer */
-  --accent-coral-soft: rgba(244, 63, 94, 0.10);
-  --accent-coral-border: rgba(244, 63, 94, 0.28);
+  --accent-coral: #E11D48;
+  --accent-coral-soft: rgba(225, 29, 72, 0.08);
+  --accent-coral-border: rgba(225, 29, 72, 0.25);
   --accent-coral-text: #BE123C;
 
-  --accent-amber: #EA580C; /* Warm Tangerine for alerts & quick tests */
-  --accent-amber-soft: rgba(234, 88, 12, 0.10);
-  --accent-amber-border: rgba(234, 88, 12, 0.28);
-  --accent-amber-text: #C2410C;
+  --accent-amber: #D97706;
+  --accent-amber-soft: rgba(217, 119, 6, 0.10);
+  --accent-amber-border: rgba(217, 119, 6, 0.28);
+  --accent-amber-text: #B45309;
 
-  /* Semantic Feedback: Success, Warning, Error */
-  --success: #10B981;
-  --success-text: #047857;
-  --success-soft: rgba(16, 185, 129, 0.10);
-  --success-border: rgba(16, 185, 129, 0.26);
+  /* Tagasiside värvid */
+  --success: #087F6D;
+  --success-text: #066657;
+  --success-soft: rgba(8, 127, 109, 0.10);
+  --success-border: rgba(8, 127, 109, 0.26);
 
-  --warning: #F59E0B;
-  --warning-text: #B45309;
-  --warning-soft: rgba(245, 158, 11, 0.10);
-  --warning-border: rgba(245, 158, 11, 0.26);
+  --warning: #F2C879;
+  --warning-text: #78350F;
+  --warning-soft: rgba(242, 200, 121, 0.22);
+  --warning-border: rgba(242, 200, 121, 0.45);
 
-  --danger: #EF4444;
-  --danger-text: #B91C1C;
-  --danger-soft: rgba(239, 68, 68, 0.10);
-  --danger-border: rgba(239, 68, 68, 0.26);
+  --danger: #E11D48;
+  --danger-text: #9F1239;
+  --danger-soft: rgba(225, 29, 72, 0.10);
+  --danger-border: rgba(225, 29, 72, 0.26);
 
-  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
-  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.07), 0 2px 6px rgba(15, 23, 42, 0.04);
-  --shadow-lg: 0 12px 36px rgba(15, 23, 42, 0.10), 0 4px 12px rgba(15, 23, 42, 0.05);
+  --shadow-sm: 0 1px 3px rgba(24, 43, 41, 0.05), 0 1px 2px rgba(24, 43, 41, 0.03);
+  --shadow-md: 0 4px 16px rgba(24, 43, 41, 0.07), 0 2px 6px rgba(24, 43, 41, 0.04);
+  --shadow-lg: 0 12px 36px rgba(24, 43, 41, 0.10), 0 4px 12px rgba(24, 43, 41, 0.05);
 
-  --focus-outline: 2px solid #3B5BF6;
-  --focus-ring: 0 0 0 3px rgba(59, 91, 246, 0.35);
+  --focus-outline: 2px solid #087F6D;
+  --focus-ring: 0 0 0 3px rgba(8, 127, 109, 0.35);
 }
 
 [data-theme='dark'] {
-  /* Revi Prismatic Slate Palette (Dark Mode) — Deep Obsidian Twilight */
-  --bg-main: #0B0F19;
-  --bg-card: #131B2E;
-  --bg-subtle: #1C263D;
-  --bg-elevated: #1F2A44;
-  --bg-selected: #1E2D4F;
+  /* Revi Emerald & Twilight Palette (Dark Mode) */
+  --bg-main: #101C1A;
+  --bg-card: #1A2B27;
+  --bg-subtle: #152421;
+  --bg-elevated: #223732;
+  --bg-selected: #25413B;
 
-  --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
+  --text-primary: #F1F5EC;
+  --text-secondary: #ADBCB3;
+  --text-muted: #82948B;
 
-  --border-color: #222E47;
-  --border-strong: #334366;
+  --border-color: #354C43;
+  --border-strong: #456157;
 
-  /* Revi Dark Signature Brand Gradient & Luminous Sky Cobalt Accent */
-  --accent: #60A5FA;
-  --accent-hover: #93C5FD;
-  --accent-contrast: #070B14;
-  --accent-gradient: linear-gradient(135deg, #14B8A6 0%, #10B981 44%, #F59E0B 84%, #FBBF24 100%);
-  --accent-gradient-hover: linear-gradient(135deg, #2DD4BF 0%, #34D399 44%, #FBBF24 84%, #FDE68A 100%);
-  --accent-soft: rgba(96, 165, 250, 0.16);
-  --accent-border: rgba(96, 165, 250, 0.35);
-  --accent-text: #BFDBFE;
+  /* Peamised nupud tumedas režiimis: #75D9BA, tekst #101C1A */
+  --accent: #75D9BA;
+  --accent-hover: #91E5CB;
+  --accent-contrast: #101C1A;
+  --accent-soft: rgba(117, 217, 186, 0.14);
+  --accent-border: rgba(117, 217, 186, 0.32);
+  --accent-text: #75D9BA;
 
-  /* Revi Signature Brand Logo Emblem: Dark Luminous Aurora (Sea Teal -> Emerald -> Warm Gold) */
-  --brand-logo-gradient: linear-gradient(135deg, #14B8A6 0%, #10B981 44%, #F59E0B 84%, #FBBF24 100%);
-  --brand-logo-gradient-hover: linear-gradient(135deg, #2DD4BF 0%, #34D399 44%, #FBBF24 84%, #FDE68A 100%);
-  --brand-logo-shadow: 0 4px 18px rgba(16, 185, 129, 0.35), 0 2px 8px rgba(245, 158, 11, 0.28);
+  /* Revi Laimiroheline & Soe Kollane Aktsendid */
+  --accent-lime: #D7EF78;
+  --accent-lime-text: #182B29;
+  --accent-lime-soft: rgba(215, 239, 120, 0.22);
+  --accent-lime-border: rgba(215, 239, 120, 0.45);
 
-  /* Revi Multi-Hue Jewel Accents (Dark Mode) */
-  --accent-cyan: #2DD4BF; /* Mint Teal in Dark Mode */
-  --accent-cyan-soft: rgba(45, 212, 191, 0.16);
-  --accent-cyan-border: rgba(45, 212, 191, 0.35);
-  --accent-cyan-text: #5EEAD4;
+  --accent-gold: #F2C879;
+  --accent-gold-text: #182B29;
+  --accent-gold-soft: rgba(242, 200, 121, 0.20);
+  --accent-gold-border: rgba(242, 200, 121, 0.42);
 
-  --accent-purple: #A78BFA; /* Amethyst in Dark Mode */
-  --accent-purple-soft: rgba(167, 139, 250, 0.16);
-  --accent-purple-border: rgba(167, 139, 250, 0.35);
-  --accent-purple-text: #DDD6FE;
+  /* Logo süsteem (Tume režiim) */
+  --brand-logo-gradient: linear-gradient(135deg, #087F6D 0%, #15AA82 100%);
+  --brand-logo-gradient-hover: linear-gradient(135deg, #0BA38C 0%, #17BE92 100%);
+  --brand-logo-shadow: 0 4px 18px rgba(21, 170, 130, 0.35), 0 2px 8px rgba(242, 200, 121, 0.25);
 
-  --accent-coral: #FB7185; /* Sunset Coral in Dark Mode */
-  --accent-coral-soft: rgba(251, 113, 133, 0.16);
-  --accent-coral-border: rgba(251, 113, 133, 0.35);
-  --accent-coral-text: #FECDD3;
+  /* Multi-Hue Aktsendid tumedas režiimis */
+  --accent-cyan: #75D9BA;
+  --accent-cyan-soft: rgba(117, 217, 186, 0.16);
+  --accent-cyan-border: rgba(117, 217, 186, 0.35);
+  --accent-cyan-text: #9BF0D6;
 
-  --accent-amber: #FB923C; /* Tangerine in Dark Mode */
-  --accent-amber-soft: rgba(251, 146, 60, 0.16);
-  --accent-amber-border: rgba(251, 146, 60, 0.35);
-  --accent-amber-text: #FFEDD5;
+  --accent-purple: #C4B5FD;
+  --accent-purple-soft: rgba(196, 181, 253, 0.14);
+  --accent-purple-border: rgba(196, 181, 253, 0.30);
+  --accent-purple-text: #E0E7FF;
 
-  /* Status Colors in Dark Mode */
-  --success: #34D399;
+  --accent-coral: #FDA4AF;
+  --accent-coral-soft: rgba(253, 164, 175, 0.14);
+  --accent-coral-border: rgba(253, 164, 175, 0.30);
+  --accent-coral-text: #FFE4E6;
+
+  --accent-amber: #FCD34D;
+  --accent-amber-soft: rgba(252, 211, 77, 0.14);
+  --accent-amber-border: rgba(252, 211, 77, 0.30);
+  --accent-amber-text: #FEF3C7;
+
+  /* Tagasiside värvid tumedas režiimis */
+  --success: #75D9BA;
   --success-text: #A7F3D0;
-  --success-soft: rgba(52, 211, 153, 0.16);
-  --success-border: rgba(52, 211, 153, 0.35);
+  --success-soft: rgba(117, 217, 186, 0.16);
+  --success-border: rgba(117, 217, 186, 0.35);
 
-  --warning: #FBBF24;
+  --warning: #F2C879;
   --warning-text: #FDE68A;
-  --warning-soft: rgba(251, 191, 36, 0.16);
-  --warning-border: rgba(251, 191, 36, 0.35);
+  --warning-soft: rgba(242, 200, 121, 0.18);
+  --warning-border: rgba(242, 200, 121, 0.38);
 
   --danger: #F87171;
   --danger-text: #FECACA;
@@ -142,11 +160,11 @@
   --danger-border: rgba(248, 113, 113, 0.35);
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 18px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.55);
 
-  --focus-outline: 2px solid #60A5FA;
-  --focus-ring: 0 0 0 3px rgba(96, 165, 250, 0.45);
+  --focus-outline: 2px solid #75D9BA;
+  --focus-ring: 0 0 0 3px rgba(117, 217, 186, 0.35);
 }
 
 /* --- ACCESSIBILITY & TEXT SIZING --- */
@@ -511,24 +529,24 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.85rem;
-  height: 2.85rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border-radius: 0.85rem;
-  background: var(--brand-logo-gradient, var(--accent-gradient));
+  background: transparent;
   color: #FFFFFF;
-  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.32), 0 2px 6px rgba(245, 158, 11, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.32);
+  filter: drop-shadow(0 4px 14px rgba(8, 127, 109, 0.32));
+  border: none;
   flex-shrink: 0;
-  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.22s ease;
 }
 
 .brand-btn:hover .brand-icon {
   transform: translateY(-1px) scale(1.06);
-  box-shadow: 0 6px 22px rgba(5, 150, 105, 0.42), 0 3px 10px rgba(245, 158, 11, 0.32);
+  filter: drop-shadow(0 6px 20px rgba(8, 127, 109, 0.44)) drop-shadow(0 2px 8px rgba(242, 200, 121, 0.4));
 }
 
 .brand-icon svg {
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.28));
+  display: block;
 }
 
 .brand-text {
@@ -574,9 +592,14 @@ button {
 }
 
 .nav-link.active {
-  color: var(--accent);
+  color: #182B29;
   background: var(--bg-selected);
   font-weight: 700;
+}
+
+[data-theme='dark'] .nav-link.active {
+  color: var(--accent);
+  background: var(--bg-selected);
 }
 
 /* --- COZY POMODORO TIMER PILL --- */
@@ -903,7 +926,7 @@ button {
   background: var(--accent);
   color: var(--accent-contrast);
   border: 1px solid transparent;
-  box-shadow: 0 2px 6px rgba(59, 91, 246, 0.25);
+  box-shadow: 0 2px 6px rgba(8, 127, 109, 0.28);
   transition: all 0.16s ease;
   flex-shrink: 0;
   cursor: pointer;
@@ -913,7 +936,15 @@ button {
 .nav-add-btn:hover {
   background: var(--accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 91, 246, 0.35);
+  box-shadow: 0 4px 14px rgba(8, 127, 109, 0.38);
+}
+
+[data-theme='dark'] .nav-add-btn {
+  box-shadow: 0 2px 8px rgba(117, 217, 186, 0.25);
+}
+
+[data-theme='dark'] .nav-add-btn:hover {
+  box-shadow: 0 4px 14px rgba(117, 217, 186, 0.35);
 }
 
 /* --- PRIVACY & PROFILE PILL --- */
@@ -1295,6 +1326,20 @@ button {
   background: var(--accent-coral-soft);
   color: var(--accent-coral-text, var(--accent-coral));
   border: 1px solid var(--accent-coral-border);
+}
+
+.badge-lime {
+  background: var(--accent-lime);
+  color: #182B29 !important;
+  border: 1px solid var(--accent-lime-border);
+  font-weight: 700;
+}
+
+.badge-gold {
+  background: var(--accent-gold);
+  color: #182B29 !important;
+  border: 1px solid var(--accent-gold-border);
+  font-weight: 700;
 }
 
 .badge-neutral {
@@ -3049,7 +3094,7 @@ button {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(15, 23, 42, 0.65);
+  background: rgba(16, 28, 26, 0.68);
   backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
