@@ -123,15 +123,28 @@ export default function ErrorNotebookModal({
 
         {/* Toolbar & Filters */}
         <div className="error-notebook-toolbar">
-          <div className="search-input-wrap">
-            <Search size={16} className="search-icon" />
-            <input
-              type="search"
-              className="form-input search-input"
-              placeholder={isEN ? 'Search mistakes, rules, or questions...' : 'Otsi vigade, reeglite või küsimuste seast...'}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <div className="error-toolbar-controls">
+            <div className="error-search-wrap">
+              <Search size={16} className="error-search-icon" />
+              <input
+                type="search"
+                className="error-search-field"
+                placeholder={isEN ? 'Search mistakes, rules, or questions...' : 'Otsi vigade, reeglite või küsimuste seast...'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            {/* Status Switcher */}
+            <select
+              className="error-status-select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="unresolved">{isEN ? 'Needs Review (Active)' : 'Vajavad kordamist (aktiivsed)'}</option>
+              <option value="resolved">{isEN ? 'Resolved / Mastered' : 'Mõistetud ja lahendatud'}</option>
+              <option value="all">{isEN ? 'All Statuses' : 'Kõik staatused'}</option>
+            </select>
           </div>
 
           <div className="error-filters-row">
@@ -169,17 +182,6 @@ export default function ErrorNotebookModal({
                 <span>{isEN ? 'Conceptual' : 'Mõiste vääritimõistmine'}</span>
               </button>
             </div>
-
-            {/* Status Switcher */}
-            <select
-              className="form-select filter-status-select"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="unresolved">{isEN ? 'Needs Review (Active)' : 'Vajavad kordamist (aktiivsed)'}</option>
-              <option value="resolved">{isEN ? 'Resolved / Mastered' : 'Mõistetud ja lahendatud'}</option>
-              <option value="all">{isEN ? 'All Statuses' : 'Kõik staatused'}</option>
-            </select>
           </div>
         </div>
 
