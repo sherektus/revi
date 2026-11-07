@@ -10,6 +10,7 @@ import DueTodayModal from './components/DueTodayModal';
 import UploadModal from './components/UploadModal';
 import SourceFileModal from './components/SourceFileModal';
 import PersonalWorkspaceModal from './components/PersonalWorkspaceModal';
+import KeyboardShortcutsModal from './components/KeyboardShortcutsModal';
 import { translations } from './i18n/translations';
 import {
   getOrCreateDeviceId,
@@ -82,6 +83,7 @@ export default function App() {
   const [uploadInitialFile, setUploadInitialFile] = useState(null);
   const [isDueTodayOpen, setIsDueTodayOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
   const [sourceModalState, setSourceModalState] = useState({
     isOpen: false,
@@ -134,6 +136,67 @@ export default function App() {
   useEffect(() => {
     saveNavState({ currentView, activeMaterialId });
   }, [currentView, activeMaterialId]);
+
+  useEffect(() => {
+    function handleGlobalKeyDown(e) {
+      const activeEl = document.activeElement;
+      const isInput =
+        activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.isContentEditable ||
+          activeEl.getAttribute?.('role') === 'textbox');
+
+      // Esc always closes modals even if inside an input
+      if (e.key === 'Escape') {
+        setIsShortcutsOpen(false);
+        setIsUploadOpen(false);
+        setIsDueTodayOpen(false);
+        setIsPrivacyOpen(false);
+        setSourceModalState((prev) => ({ ...prev, isOpen: false }));
+        return;
+      }
+
+      // Hotkeys only apply when user is not typing in a form input
+      if (isInput) return;
+
+      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        e.preventDefault();
+        setIsShortcutsOpen((prev) => !prev);
+        return;
+      }
+
+      if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+        const lower = e.key.toLowerCase();
+        if (lower === 'h') {
+          e.preventDefault();
+          setCurrentView('home');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (lower === 'l') {
+          e.preventDefault();
+          setCurrentView('library');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (lower === 'c') {
+          e.preventDefault();
+          setCurrentView('calendar');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (lower === 'm') {
+          e.preventDefault();
+          setCurrentView('mockExam');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (lower === 'f') {
+          e.preventDefault();
+          setCurrentView('formulas');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (lower === 't') {
+          e.preventDefault();
+          handleToggleTheme();
+        }
+      }
+    }
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   const dueTodayQueue = useMemo(
     () => buildDueTodayQueue(materials, progressMap, srMap, studyPlans),
@@ -522,6 +585,7 @@ export default function App() {
         onOpenUploadModal={() => handleOpenUploadModal(null)}
         activeProfileName={activeProfileLabel}
         onOpenPrivacyModal={() => setIsPrivacyOpen(true)}
+        onOpenShortcutsModal={() => setIsShortcutsOpen(true)}
       />
 
       {toastMessage && (
@@ -653,6 +717,12 @@ export default function App() {
         onDeleteProfile={handleDeleteProfile}
         onWorkspaceDataChanged={handleWorkspaceDataChanged}
         onClose={() => setIsPrivacyOpen(false)}
+      />
+
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsOpen}
+        t={t}
+        onClose={() => setIsShortcutsOpen(false)}
       />
     </div>
   );

@@ -30,26 +30,26 @@ function buildSchematicSvgForTopic({ heading, keyFormula, concepts, refLabel }) 
   const c2 = (concepts[1]?.term || safeFormula || refLabel).replace(/[<>&"]/g, '').slice(0, 26);
 
   return `<svg viewBox="0 0 520 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${safeHeading}">
-    <rect width="520" height="240" rx="12" fill="#FBF8F3"/>
-    <g stroke="#E6DEC8" stroke-width="1">
+    <rect width="520" height="240" rx="12" fill="#F8FAFC"/>
+    <g stroke="#E2E8F0" stroke-width="1">
       <line x1="40" y1="195" x2="480" y2="195"/>
       <line x1="55" y1="35" x2="55" y2="205"/>
     </g>
     <!-- Header banner -->
-    <rect x="75" y="26" width="370" height="38" rx="8" fill="#EFE9DC" stroke="#D8CEB8"/>
-    <text x="260" y="50" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#2F241D">${safeHeading}</text>
+    <rect x="75" y="26" width="370" height="38" rx="8" fill="#E7EBD9" stroke="#CCD5BA"/>
+    <text x="260" y="50" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#292D24">${safeHeading}</text>
     <!-- Left node -->
-    <rect x="75" y="92" width="160" height="54" rx="8" fill="#F4EFE6" stroke="#3F6A52" stroke-width="1.8"/>
-    <text x="155" y="123" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#3F6A52">${c1}</text>
+    <rect x="75" y="92" width="160" height="54" rx="8" fill="#FFFDF8" stroke="#59633F" stroke-width="1.8"/>
+    <text x="155" y="123" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#4A5433">${c1}</text>
     <!-- Arrow -->
-    <line x1="238" y1="119" x2="278" y2="119" stroke="#8C5A3C" stroke-width="2.2"/>
-    <polygon points="282,119 273,114 273,124" fill="#8C5A3C"/>
+    <line x1="238" y1="119" x2="278" y2="119" stroke="#59633F" stroke-width="2.2"/>
+    <polygon points="282,119 273,114 273,124" fill="#59633F"/>
     <!-- Right node -->
-    <rect x="285" y="92" width="160" height="54" rx="8" fill="#F4EFE6" stroke="#8C5A3C" stroke-width="1.8"/>
-    <text x="365" y="123" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#8C5A3C">${c2}</text>
+    <rect x="285" y="92" width="160" height="54" rx="8" fill="#FFFDF8" stroke="#59633F" stroke-width="1.8"/>
+    <text x="365" y="123" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#4A5433">${c2}</text>
     <!-- Bottom relation bar -->
-    <rect x="95" y="162" width="330" height="28" rx="6" fill="#E9F0EC"/>
-    <text x="260" y="180" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#2D5A40">${safeFormula || refLabel}</text>
+    <rect x="95" y="162" width="330" height="28" rx="6" fill="#F0F4E8" stroke="#DCE5C4"/>
+    <text x="260" y="180" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#4A5433">${safeFormula || refLabel}</text>
   </svg>`;
 }
 

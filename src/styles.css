@@ -1,119 +1,129 @@
 :root,
 [data-theme='light'] {
-  /* Canva-inspired Modern Creative Palette (Light Mode) */
-  --bg-main: #F7F8FC;
+  /* Revi Prismatic Slate Palette (Light Mode) — Studio Clarity without 1:1 Canva Clones */
+  --bg-main: #F8FAFC;
   --bg-card: #FFFFFF;
-  --bg-subtle: #EDF0F7;
+  --bg-subtle: #F1F5F9;
   --bg-elevated: #FFFFFF;
-  --bg-selected: #EEF2FF;
+  --bg-selected: #EFF6FF;
 
-  --text-primary: #111827;
-  --text-secondary: #4B5563;
-  --text-muted: #6B7280;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
 
   --border-color: #E2E8F0;
   --border-strong: #CBD5E1;
 
-  /* Canva Signature Brand Gradient & Electric Indigo Accent */
-  --accent: #5850EC;
-  --accent-hover: #4338CA;
+  /* Revi Signature Brand Gradient & Royal Sapphire Accent */
+  --accent: #3B5BF6;
+  --accent-hover: #2643D8;
   --accent-contrast: #FFFFFF;
-  --accent-gradient: linear-gradient(135deg, #00C4CC 0%, #7D2AE8 100%);
-  --accent-gradient-hover: linear-gradient(135deg, #00B4BD 0%, #6C1FD4 100%);
-  --accent-soft: rgba(88, 80, 236, 0.08);
-  --accent-border: rgba(88, 80, 236, 0.25);
-  --accent-text: #4338CA;
+  --accent-gradient: linear-gradient(135deg, #0D9488 0%, #059669 46%, #F59E0B 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #0F766E 0%, #047857 46%, #D97706 100%);
+  --accent-soft: rgba(59, 91, 246, 0.08);
+  --accent-border: rgba(59, 91, 246, 0.25);
+  --accent-text: #2643D8;
 
-  /* Canva Multi-Hue Jewel Accents (Harmonious & non-monochromatic!) */
-  --accent-cyan: #0096B3;
-  --accent-cyan-soft: rgba(0, 150, 179, 0.10);
-  --accent-cyan-border: rgba(0, 150, 179, 0.28);
-  --accent-cyan-text: #007A91;
+  /* Revi Signature Brand Logo Emblem: Sea Teal -> Living Emerald -> Luminous Solar Amber */
+  --brand-logo-gradient: linear-gradient(135deg, #0D9488 0%, #059669 46%, #F59E0B 100%);
+  --brand-logo-gradient-hover: linear-gradient(135deg, #0F766E 0%, #047857 46%, #D97706 100%);
+  --brand-logo-shadow: 0 4px 14px rgba(5, 150, 105, 0.28), 0 2px 6px rgba(245, 158, 11, 0.2);
 
-  --accent-purple: #7D2AE8;
-  --accent-purple-soft: rgba(125, 42, 232, 0.10);
-  --accent-purple-border: rgba(125, 42, 232, 0.28);
-  --accent-purple-text: #6117BE;
+  /* Revi Multi-Hue Jewel Accents (Harmonious, distinct study domains) */
+  --accent-cyan: #0D9488; /* Mint Teal for formulas & engineering */
+  --accent-cyan-soft: rgba(13, 148, 136, 0.10);
+  --accent-cyan-border: rgba(13, 148, 136, 0.28);
+  --accent-cyan-text: #0F766E;
 
-  --accent-coral: #E11D48;
-  --accent-coral-soft: rgba(225, 29, 72, 0.10);
-  --accent-coral-border: rgba(225, 29, 72, 0.28);
+  --accent-purple: #8B5CF6; /* Royal Amethyst for flashcards & active recall */
+  --accent-purple-soft: rgba(139, 92, 246, 0.10);
+  --accent-purple-border: rgba(139, 92, 246, 0.28);
+  --accent-purple-text: #6D28D9;
+
+  --accent-coral: #F43F5E; /* Sunset Rose / Coral for calendar deadlines & focus timer */
+  --accent-coral-soft: rgba(244, 63, 94, 0.10);
+  --accent-coral-border: rgba(244, 63, 94, 0.28);
   --accent-coral-text: #BE123C;
 
-  --accent-amber: #D97706;
-  --accent-amber-soft: rgba(217, 119, 6, 0.10);
-  --accent-amber-border: rgba(217, 119, 6, 0.28);
-  --accent-amber-text: #92400E;
+  --accent-amber: #EA580C; /* Warm Tangerine for alerts & quick tests */
+  --accent-amber-soft: rgba(234, 88, 12, 0.10);
+  --accent-amber-border: rgba(234, 88, 12, 0.28);
+  --accent-amber-text: #C2410C;
 
   /* Semantic Feedback: Success, Warning, Error */
-  --success: #059669;
-  --success-text: #065F46;
-  --success-soft: rgba(5, 150, 105, 0.10);
-  --success-border: rgba(5, 150, 105, 0.26);
+  --success: #10B981;
+  --success-text: #047857;
+  --success-soft: rgba(16, 185, 129, 0.10);
+  --success-border: rgba(16, 185, 129, 0.26);
 
-  --warning: #D97706;
-  --warning-text: #92400E;
-  --warning-soft: rgba(217, 119, 6, 0.10);
-  --warning-border: rgba(217, 119, 6, 0.26);
+  --warning: #F59E0B;
+  --warning-text: #B45309;
+  --warning-soft: rgba(245, 158, 11, 0.10);
+  --warning-border: rgba(245, 158, 11, 0.26);
 
-  --danger: #DC2626;
-  --danger-text: #991B1B;
-  --danger-soft: rgba(220, 38, 38, 0.10);
-  --danger-border: rgba(220, 38, 38, 0.26);
+  --danger: #EF4444;
+  --danger-text: #B91C1C;
+  --danger-soft: rgba(239, 68, 68, 0.10);
+  --danger-border: rgba(239, 68, 68, 0.26);
 
   --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
   --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.07), 0 2px 6px rgba(15, 23, 42, 0.04);
   --shadow-lg: 0 12px 36px rgba(15, 23, 42, 0.10), 0 4px 12px rgba(15, 23, 42, 0.05);
 
-  --focus-outline: 2px solid #5850EC;
-  --focus-ring: 0 0 0 3px rgba(88, 80, 236, 0.35);
+  --focus-outline: 2px solid #3B5BF6;
+  --focus-ring: 0 0 0 3px rgba(59, 91, 246, 0.35);
 }
 
 [data-theme='dark'] {
-  /* Canva-inspired Modern Creative Palette (Dark Mode) */
-  --bg-main: #0E131F;
-  --bg-card: #161D2D;
-  --bg-subtle: #21293D;
-  --bg-elevated: #1C2438;
-  --bg-selected: #242E4A;
+  /* Revi Prismatic Slate Palette (Dark Mode) — Deep Obsidian Twilight */
+  --bg-main: #0B0F19;
+  --bg-card: #131B2E;
+  --bg-subtle: #1C263D;
+  --bg-elevated: #1F2A44;
+  --bg-selected: #1E2D4F;
 
   --text-primary: #F8FAFC;
   --text-secondary: #94A3B8;
   --text-muted: #64748B;
 
-  --border-color: #263045;
-  --border-strong: #334155;
+  --border-color: #222E47;
+  --border-strong: #334366;
 
-  /* Canva Dark Signature Brand Gradient & Indigo Accent */
-  --accent: #818CF8;
-  --accent-hover: #9FA8FF;
-  --accent-contrast: #0B0F19;
-  --accent-gradient: linear-gradient(135deg, #00E5FF 0%, #A855F7 100%);
-  --accent-gradient-hover: linear-gradient(135deg, #38BDF8 0%, #C084FC 100%);
-  --accent-soft: rgba(129, 140, 248, 0.16);
-  --accent-border: rgba(129, 140, 248, 0.35);
-  --accent-text: #C7D2FE;
+  /* Revi Dark Signature Brand Gradient & Luminous Sky Cobalt Accent */
+  --accent: #60A5FA;
+  --accent-hover: #93C5FD;
+  --accent-contrast: #070B14;
+  --accent-gradient: linear-gradient(135deg, #14B8A6 0%, #10B981 44%, #F59E0B 84%, #FBBF24 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #2DD4BF 0%, #34D399 44%, #FBBF24 84%, #FDE68A 100%);
+  --accent-soft: rgba(96, 165, 250, 0.16);
+  --accent-border: rgba(96, 165, 250, 0.35);
+  --accent-text: #BFDBFE;
 
-  /* Canva Multi-Hue Jewel Accents (Dark Mode) */
-  --accent-cyan: #38BDF8;
-  --accent-cyan-soft: rgba(56, 189, 248, 0.16);
-  --accent-cyan-border: rgba(56, 189, 248, 0.35);
-  --accent-cyan-text: #7DD3FC;
+  /* Revi Signature Brand Logo Emblem: Dark Luminous Aurora (Sea Teal -> Emerald -> Warm Gold) */
+  --brand-logo-gradient: linear-gradient(135deg, #14B8A6 0%, #10B981 44%, #F59E0B 84%, #FBBF24 100%);
+  --brand-logo-gradient-hover: linear-gradient(135deg, #2DD4BF 0%, #34D399 44%, #FBBF24 84%, #FDE68A 100%);
+  --brand-logo-shadow: 0 4px 18px rgba(16, 185, 129, 0.35), 0 2px 8px rgba(245, 158, 11, 0.28);
 
-  --accent-purple: #C084FC;
-  --accent-purple-soft: rgba(192, 132, 252, 0.16);
-  --accent-purple-border: rgba(192, 132, 252, 0.35);
-  --accent-purple-text: #E9D5FF;
+  /* Revi Multi-Hue Jewel Accents (Dark Mode) */
+  --accent-cyan: #2DD4BF; /* Mint Teal in Dark Mode */
+  --accent-cyan-soft: rgba(45, 212, 191, 0.16);
+  --accent-cyan-border: rgba(45, 212, 191, 0.35);
+  --accent-cyan-text: #5EEAD4;
 
-  --accent-coral: #FB7185;
+  --accent-purple: #A78BFA; /* Amethyst in Dark Mode */
+  --accent-purple-soft: rgba(167, 139, 250, 0.16);
+  --accent-purple-border: rgba(167, 139, 250, 0.35);
+  --accent-purple-text: #DDD6FE;
+
+  --accent-coral: #FB7185; /* Sunset Coral in Dark Mode */
   --accent-coral-soft: rgba(251, 113, 133, 0.16);
   --accent-coral-border: rgba(251, 113, 133, 0.35);
   --accent-coral-text: #FECDD3;
 
-  --accent-amber: #FBBF24;
-  --accent-amber-soft: rgba(251, 191, 36, 0.16);
-  --accent-amber-border: rgba(251, 191, 36, 0.35);
-  --accent-amber-text: #FDE68A;
+  --accent-amber: #FB923C; /* Tangerine in Dark Mode */
+  --accent-amber-soft: rgba(251, 146, 60, 0.16);
+  --accent-amber-border: rgba(251, 146, 60, 0.35);
+  --accent-amber-text: #FFEDD5;
 
   /* Status Colors in Dark Mode */
   --success: #34D399;
@@ -132,11 +142,11 @@
   --danger-border: rgba(248, 113, 113, 0.35);
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 16px 44px rgba(0, 0, 0, 0.65);
+  --shadow-md: 0 4px 18px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.55);
 
-  --focus-outline: 2px solid #818CF8;
-  --focus-ring: 0 0 0 3px rgba(129, 140, 248, 0.4);
+  --focus-outline: 2px solid #60A5FA;
+  --focus-ring: 0 0 0 3px rgba(96, 165, 250, 0.45);
 }
 
 /* --- ACCESSIBILITY & TEXT SIZING --- */
@@ -493,13 +503,25 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.2rem;
-  height: 2.2rem;
-  border-radius: 0.7rem;
-  background: var(--accent-gradient);
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.72rem;
+  background: var(--brand-logo-gradient);
   color: #FFFFFF;
-  box-shadow: 0 4px 14px rgba(125, 42, 232, 0.28);
+  box-shadow: var(--brand-logo-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   flex-shrink: 0;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease;
+}
+
+.brand-btn:hover .brand-icon {
+  transform: translateY(-1px) scale(1.05);
+  background: var(--brand-logo-gradient-hover);
+  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.38), 0 3px 8px rgba(245, 158, 11, 0.3);
+}
+
+.brand-icon svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.24));
 }
 
 .nav-links {
@@ -1383,7 +1405,7 @@ button {
 
 .progress-fill {
   height: 100%;
-  background: var(--accent-gradient, linear-gradient(90deg, #00C4CC, #7D2AE8));
+  background: var(--accent);
   border-radius: 999px;
   transition: width 0.3s ease;
 }
@@ -4542,15 +4564,15 @@ button {
 .academic-suggestion-box {
   margin-bottom: 1.25rem;
   padding: 1rem 1.15rem;
-  background: linear-gradient(135deg, rgba(63, 106, 82, 0.08) 0%, rgba(200, 168, 130, 0.12) 100%);
-  border: 1px solid rgba(63, 106, 82, 0.35);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
   border-radius: 0.95rem;
   animation: fadeIn 0.25s ease-out;
 }
 
 [data-theme='dark'] .academic-suggestion-box {
-  background: linear-gradient(135deg, rgba(74, 122, 97, 0.15) 0%, rgba(200, 168, 130, 0.06) 100%);
-  border-color: rgba(74, 122, 97, 0.45);
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
 }
 
 .academic-rec-header {

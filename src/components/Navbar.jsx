@@ -17,7 +17,8 @@ import {
   ShieldCheck,
   Type,
   Eye,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Keyboard
 } from 'lucide-react';
 import { loadTimerSettings, saveTimerSettings } from '../utils/storage';
 
@@ -35,7 +36,8 @@ export default function Navbar({
   onNavigate,
   onOpenUploadModal,
   activeProfileName,
-  onOpenPrivacyModal
+  onOpenPrivacyModal,
+  onOpenShortcutsModal
 }) {
   const [timerSettings, setTimerSettings] = useState(() => loadTimerSettings());
   const [isTimerSettingsOpen, setIsTimerSettingsOpen] = useState(false);
@@ -243,8 +245,10 @@ export default function Navbar({
           </nav>
 
         <div className="navbar-right">
-          {/* Cozy Focus / Break Study Timer with Custom Duration */}
-          <div className="cozy-timer-wrapper" ref={timerSettingsRef}>
+          {/* Primary Action Zone: Timer & Add Material */}
+          <div className="navbar-actions-group">
+            {/* Cozy Focus / Break Study Timer with Custom Duration */}
+            <div className="cozy-timer-wrapper" ref={timerSettingsRef}>
             <div className={`cozy-timer-pill ${isRunning ? 'timer-active' : ''}`}>
               <button
                 type="button"
@@ -451,6 +455,18 @@ export default function Navbar({
 
           <button
             type="button"
+            className="btn btn-primary nav-add-btn"
+            onClick={() => onOpenUploadModal()}
+          >
+            <Plus size={16} strokeWidth={2.5} />
+            <span className="nav-add-label">{t.nav.addMaterial}</span>
+          </button>
+        </div>
+
+        {/* Utilities & Preferences Hub */}
+        <div className="navbar-tools-group">
+          <button
+            type="button"
             className="privacy-device-pill"
             onClick={onOpenPrivacyModal}
             title={t.privacy?.modalTitle}
@@ -461,16 +477,7 @@ export default function Navbar({
             </span>
           </button>
 
-          <button
-            type="button"
-            className="btn btn-primary btn-sm nav-add-btn"
-            onClick={() => onOpenUploadModal()}
-          >
-            <Plus size={16} strokeWidth={2.5} />
-            <span className="nav-add-label">{t.nav.addMaterial}</span>
-          </button>
-
-          <div className="nav-controls-group">
+          <div className="nav-pref-hub" role="region" aria-label="Eelistused ja ligipääsetavus">
             <div
               className="lang-switcher"
               role="group"
@@ -494,6 +501,8 @@ export default function Navbar({
               </button>
             </div>
 
+            <div className="nav-pref-divider" aria-hidden="true" />
+
             <button
               type="button"
               className="theme-toggle-btn"
@@ -510,6 +519,8 @@ export default function Navbar({
                 className={`theme-icon moon-icon ${theme === 'dark' ? 'active' : ''}`}
               />
             </button>
+
+            <div className="nav-pref-divider" aria-hidden="true" />
 
             {/* Teksti suurendamise ja vähendamise stepper vaevnägijatele ja kohandamiseks */}
             <div
@@ -531,7 +542,7 @@ export default function Navbar({
                   uiLang === 'en' ? 'Make text smaller' : 'Tee tekst väiksemaks'
                 }
               >
-                <Minus size={12} strokeWidth={2.4} />
+                <Minus size={13} strokeWidth={2.4} />
               </button>
 
               <button
@@ -545,7 +556,7 @@ export default function Navbar({
                 }
                 aria-label={`${t.nav?.textSize || 'Teksti suurus'}: ${currentPercent}%`}
               >
-                <Type size={13} />
+                <Type size={14} />
                 <span className="font-size-tag">{currentPercent}%</span>
               </button>
 
@@ -563,9 +574,11 @@ export default function Navbar({
                   uiLang === 'en' ? 'Make text larger' : 'Tee tekst suuremaks'
                 }
               >
-                <Plus size={12} strokeWidth={2.4} />
+                <Plus size={13} strokeWidth={2.4} />
               </button>
             </div>
+
+            <div className="nav-pref-divider" aria-hidden="true" />
 
             {/* Vaevnägijate vaade (kõrge kontrast) */}
             <button
@@ -576,12 +589,27 @@ export default function Navbar({
               aria-label={highContrast ? t.nav.highContrastOn : t.nav.highContrast}
               aria-pressed={highContrast}
             >
-              <Eye size={15} />
+              <Eye size={16} />
               <span className="sr-only">
                 {highContrast ? t.nav.highContrastOn : t.nav.highContrastOff}
               </span>
             </button>
+
+            <div className="nav-pref-divider" aria-hidden="true" />
+
+            {/* Klaviatuuri kiirklahvide nupp */}
+            <button
+              type="button"
+              className="shortcuts-hub-btn"
+              onClick={onOpenShortcutsModal}
+              title="Klaviatuuri kiirklahvid (?)"
+              aria-label="Klaviatuuri kiirklahvid"
+            >
+              <Keyboard size={16} />
+              <span className="shortcuts-k-badge">?</span>
+            </button>
           </div>
+        </div>
         </div>
       </div>
     </header>
