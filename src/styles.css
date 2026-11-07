@@ -1,94 +1,142 @@
 :root,
 [data-theme='light'] {
-  /* Warm Paper, Olive Green & Charcoal Palette */
-  --bg-main: #f6f4ee;
-  --bg-card: #fffdf8;
-  --bg-subtle: #ece8de;
-  --bg-elevated: #fffdf8;
-  --bg-selected: #e7ebd9;
+  /* Canva-inspired Modern Creative Palette (Light Mode) */
+  --bg-main: #F7F8FC;
+  --bg-card: #FFFFFF;
+  --bg-subtle: #EDF0F7;
+  --bg-elevated: #FFFFFF;
+  --bg-selected: #EEF2FF;
 
-  --text-primary: #292d24;
-  --text-secondary: #63675b;
-  --text-muted: #797e70;
-  --border-color: #e2dfd3;
-  --border-strong: #cdc9ba;
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --text-muted: #6B7280;
 
-  /* Olive Green Accent & Primary Buttons */
-  --accent: #59633f;
-  --accent-hover: #485132;
-  --accent-contrast: #fffdf8;
-  --accent-soft: rgba(89, 99, 63, 0.12);
-  --accent-border: rgba(89, 99, 63, 0.28);
-  --accent-text: #454e30;
+  --border-color: #E2E8F0;
+  --border-strong: #CBD5E1;
 
-  /* Status Colors: Success, Warning/Deadline, Error */
-  --success: #4d6837;
-  --success-text: #344b22;
-  --success-soft: #ebf3e5;
-  --success-border: #b7cca6;
+  /* Canva Signature Brand Gradient & Electric Indigo Accent */
+  --accent: #5850EC;
+  --accent-hover: #4338CA;
+  --accent-contrast: #FFFFFF;
+  --accent-gradient: linear-gradient(135deg, #00C4CC 0%, #7D2AE8 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #00B4BD 0%, #6C1FD4 100%);
+  --accent-soft: rgba(88, 80, 236, 0.08);
+  --accent-border: rgba(88, 80, 236, 0.25);
+  --accent-text: #4338CA;
 
-  --warning: #8e5f1e;
-  --warning-text: #694411;
-  --warning-soft: #fdf4e5;
-  --warning-border: #e8d09e;
+  /* Canva Multi-Hue Jewel Accents (Harmonious & non-monochromatic!) */
+  --accent-cyan: #0096B3;
+  --accent-cyan-soft: rgba(0, 150, 179, 0.10);
+  --accent-cyan-border: rgba(0, 150, 179, 0.28);
+  --accent-cyan-text: #007A91;
 
-  --danger: #9e3c32;
-  --danger-text: #73271f;
-  --danger-soft: #fbedea;
-  --danger-border: #e6b4ad;
+  --accent-purple: #7D2AE8;
+  --accent-purple-soft: rgba(125, 42, 232, 0.10);
+  --accent-purple-border: rgba(125, 42, 232, 0.28);
+  --accent-purple-text: #6117BE;
 
-  --shadow-sm: 0 2px 8px rgba(41, 45, 36, 0.04);
-  --shadow-md: 0 8px 24px rgba(41, 45, 36, 0.07);
-  --shadow-lg: 0 18px 40px rgba(41, 45, 36, 0.1);
+  --accent-coral: #E11D48;
+  --accent-coral-soft: rgba(225, 29, 72, 0.10);
+  --accent-coral-border: rgba(225, 29, 72, 0.28);
+  --accent-coral-text: #BE123C;
 
-  --focus-outline: 2px solid #59633f;
-  --focus-ring: 0 0 0 3px rgba(89, 99, 63, 0.35);
+  --accent-amber: #D97706;
+  --accent-amber-soft: rgba(217, 119, 6, 0.10);
+  --accent-amber-border: rgba(217, 119, 6, 0.28);
+  --accent-amber-text: #92400E;
+
+  /* Semantic Feedback: Success, Warning, Error */
+  --success: #059669;
+  --success-text: #065F46;
+  --success-soft: rgba(5, 150, 105, 0.10);
+  --success-border: rgba(5, 150, 105, 0.26);
+
+  --warning: #D97706;
+  --warning-text: #92400E;
+  --warning-soft: rgba(217, 119, 6, 0.10);
+  --warning-border: rgba(217, 119, 6, 0.26);
+
+  --danger: #DC2626;
+  --danger-text: #991B1B;
+  --danger-soft: rgba(220, 38, 38, 0.10);
+  --danger-border: rgba(220, 38, 38, 0.26);
+
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
+  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.07), 0 2px 6px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 36px rgba(15, 23, 42, 0.10), 0 4px 12px rgba(15, 23, 42, 0.05);
+
+  --focus-outline: 2px solid #5850EC;
+  --focus-ring: 0 0 0 3px rgba(88, 80, 236, 0.35);
 }
 
 [data-theme='dark'] {
-  /* Deep Charcoal Paper, Olive Green & Warm Sage */
-  --bg-main: #191b17;
-  --bg-card: #24271f;
-  --bg-subtle: #2c3026;
-  --bg-elevated: #282c22;
-  --bg-selected: #343d29;
+  /* Canva-inspired Modern Creative Palette (Dark Mode) */
+  --bg-main: #0E131F;
+  --bg-card: #161D2D;
+  --bg-subtle: #21293D;
+  --bg-elevated: #1C2438;
+  --bg-selected: #242E4A;
 
-  --text-primary: #f0efe7;
-  --text-secondary: #b8bcae;
-  --text-muted: #8b9080;
-  --border-color: #353a2d;
-  --border-strong: #4b5240;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
 
-  /* Olive Green Accent & Primary Buttons */
-  --accent: #bbc79b;
-  --accent-hover: #c9d5aa;
-  --accent-contrast: #191b17;
-  --accent-soft: rgba(187, 199, 155, 0.15);
-  --accent-border: rgba(187, 199, 155, 0.35);
-  --accent-text: #d6e0bc;
+  --border-color: #263045;
+  --border-strong: #334155;
+
+  /* Canva Dark Signature Brand Gradient & Indigo Accent */
+  --accent: #818CF8;
+  --accent-hover: #9FA8FF;
+  --accent-contrast: #0B0F19;
+  --accent-gradient: linear-gradient(135deg, #00E5FF 0%, #A855F7 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #38BDF8 0%, #C084FC 100%);
+  --accent-soft: rgba(129, 140, 248, 0.16);
+  --accent-border: rgba(129, 140, 248, 0.35);
+  --accent-text: #C7D2FE;
+
+  /* Canva Multi-Hue Jewel Accents (Dark Mode) */
+  --accent-cyan: #38BDF8;
+  --accent-cyan-soft: rgba(56, 189, 248, 0.16);
+  --accent-cyan-border: rgba(56, 189, 248, 0.35);
+  --accent-cyan-text: #7DD3FC;
+
+  --accent-purple: #C084FC;
+  --accent-purple-soft: rgba(192, 132, 252, 0.16);
+  --accent-purple-border: rgba(192, 132, 252, 0.35);
+  --accent-purple-text: #E9D5FF;
+
+  --accent-coral: #FB7185;
+  --accent-coral-soft: rgba(251, 113, 133, 0.16);
+  --accent-coral-border: rgba(251, 113, 133, 0.35);
+  --accent-coral-text: #FECDD3;
+
+  --accent-amber: #FBBF24;
+  --accent-amber-soft: rgba(251, 191, 36, 0.16);
+  --accent-amber-border: rgba(251, 191, 36, 0.35);
+  --accent-amber-text: #FDE68A;
 
   /* Status Colors in Dark Mode */
-  --success: #a2cb88;
-  --success-text: #c3e7ab;
-  --success-soft: #23351c;
-  --success-border: #3f5b2f;
+  --success: #34D399;
+  --success-text: #A7F3D0;
+  --success-soft: rgba(52, 211, 153, 0.16);
+  --success-border: rgba(52, 211, 153, 0.35);
 
-  --warning: #dcad5a;
-  --warning-text: #efd392;
-  --warning-soft: #3a2e16;
-  --warning-border: #604a22;
+  --warning: #FBBF24;
+  --warning-text: #FDE68A;
+  --warning-soft: rgba(251, 191, 36, 0.16);
+  --warning-border: rgba(251, 191, 36, 0.35);
 
-  --danger: #e4776d;
-  --danger-text: #f7a9a1;
-  --danger-soft: #3a1c19;
-  --danger-border: #662e29;
+  --danger: #F87171;
+  --danger-text: #FECACA;
+  --danger-soft: rgba(248, 113, 113, 0.16);
+  --danger-border: rgba(248, 113, 113, 0.35);
 
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 44px rgba(0, 0, 0, 0.65);
 
-  --focus-outline: 2px solid #bbc79b;
-  --focus-ring: 0 0 0 3px rgba(187, 199, 155, 0.4);
+  --focus-outline: 2px solid #818CF8;
+  --focus-ring: 0 0 0 3px rgba(129, 140, 248, 0.4);
 }
 
 /* --- ACCESSIBILITY & TEXT SIZING --- */
@@ -295,12 +343,12 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.6rem;
-  background: var(--accent);
-  color: var(--accent-contrast);
-  box-shadow: 0 3px 10px var(--accent-border);
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 0.7rem;
+  background: var(--accent-gradient);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(125, 42, 232, 0.28);
   flex-shrink: 0;
 }
 
@@ -386,6 +434,25 @@ button {
   padding: 0 0.15rem;
 }
 
+.cozy-timer-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.timer-clock-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.15rem;
+  background: transparent;
+  border-radius: 0.35rem;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.timer-clock-btn:hover {
+  background: var(--bg-subtle);
+}
+
 .timer-ctrl-btn {
   display: inline-flex;
   align-items: center;
@@ -400,7 +467,138 @@ button {
 
 .timer-ctrl-btn:hover {
   background: var(--accent);
-  color: #ffffff;
+  color: var(--accent-contrast);
+}
+
+.timer-cfg-btn.active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+/* Timer Settings Popover */
+.timer-settings-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  width: 270px;
+  padding: 0.95rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.timer-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.timer-settings-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.icon-btn-xs {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.icon-btn-xs:hover {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.timer-duration-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.timer-duration-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.timer-active-val {
+  color: var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+}
+
+.timer-presets-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.timer-preset-btn {
+  padding: 0.22rem 0.55rem;
+  border-radius: 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  transition: all 0.14s ease;
+  cursor: pointer;
+}
+
+.timer-preset-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.timer-preset-btn.active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+}
+
+.timer-custom-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.timer-number-input {
+  width: 3.5rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.4rem;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.timer-number-input:focus {
+  border-color: var(--accent);
+  outline: none;
 }
 
 /* --- PRIVACY & PROFILE PILL --- */
@@ -635,9 +833,21 @@ button {
 }
 
 .badge-violet {
-  background: var(--accent-soft);
-  color: var(--accent-text);
-  border: 1px solid var(--accent-border);
+  background: var(--accent-purple-soft);
+  color: var(--accent-purple-text, var(--accent-purple));
+  border: 1px solid var(--accent-purple-border);
+}
+
+.badge-cyan {
+  background: var(--accent-cyan-soft);
+  color: var(--accent-cyan-text, var(--accent-cyan));
+  border: 1px solid var(--accent-cyan-border);
+}
+
+.badge-coral {
+  background: var(--accent-coral-soft);
+  color: var(--accent-coral-text, var(--accent-coral));
+  border: 1px solid var(--accent-coral-border);
 }
 
 .badge-neutral {
@@ -898,7 +1108,7 @@ button {
 
 .progress-fill {
   height: 100%;
-  background: var(--accent);
+  background: var(--accent-gradient, linear-gradient(90deg, #00C4CC, #7D2AE8));
   border-radius: 999px;
   transition: width 0.3s ease;
 }

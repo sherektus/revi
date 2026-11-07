@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   BookOpen,
   Library,
@@ -15,8 +15,10 @@ import {
   RotateCcw,
   ShieldCheck,
   Type,
-  Eye
+  Eye,
+  SlidersHorizontal
 } from 'lucide-react';
+import { loadTimerSettings, saveTimerSettings } from '../utils/storage';
 
 export default function Navbar({
   t,
@@ -34,9 +36,31 @@ export default function Navbar({
   activeProfileName,
   onOpenPrivacyModal
 }) {
+  const [timerSettings, setTimerSettings] = useState(() => loadTimerSettings());
+  const [isTimerSettingsOpen, setIsTimerSettingsOpen] = useState(false);
+  const timerSettingsRef = useRef(null);
+
+  const focusDuration = timerSettings.focusMinutes || 25;
+  const breakDuration = timerSettings.breakMinutes || 5;
+
   const [timerMode, setTimerMode] = useState('focus');
-  const [secondsLeft, setSecondsLeft] = useState(25 * 60);
+  const [secondsLeft, setSecondsLeft] = useState(focusDuration * 60);
   const [isRunning, setIsRunning] = useState(false);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        timerSettingsRef.current &&
+        !timerSettingsRef.current.contains(event.target)
+      ) {
+        setIsTimerSettingsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isRunning) return;
@@ -46,24 +70,50 @@ export default function Navbar({
           const nextMode = timerMode === 'focus' ? 'break' : 'focus';
           setTimerMode(nextMode);
           setIsRunning(false);
-          return nextMode === 'focus' ? 25 * 60 : 5 * 60;
+          const nextMins =
+            nextMode === 'focus'
+              ? timerSettings.focusMinutes
+              : timerSettings.breakMinutes;
+          return nextMins * 60;
         }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [isRunning, timerMode]);
+  }, [isRunning, timerMode, timerSettings]);
 
   function toggleTimerMode() {
     const nextMode = timerMode === 'focus' ? 'break' : 'focus';
     setTimerMode(nextMode);
     setIsRunning(false);
-    setSecondsLeft(nextMode === 'focus' ? 25 * 60 : 5 * 60);
+    const nextMins =
+      nextMode === 'focus'
+        ? timerSettings.focusMinutes
+        : timerSettings.breakMinutes;
+    setSecondsLeft(nextMins * 60);
   }
 
   function resetTimer() {
     setIsRunning(false);
-    setSecondsLeft(timerMode === 'focus' ? 25 * 60 : 5 * 60);
+    const minsVal =
+      timerMode === 'focus'
+        ? timerSettings.focusMinutes
+        : timerSettings.breakMinutes;
+    setSecondsLeft(minsVal * 60);
+  }
+
+  function updateDurations(newFocus, newBreak) {
+    const updated = {
+      focusMinutes: Math.min(180, Math.max(1, Number(newFocus) || 25)),
+      breakMinutes: Math.min(60, Math.max(1, Number(newBreak) || 5))
+    };
+    setTimerSettings(updated);
+    saveTimerSettings(updated);
+    if (!isRunning) {
+      const activeMins =
+        timerMode === 'focus' ? updated.focusMinutes : updated.breakMinutes;
+      setSecondsLeft(activeMins * 60);
+    }
   }
 
   const mins = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
@@ -147,44 +197,186 @@ export default function Navbar({
           </nav>
 
         <div className="navbar-right">
-          {/* Cozy Focus / Break Study Timer */}
-          <div className={`cozy-timer-pill ${isRunning ? 'timer-active' : ''}`}>
-            <button
-              type="button"
-              className="timer-mode-tag"
-              onClick={toggleTimerMode}
-              title={
-                timerMode === 'focus' ? t.nav.timerFocus : t.nav.timerBreak
-              }
-            >
-              <Coffee size={13} />
-              <span className="timer-mode-label">
-                {timerMode === 'focus' ? t.nav.timerFocus : t.nav.timerBreak}
-              </span>
-            </button>
-            <span className="timer-clock">
-              {mins}:{secs}
-            </span>
-            <button
-              type="button"
-              className="timer-ctrl-btn"
-              onClick={() => setIsRunning((r) => !r)}
-              title={isRunning ? t.nav.timerPause : t.nav.timerStart}
-              aria-label={isRunning ? t.nav.timerPause : t.nav.timerStart}
-            >
-              {isRunning ? <Pause size={12} /> : <Play size={12} />}
-            </button>
-            {(isRunning ||
-              secondsLeft !== (timerMode === 'focus' ? 25 * 60 : 5 * 60)) && (
+          {/* Cozy Focus / Break Study Timer with Custom Duration */}
+          <div className="cozy-timer-wrapper" ref={timerSettingsRef}>
+            <div className={`cozy-timer-pill ${isRunning ? 'timer-active' : ''}`}>
+              <button
+                type="button"
+                className="timer-mode-tag"
+                onClick={toggleTimerMode}
+                title={timerMode === 'focus' ? t.nav.timerFocus : t.nav.timerBreak}
+              >
+                <Coffee size={13} />
+                <span className="timer-mode-label">
+                  {timerMode === 'focus' ? t.nav.timerFocus : t.nav.timerBreak}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="timer-clock-btn"
+                onClick={() => setIsTimerSettingsOpen((prev) => !prev)}
+                title={t.nav.timerSettingsTitle || 'Muuda õppimise ja pausi kestvust'}
+              >
+                <span className="timer-clock">
+                  {mins}:{secs}
+                </span>
+              </button>
+
               <button
                 type="button"
                 className="timer-ctrl-btn"
-                onClick={resetTimer}
-                title={t.nav.timerReset}
-                aria-label={t.nav.timerReset}
+                onClick={() => setIsRunning((r) => !r)}
+                title={isRunning ? t.nav.timerPause : t.nav.timerStart}
+                aria-label={isRunning ? t.nav.timerPause : t.nav.timerStart}
               >
-                <RotateCcw size={12} />
+                {isRunning ? <Pause size={12} /> : <Play size={12} />}
               </button>
+
+              <button
+                type="button"
+                className={`timer-ctrl-btn timer-cfg-btn ${
+                  isTimerSettingsOpen ? 'active' : ''
+                }`}
+                onClick={() => setIsTimerSettingsOpen((prev) => !prev)}
+                title={t.nav.timerSettingsTitle || 'Kestvuse seaded'}
+                aria-label={t.nav.timerSettingsTitle}
+                aria-expanded={isTimerSettingsOpen}
+              >
+                <SlidersHorizontal size={12} />
+              </button>
+
+              {(isRunning ||
+                secondsLeft !==
+                  (timerMode === 'focus'
+                    ? timerSettings.focusMinutes
+                    : timerSettings.breakMinutes) *
+                    60) && (
+                <button
+                  type="button"
+                  className="timer-ctrl-btn"
+                  onClick={resetTimer}
+                  title={t.nav.timerReset}
+                  aria-label={t.nav.timerReset}
+                >
+                  <RotateCcw size={12} />
+                </button>
+              )}
+            </div>
+
+            {/* Custom duration popover */}
+            {isTimerSettingsOpen && (
+              <div
+                className="timer-settings-popover"
+                role="dialog"
+                aria-label={t.nav.timerSettingsTitle}
+              >
+                <div className="timer-settings-header">
+                  <span className="timer-settings-title">
+                    {t.nav.timerSettingsTitle}
+                  </span>
+                  <button
+                    type="button"
+                    className="icon-btn-xs"
+                    onClick={() => setIsTimerSettingsOpen(false)}
+                    aria-label="Sulge"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Õppimise kestvus */}
+                <div className="timer-duration-section">
+                  <div className="timer-duration-label-row">
+                    <span>{t.nav.timerFocusDuration}</span>
+                    <strong className="timer-active-val">
+                      {timerSettings.focusMinutes} min
+                    </strong>
+                  </div>
+                  <div className="timer-presets-row">
+                    {[15, 20, 25, 30, 45, 60].map((mVal) => (
+                      <button
+                        key={mVal}
+                        type="button"
+                        className={`timer-preset-btn ${
+                          timerSettings.focusMinutes === mVal ? 'active' : ''
+                        }`}
+                        onClick={() =>
+                          updateDurations(mVal, timerSettings.breakMinutes)
+                        }
+                      >
+                        {mVal}m
+                      </button>
+                    ))}
+                  </div>
+                  <div className="timer-custom-input-row">
+                    <label htmlFor="custom-focus-input">
+                      {t.nav.timerCustom || 'Määra ise'}:
+                    </label>
+                    <input
+                      id="custom-focus-input"
+                      type="number"
+                      min="1"
+                      max="180"
+                      value={timerSettings.focusMinutes}
+                      onChange={(e) =>
+                        updateDurations(
+                          e.target.value,
+                          timerSettings.breakMinutes
+                        )
+                      }
+                      className="timer-number-input"
+                    />
+                    <span>min</span>
+                  </div>
+                </div>
+
+                {/* Pausi kestvus */}
+                <div className="timer-duration-section mt-2">
+                  <div className="timer-duration-label-row">
+                    <span>{t.nav.timerBreakDuration}</span>
+                    <strong className="timer-active-val">
+                      {timerSettings.breakMinutes} min
+                    </strong>
+                  </div>
+                  <div className="timer-presets-row">
+                    {[3, 5, 10, 15, 20].map((bVal) => (
+                      <button
+                        key={bVal}
+                        type="button"
+                        className={`timer-preset-btn ${
+                          timerSettings.breakMinutes === bVal ? 'active' : ''
+                        }`}
+                        onClick={() =>
+                          updateDurations(timerSettings.focusMinutes, bVal)
+                        }
+                      >
+                        {bVal}m
+                      </button>
+                    ))}
+                  </div>
+                  <div className="timer-custom-input-row">
+                    <label htmlFor="custom-break-input">
+                      {t.nav.timerCustom || 'Määra ise'}:
+                    </label>
+                    <input
+                      id="custom-break-input"
+                      type="number"
+                      min="1"
+                      max="60"
+                      value={timerSettings.breakMinutes}
+                      onChange={(e) =>
+                        updateDurations(
+                          timerSettings.focusMinutes,
+                          e.target.value
+                        )
+                      }
+                      className="timer-number-input"
+                    />
+                    <span>min</span>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 

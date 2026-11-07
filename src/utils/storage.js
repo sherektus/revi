@@ -239,15 +239,23 @@ export function saveTheme(theme) {
 export function loadFontSize() {
   try {
     const saved = localStorage.getItem(KEYS.FONT_SIZE);
-    return saved === 'large' || saved === 'xlarge' ? saved : 'normal';
+    if (!saved) return 100;
+    if (saved === 'normal') return 100;
+    if (saved === 'large') return 115;
+    if (saved === 'xlarge') return 130;
+    if (saved === 'small') return 90;
+    if (saved === 'xsmall') return 80;
+    const num = Number(saved);
+    if (!isNaN(num) && num >= 70 && num <= 160) return num;
+    return 100;
   } catch {
-    return 'normal';
+    return 100;
   }
 }
 
 export function saveFontSize(size) {
   try {
-    localStorage.setItem(KEYS.FONT_SIZE, size);
+    localStorage.setItem(KEYS.FONT_SIZE, String(size));
   } catch {
     // ignore
   }
