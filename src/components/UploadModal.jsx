@@ -7,10 +7,12 @@ import {
   BookOpen,
   Sparkles,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  Sliders
 } from 'lucide-react';
 import { parseUploadedFile } from '../utils/fileParser';
 import { generateStudyContent } from '../utils/contentGenerator';
+import { DEFAULT_ENABLED_FEATURES } from '../data/sampleMaterial';
 
 export default function UploadModal({
   isOpen,
@@ -26,18 +28,21 @@ export default function UploadModal({
   const [subject, setSubject] = useState('Matemaatiline analüüs');
   const [customSubject, setCustomSubject] = useState('');
   const [contentLang, setContentLang] = useState(uiLang);
+  const [enabledFeatures, setEnabledFeatures] = useState({
+    ...DEFAULT_ENABLED_FEATURES
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState('reading');
   const [errorMsg, setErrorMsg] = useState('');
   const fileInputRef = useRef(null);
 
-  // Sync default content language with website language when modal opens
   useEffect(() => {
     if (isOpen) {
       setContentLang(uiLang);
       setErrorMsg('');
       setIsProcessing(false);
+      setEnabledFeatures({ ...DEFAULT_ENABLED_FEATURES });
       if (initialFile) {
         handleFileSelection(initialFile);
       } else {
@@ -75,6 +80,13 @@ export default function UploadModal({
     }
   }
 
+  function toggleFeature(key) {
+    setEnabledFeatures((prev) => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (!selectedFile) return;
@@ -93,7 +105,7 @@ export default function UploadModal({
       }
 
       setProcessingStep('segmenting');
-      await new Promise((r) => setTimeout(r, 250));
+      await new Promise((r) => setTimeout(r, 200));
 
       const finalTitle =
         title.trim() || selectedFile.name.replace(/\.[^/.]+$/, '');
@@ -105,7 +117,7 @@ export default function UploadModal({
           : subject || 'Matemaatiline analüüs';
 
       setProcessingStep('generating');
-      await new Promise((r) => setTimeout(r, 250));
+      await new Promise((r) => setTimeout(r, 200));
 
       const generated = generateStudyContent({
         pages,
@@ -125,6 +137,7 @@ export default function UploadModal({
         contentLang,
         createdAt: now,
         lastOpenedAt: now,
+        enabledFeatures,
         pages,
         topics: generated.topics,
         flashcards: generated.flashcards,
@@ -142,6 +155,17 @@ export default function UploadModal({
       setIsProcessing(false);
     }
   }
+
+  const featureKeys = [
+    'summary',
+    'flashcards',
+    'exercises',
+    'quickTest',
+    'shortCalc',
+    'formulaSheet',
+    'spacedRepetition',
+    'mockExam'
+  ];
 
   return (
     <div className="modal-backdrop" onClick={!isProcessing ? onClose : undefined}>
@@ -312,6 +336,33 @@ export default function UploadModal({
               </button>
             </div>
             <p className="form-hint">{t.upload.contentLangHint}</p>
+          </div>
+
+          {/* Per-Material Feature Selection */}
+          <div className="form-group">
+            <label className="form-label">
+              <Sliders size={15} />
+              <span>{t.featuresConfig.title}</span>
+            </label>
+            <p className="form-hint">{t.featuresConfig.subtitle}</p>
+            <div className="feature-checkbox-grid">
+              {featureKeys.map((fKey) => (
+                <label
+                  key={fKey}
+                  className={`feature-toggle-chip ${
+                    enabledFeatures[fKey] ? 'active' : ''
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={Boolean(enabledFeatures[fKey])}
+                    onChange={() => toggleFeature(fKey)}
+                    disabled={isProcessing}
+                  />
+                  <span>{t.featuresConfig[fKey]}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
           {isProcessing && (

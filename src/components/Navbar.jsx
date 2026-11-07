@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import {
   BookOpen,
   Library,
+  Calendar,
+  ClipboardCheck,
+  Sigma,
   Plus,
   Sun,
   Moon,
@@ -22,8 +25,7 @@ export default function Navbar({
   onNavigate,
   onOpenUploadModal
 }) {
-  // Cozy Pomodoro Timer (25 min focus / 5 min break)
-  const [timerMode, setTimerMode] = useState('focus'); // 'focus' | 'break'
+  const [timerMode, setTimerMode] = useState('focus');
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
 
@@ -80,7 +82,7 @@ export default function Navbar({
               className={`nav-link ${currentView === 'home' ? 'active' : ''}`}
               onClick={() => onNavigate('home')}
             >
-              <BookOpen size={17} />
+              <BookOpen size={16} />
               <span>{t.nav.home}</span>
             </button>
             <button
@@ -88,8 +90,32 @@ export default function Navbar({
               className={`nav-link ${currentView === 'library' ? 'active' : ''}`}
               onClick={() => onNavigate('library')}
             >
-              <Library size={17} />
+              <Library size={16} />
               <span>{t.nav.library}</span>
+            </button>
+            <button
+              type="button"
+              className={`nav-link ${currentView === 'calendar' ? 'active' : ''}`}
+              onClick={() => onNavigate('calendar')}
+            >
+              <Calendar size={16} />
+              <span>{t.nav.calendar}</span>
+            </button>
+            <button
+              type="button"
+              className={`nav-link ${currentView === 'mockExam' ? 'active' : ''}`}
+              onClick={() => onNavigate('mockExam')}
+            >
+              <ClipboardCheck size={16} />
+              <span>{t.nav.mockExam}</span>
+            </button>
+            <button
+              type="button"
+              className={`nav-link ${currentView === 'formulas' ? 'active' : ''}`}
+              onClick={() => onNavigate('formulas')}
+            >
+              <Sigma size={16} />
+              <span>{t.nav.formulas}</span>
             </button>
           </nav>
         </div>
@@ -105,7 +131,7 @@ export default function Navbar({
                 timerMode === 'focus' ? t.nav.timerFocus : t.nav.timerBreak
               }
             >
-              <Coffee size={14} />
+              <Coffee size={13} />
               <span>
                 {timerMode === 'focus' ? t.nav.timerFocus : t.nav.timerBreak}
               </span>
@@ -120,7 +146,7 @@ export default function Navbar({
               title={isRunning ? t.nav.timerPause : t.nav.timerStart}
               aria-label={isRunning ? t.nav.timerPause : t.nav.timerStart}
             >
-              {isRunning ? <Pause size={13} /> : <Play size={13} />}
+              {isRunning ? <Pause size={12} /> : <Play size={12} />}
             </button>
             {(isRunning ||
               secondsLeft !== (timerMode === 'focus' ? 25 * 60 : 5 * 60)) && (
@@ -131,7 +157,7 @@ export default function Navbar({
                 title={t.nav.timerReset}
                 aria-label={t.nav.timerReset}
               >
-                <RotateCcw size={13} />
+                <RotateCcw size={12} />
               </button>
             )}
           </div>
@@ -141,7 +167,7 @@ export default function Navbar({
             className="btn btn-primary btn-sm nav-add-btn"
             onClick={() => onOpenUploadModal()}
           >
-            <Plus size={17} strokeWidth={2.5} />
+            <Plus size={16} strokeWidth={2.5} />
             <span>{t.nav.addMaterial}</span>
           </button>
 
@@ -176,11 +202,11 @@ export default function Navbar({
             aria-label={theme === 'light' ? t.nav.darkMode : t.nav.lightMode}
           >
             <Sun
-              size={18}
+              size={17}
               className={`theme-icon sun-icon ${theme === 'light' ? 'active' : ''}`}
             />
             <Moon
-              size={18}
+              size={17}
               className={`theme-icon moon-icon ${theme === 'dark' ? 'active' : ''}`}
             />
           </button>

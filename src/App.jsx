@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from './components/Navbar';
 import HomeView from './components/HomeView';
 import LibraryView from './components/LibraryView';
 import MaterialStudyView from './components/MaterialStudyView';
+import CalendarView from './components/CalendarView';
+import MockExamView from './components/MockExamView';
+import FormulasView from './components/FormulasView';
+import DueTodayModal from './components/DueTodayModal';
 import UploadModal from './components/UploadModal';
 import SourceFileModal from './components/SourceFileModal';
 import { translations } from './i18n/translations';
@@ -18,6 +22,16 @@ import {
   createDefaultProgressForMaterial,
   loadLastSession,
   saveLastSession,
+  loadNavState,
+  saveNavState,
+  loadCalendarEvents,
+  saveCalendarEvents,
+  loadStudyPlans,
+  saveStudyPlans,
+  generateStudyPlanForEvent,
+  loadSpacedRepetition,
+  recordSpacedRepetitionReview,
+  buildDueTodayQueue,
   saveOriginalFileBlob,
   deleteOriginalFileBlob
 } from './utils/storage';
@@ -31,23 +45,32 @@ export default function App() {
     loadAllProgress(loadMaterials())
   );
   const [lastSession, setLastSession] = useState(() => loadLastSession());
+  const [calendarEvents, setCalendarEvents] = useState(() =>
+    loadCalendarEvents()
+  );
+  const [studyPlans, setStudyPlans] = useState(() => loadStudyPlans());
+  const [srMap, setSrMap] = useState(() => loadSpacedRepetition());
 
-  // Navigation state: 'home' | 'library' | 'study'
-  const [currentView, setCurrentView] = useState('home');
-  const [activeMaterialId, setActiveMaterialId] = useState(null);
+  // Restore exact view & active material on page refresh!
+  const initialNav = loadNavState();
+  const [currentView, setCurrentView] = useState(
+    initialNav.currentView || 'home'
+  );
+  const [activeMaterialId, setActiveMaterialId] = useState(
+    initialNav.activeMaterialId || null
+  );
 
-  // Upload modal state
+  // Modals state
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [uploadInitialFile, setUploadInitialFile] = useState(null);
+  const [isDueTodayOpen, setIsDueTodayOpen] = useState(false);
 
-  // Original file viewer modal state
   const [sourceModalState, setSourceModalState] = useState({
     isOpen: false,
     material: null,
     pageNumber: 1
   });
 
-  // Notification toast key (so switching language translates active toast too)
   const [toastKey, setToastKey] = useState(null);
 
   const t = translations[uiLang] || translations.et;
@@ -62,6 +85,16 @@ export default function App() {
     saveUILang(uiLang);
   }, [uiLang]);
 
+  // Persist currentView and activeMaterialId so refreshing (F5) stays on exact view
+  useEffect(() => {
+    saveNavState({ currentView, activeMaterialId });
+  }, [currentView, activeMaterialId]);
+
+  const dueTodayQueue = useMemo(
+    () => buildDueTodayQueue(materials, progressMap, srMap, studyPlans),
+    [materials, progressMap, srMap, studyPlans]
+  );
+
   function showNotification(key) {
     setToastKey(key);
     setTimeout(() => {
@@ -74,7 +107,6 @@ export default function App() {
   }
 
   function handleChangeLang(nextLang) {
-    // Switching language updates UI strings without interrupting active study session
     setUiLang(nextLang);
   }
 
@@ -151,6 +183,14 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function handleUpdateMaterial(updatedMat) {
+    const updatedList = materials.map((m) =>
+      m.id === updatedMat.id ? updatedMat : m
+    );
+    setMaterials(updatedList);
+    saveMaterials(updatedList);
+  }
+
   function handleUpdateProgress(materialId, nextMatProgress) {
     const now = new Date().toISOString();
     const updated = {
@@ -171,6 +211,64 @@ export default function App() {
     };
     setLastSession(sessionObj);
     saveLastSession(sessionObj);
+  }
+
+  function handleRecordSpacedRep(itemKey, isSuccess) {
+    const updatedSr = recordSpacedRepetitionReview(srMap, itemKey, isSuccess);
+    setSrMap(updatedSr);
+  }
+
+  function handleRecordDueTodayReview(dueItem, isSuccess) {
+    handleRecordSpacedRep(dueItem.itemKey, isSuccess);
+
+    // Also update the material's own progress map so library stats & topic mastery stay in sync
+    const matId = dueItem.materialId;
+    const mat = materials.find((m) => m.id === matId);
+    if (!mat) return;
+
+    const existingProg =
+      progressMap[matId] || createDefaultProgressForMaterial(mat);
+
+    if (dueItem.itemType === 'flashcard') {
+      const cardId = dueItem.card.id;
+      const status = isSuccess ? 'knew' : 'review';
+      const prevHist = existingProg.flashcards?.historyById?.[cardId] || [];
+      handleUpdateProgress(matId, {
+        ...existingProg,
+        flashcards: {
+          ...existingProg.flashcards,
+          statusById: {
+            ...(existingProg.flashcards?.statusById || {}),
+            [cardId]: status
+          },
+          historyById: {
+            ...(existingProg.flashcards?.historyById || {}),
+            [cardId]: [...prevHist, status]
+          }
+        }
+      });
+    } else if (dueItem.itemType === 'exercise') {
+      const exId = dueItem.exercise.id;
+      const prevHist = existingProg.exercises?.historyById?.[exId] || [];
+      handleUpdateProgress(matId, {
+        ...existingProg,
+        exercises: {
+          ...existingProg.exercises,
+          answersById: {
+            ...(existingProg.exercises?.answersById || {}),
+            [exId]: {
+              selectedIndex: isSuccess ? dueItem.exercise.correctIndex : 0,
+              isCorrect: isSuccess,
+              checked: true
+            }
+          },
+          historyById: {
+            ...(existingProg.exercises?.historyById || {}),
+            [exId]: [...prevHist, isSuccess]
+          }
+        }
+      });
+    }
   }
 
   function handleResetProgress(materialId) {
@@ -214,6 +312,59 @@ export default function App() {
     showNotification('deleted');
   }
 
+  // --- CALENDAR & STUDY PLANS HANDLERS ---
+  function handleSaveCalendarEvent(savedEvent) {
+    const exists = calendarEvents.some((e) => e.id === savedEvent.id);
+    const nextEvents = exists
+      ? calendarEvents.map((e) => (e.id === savedEvent.id ? savedEvent : e))
+      : [...calendarEvents, savedEvent];
+    setCalendarEvents(nextEvents);
+    saveCalendarEvents(nextEvents);
+  }
+
+  function handleDeleteCalendarEvent(eventId) {
+    const nextEvents = calendarEvents.filter((e) => e.id !== eventId);
+    setCalendarEvents(nextEvents);
+    saveCalendarEvents(nextEvents);
+
+    const nextPlans = studyPlans.filter((p) => p.eventId !== eventId);
+    setStudyPlans(nextPlans);
+    saveStudyPlans(nextPlans);
+  }
+
+  function handleToggleEventCompleted(eventId) {
+    const nextEvents = calendarEvents.map((e) =>
+      e.id === eventId ? { ...e, completed: !e.completed } : e
+    );
+    setCalendarEvents(nextEvents);
+    saveCalendarEvents(nextEvents);
+  }
+
+  function handleCreateOrUpdateStudyPlan(event, dailyMinutes) {
+    const updatedEvent = { ...event, dailyMinutes };
+    handleSaveCalendarEvent(updatedEvent);
+
+    const generatedPlan = generateStudyPlanForEvent(updatedEvent, materials);
+    const otherPlans = studyPlans.filter((p) => p.eventId !== event.id);
+    const nextPlans = [...otherPlans, generatedPlan];
+    setStudyPlans(nextPlans);
+    saveStudyPlans(nextPlans);
+  }
+
+  function handleToggleSessionCompleted(planId, sessionId) {
+    const nextPlans = studyPlans.map((p) => {
+      if (p.id !== planId) return p;
+      return {
+        ...p,
+        sessions: (p.sessions || []).map((s) =>
+          s.id === sessionId ? { ...s, completed: !s.completed } : s
+        )
+      };
+    });
+    setStudyPlans(nextPlans);
+    saveStudyPlans(nextPlans);
+  }
+
   function handleOpenSourceViewer(material, pageNumber = 1) {
     setSourceModalState({
       isOpen: true,
@@ -222,7 +373,8 @@ export default function App() {
     });
   }
 
-  const activeMaterial = materials.find((m) => m.id === activeMaterialId);
+  const activeMaterial =
+    materials.find((m) => m.id === activeMaterialId) || materials[0];
   const existingSubjects = Array.from(
     new Set(materials.map((m) => m.subject).filter(Boolean))
   );
@@ -267,9 +419,13 @@ export default function App() {
             materials={materials}
             progressMap={progressMap}
             lastSession={lastSession}
+            dueTodayQueue={dueTodayQueue}
+            calendarEvents={calendarEvents}
+            onStartDueToday={() => setIsDueTodayOpen(true)}
             onOpenUploadModal={handleOpenUploadModal}
             onOpenMaterial={handleOpenMaterial}
             onNavigateLibrary={() => setCurrentView('library')}
+            onNavigateCalendar={() => setCurrentView('calendar')}
           />
         )}
 
@@ -285,6 +441,37 @@ export default function App() {
           />
         )}
 
+        {currentView === 'calendar' && (
+          <CalendarView
+            t={t}
+            materials={materials}
+            calendarEvents={calendarEvents}
+            studyPlans={studyPlans}
+            onSaveEvent={handleSaveCalendarEvent}
+            onDeleteEvent={handleDeleteCalendarEvent}
+            onToggleEventCompleted={handleToggleEventCompleted}
+            onCreateOrUpdateStudyPlan={handleCreateOrUpdateStudyPlan}
+            onToggleSessionCompleted={handleToggleSessionCompleted}
+            onOpenMaterial={handleOpenMaterial}
+          />
+        )}
+
+        {currentView === 'mockExam' && (
+          <MockExamView
+            t={t}
+            materials={materials}
+            onOpenSourceViewer={handleOpenSourceViewer}
+          />
+        )}
+
+        {currentView === 'formulas' && (
+          <FormulasView
+            t={t}
+            materials={materials}
+            onOpenSourceViewer={handleOpenSourceViewer}
+          />
+        )}
+
         {currentView === 'study' && activeMaterial && (
           <MaterialStudyView
             t={t}
@@ -294,6 +481,8 @@ export default function App() {
               createDefaultProgressForMaterial(activeMaterial)
             }
             onUpdateProgress={handleUpdateProgress}
+            onUpdateMaterial={handleUpdateMaterial}
+            onRecordSpacedRep={handleRecordSpacedRep}
             onResetProgress={handleResetProgress}
             onBackToLibrary={() => setCurrentView('library')}
             onOpenSourceViewer={handleOpenSourceViewer}
@@ -301,6 +490,14 @@ export default function App() {
           />
         )}
       </main>
+
+      <DueTodayModal
+        isOpen={isDueTodayOpen}
+        t={t}
+        queue={dueTodayQueue}
+        onClose={() => setIsDueTodayOpen(false)}
+        onRecordReview={handleRecordDueTodayReview}
+      />
 
       <UploadModal
         isOpen={isUploadOpen}

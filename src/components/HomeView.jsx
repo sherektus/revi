@@ -8,7 +8,10 @@ import {
   CheckSquare,
   ArrowRight,
   Sparkles,
-  FileText
+  RefreshCw,
+  Calendar,
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 import { calculateMaterialStats } from '../utils/storage';
 
@@ -18,21 +21,23 @@ export default function HomeView({
   materials,
   progressMap,
   lastSession,
+  dueTodayQueue,
+  calendarEvents,
+  onStartDueToday,
   onOpenUploadModal,
   onOpenMaterial,
-  onNavigateLibrary
+  onNavigateLibrary,
+  onNavigateCalendar
 }) {
   const [isDragging, setIsDragging] = useState(false);
   const homeFileInputRef = useRef(null);
 
-  // Sort materials by lastOpenedAt descending
   const sortedRecent = [...materials].sort((a, b) => {
     const tA = new Date(a.lastOpenedAt || a.createdAt || 0).getTime();
     const tB = new Date(b.lastOpenedAt || b.createdAt || 0).getTime();
     return tB - tA;
   });
 
-  // Determine the best material to resume when clicking "Jätka kordamist"
   const resumeMaterial =
     (lastSession?.materialId &&
       materials.find((m) => m.id === lastSession.materialId)) ||
@@ -42,6 +47,25 @@ export default function HomeView({
   const resumeStats = resumeMaterial
     ? calculateMaterialStats(resumeMaterial, progressMap[resumeMaterial.id])
     : null;
+
+  // Upcoming uncompleted deadlines sorted by date ascending
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const upcomingEvents = [...(calendarEvents || [])]
+    .filter((ev) => !ev.completed && ev.date >= todayStr)
+    .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+    .slice(0, 4);
+
+  function getDaysRemainingLabel(dateStr) {
+    const [y, m, d] = (dateStr || '').split('-').map(Number);
+    if (!y || !m || !d) return '';
+    const now = new Date();
+    const todayUTC = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+    const targetUTC = Date.UTC(y, m - 1, d);
+    const diff = Math.round((targetUTC - todayUTC) / 86400000);
+    if (diff === 0) return t.upcomingDeadlines.todayBadge;
+    if (diff === 1) return t.upcomingDeadlines.tomorrowBadge;
+    return `${diff} ${t.upcomingDeadlines.daysLeft}`;
+  }
 
   function handleHomeDrop(e) {
     e.preventDefault();
@@ -139,6 +163,158 @@ export default function HomeView({
             <span className="format-pill">TXT</span>
           </div>
           <p className="dropzone-footer-note">{t.hero.supportedFormats}</p>
+        </div>
+      </section>
+
+      {/* TWO-COLUMN DASHBOARD: "Täna korrata" & "Lähenevad tähtajad" */}
+      <section className="home-dashboard-grid">
+        {/* 1. "Täna korrata" (Due Today Spaced Repetition Card) */}
+        <div className="dashboard-panel due-today-panel">
+          <div className="panel-header">
+            <div>
+              <div className="continue-banner-eyebrow">
+                <RefreshCw size={14} />
+                <span>{t.dueToday.title}</span>
+              </div>
+              <h2 className="panel-title">{t.dueToday.title}</h2>
+              <p className="panel-subtitle">{t.dueToday.subtitle}</p>
+            </div>
+          </div>
+
+          {dueTodayQueue && dueTodayQueue.length > 0 ? (
+            <div className="due-today-content">
+              <div className="due-preview-list">
+                {dueTodayQueue.slice(0, 3).map((item) => (
+                  <div key={item.itemKey} className="due-preview-item">
+                    <span
+                      className={`badge ${
+                        item.difficultyTag === 'hard'
+                          ? 'badge-warning'
+                          : 'badge-violet'
+                      }`}
+                    >
+                      {item.difficultyTag === 'hard'
+                        ? t.dueToday.tagHard
+                        : item.difficultyTag === 'planned'
+                        ? t.dueToday.tagPlanned
+                        : t.dueToday.tagDue}
+                    </span>
+                    <p className="due-preview-question">
+                      {item.itemType === 'flashcard'
+                        ? item.card.question
+                        : item.exercise.question}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className="btn btn-primary btn-lg btn-full mt-3"
+                onClick={onStartDueToday}
+              >
+                <Play size={17} />
+                <span>
+                  {t.dueToday.startBtnPrefix} {dueTodayQueue.length}{' '}
+                  {t.dueToday.startBtnSuffix}
+                </span>
+              </button>
+            </div>
+          ) : (
+            <div className="due-empty-box">
+              <CheckCircle2 size={28} className="accent-text mb-2" />
+              <h3>{t.dueToday.emptyTitle}</h3>
+              <p>{t.dueToday.emptySubtitle}</p>
+            </div>
+          )}
+        </div>
+
+        {/* 2. "Lähenevad tähtajad" (Upcoming Deadlines from Calendar) */}
+        <div className="dashboard-panel deadlines-panel">
+          <div className="panel-header">
+            <div>
+              <div className="continue-banner-eyebrow">
+                <Calendar size={14} />
+                <span>{t.nav.calendar}</span>
+              </div>
+              <h2 className="panel-title">{t.upcomingDeadlines.title}</h2>
+              <p className="panel-subtitle">{t.upcomingDeadlines.subtitle}</p>
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={onNavigateCalendar}
+            >
+              <span>{t.upcomingDeadlines.viewCalendarBtn}</span>
+              <ArrowRight size={14} />
+            </button>
+          </div>
+
+          {upcomingEvents.length === 0 ? (
+            <div className="due-empty-box">
+              <p>{t.upcomingDeadlines.emptyText}</p>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm mt-2"
+                onClick={onNavigateCalendar}
+              >
+                <Plus size={15} />
+                <span>{t.upcomingDeadlines.addEventBtn}</span>
+              </button>
+            </div>
+          ) : (
+            <div className="deadlines-mini-list">
+              {upcomingEvents.map((ev) => {
+                const linkedMats = materials.filter((m) =>
+                  (ev.linkedMaterialIds || []).includes(m.id)
+                );
+                return (
+                  <div key={ev.id} className="deadline-mini-card">
+                    <div className="deadline-mini-top">
+                      <div className="material-badges" style={{ marginBottom: 0 }}>
+                        <span className="badge badge-violet">
+                          {t.calendar.types[ev.type] || ev.type}
+                        </span>
+                        <span className="badge badge-neutral">{ev.subject}</span>
+                      </div>
+                      <span className="badge badge-warning">
+                        <Clock size={12} />
+                        {getDaysRemainingLabel(ev.date)}
+                      </span>
+                    </div>
+
+                    <h3
+                      className="deadline-mini-title"
+                      onClick={onNavigateCalendar}
+                    >
+                      {ev.title}
+                    </h3>
+
+                    <p className="deadline-mini-date">
+                      {ev.date} {ev.time ? `• ${ev.time}` : ''}
+                    </p>
+
+                    {linkedMats.length > 0 && (
+                      <div className="deadline-linked-pills">
+                        {linkedMats.map((lm) => (
+                          <button
+                            key={lm.id}
+                            type="button"
+                            className="source-ref-btn"
+                            onClick={() => onOpenMaterial(lm.id)}
+                          >
+                            <BookOpen size={12} />
+                            <span>{lm.title.slice(0, 34)}...</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 

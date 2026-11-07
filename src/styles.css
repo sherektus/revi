@@ -2206,3 +2206,619 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* --- NEW DASHBOARD, CALENDAR, QUICK TEST, FORMULA SHEET & CRUD STYLES --- */
+.home-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.dashboard-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.6rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 1.2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.due-today-panel {
+  border-top: 4px solid var(--accent);
+}
+
+.deadlines-panel {
+  border-top: 4px solid var(--success);
+}
+
+.panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.15rem;
+}
+
+.panel-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.panel-subtitle {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+}
+
+.due-preview-list,
+.deadlines-mini-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.due-preview-item,
+.deadline-mini-card {
+  padding: 0.85rem 1rem;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 0.85rem;
+}
+
+.due-preview-question {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 0.4rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.due-empty-box {
+  text-align: center;
+  padding: 1.75rem 1rem;
+  background: var(--bg-main);
+  border: 1px dashed var(--border-strong);
+  border-radius: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.deadline-mini-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.deadline-mini-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.deadline-mini-title:hover {
+  color: var(--accent);
+}
+
+.deadline-mini-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.45rem;
+}
+
+.deadline-linked-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.due-today-modal {
+  max-width: 680px;
+}
+
+.due-item-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+}
+
+/* --- PER-MATERIAL FEATURE TOGGLES --- */
+.feature-config-drawer {
+  padding: 1.2rem 1.4rem;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.feature-config-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.88rem;
+}
+
+.feature-config-header span {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.feature-checkbox-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.feature-toggle-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.8rem;
+  border-radius: 0.6rem;
+  background: var(--bg-main);
+  border: 1px solid var(--border-strong);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.feature-toggle-chip.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+/* --- TOPIC MASTERY & QUICK TEST --- */
+.topic-mastery-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.mastery-topic-chip {
+  cursor: pointer;
+  transition: transform 0.14s ease;
+}
+
+.mastery-topic-chip:hover {
+  transform: translateY(-1px);
+}
+
+.recommended-topic-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--accent-text);
+  text-align: left;
+}
+
+.recommended-topic-link:hover {
+  text-decoration: underline;
+}
+
+.mastery-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.85rem;
+}
+
+.recommended-start-callout {
+  padding: 1.35rem;
+  background: var(--bg-main);
+  border: 1px solid var(--accent-border);
+  border-radius: 1rem;
+}
+
+/* --- SHORT ANSWER, STEP-BY-STEP & CRUD TOOLBAR --- */
+.crud-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.item-crud-btns {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.exercise-helper-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.steps-solution-box {
+  padding: 1rem 1.2rem;
+  background: var(--bg-subtle);
+  border-left: 4px solid var(--success);
+  border-radius: 0.65rem;
+  font-size: 0.88rem;
+}
+
+.steps-list {
+  margin-top: 0.45rem;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.short-answer-input-row {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+/* --- CALENDAR VIEW & STUDY PLANS --- */
+.calendar-layout-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.calendar-month-card {
+  padding: 1.4rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 1.15rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-month-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.calendar-month-title {
+  font-size: 1.22rem;
+  font-weight: 700;
+}
+
+.calendar-weekdays-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.calendar-weekday-cell {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 0.3rem 0;
+}
+
+.calendar-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.35rem;
+}
+
+.calendar-day-cell {
+  min-height: 82px;
+  padding: 0.4rem;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 0.65rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: all 0.14s ease;
+}
+
+.calendar-day-cell:hover:not(.padding-cell) {
+  border-color: var(--accent);
+}
+
+.calendar-day-cell.padding-cell {
+  background: transparent;
+  border-color: transparent;
+  cursor: default;
+}
+
+.calendar-day-cell.selected-day {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.calendar-day-cell.today-cell .day-num {
+  background: var(--accent);
+  color: #fffdf9;
+  padding: 0.08rem 0.42rem;
+  border-radius: 999px;
+}
+
+.day-number-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.day-event-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.day-pills-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.day-event-pill {
+  font-size: 0.66rem;
+  font-weight: 600;
+  padding: 0.12rem 0.32rem;
+  border-radius: 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pill-deadline {
+  background: var(--accent);
+  color: #fffdf9;
+}
+
+.pill-session {
+  background: var(--success-soft);
+  color: var(--success);
+  border: 1px solid var(--success-border);
+}
+
+.pill-done {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.calendar-events-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.calendar-event-card {
+  padding: 1.35rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 1.1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-event-card.event-completed {
+  opacity: 0.68;
+}
+
+.event-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.event-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.event-card-title {
+  font-size: 1.14rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.event-datetime-line {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.65rem;
+}
+
+.event-notes-text {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  padding: 0.65rem 0.85rem;
+  background: var(--bg-main);
+  border-radius: 0.6rem;
+  margin-bottom: 0.85rem;
+}
+
+.event-linked-box {
+  margin-bottom: 0.9rem;
+}
+
+.study-plan-builder-box {
+  padding: 1rem;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 0.85rem;
+}
+
+.plan-controls-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.plan-minutes-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.plan-minutes-input-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.plan-min-input {
+  width: 82px;
+  padding: 0.42rem 0.6rem;
+}
+
+.minutes-unit {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.plan-sessions-list {
+  margin-top: 0.9rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.plan-sessions-header {
+  font-size: 0.82rem;
+  color: var(--accent-text);
+  margin-bottom: 0.25rem;
+}
+
+.plan-session-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.65rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 0.55rem;
+  font-size: 0.82rem;
+}
+
+.plan-session-row.session-done {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+.session-check-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.session-date-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-text);
+}
+
+.session-topic-name {
+  font-weight: 600;
+}
+
+/* --- FORMULA SHEET VIEW --- */
+.formulas-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.35rem;
+}
+
+.formula-sheet-card {
+  padding: 1.4rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 1.1rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.formula-sheet-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.formula-sheet-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+}
+
+.formula-sheet-expression-box {
+  padding: 0.85rem 1rem;
+  background: var(--bg-main);
+  border: 1px solid var(--accent-border);
+  border-left: 4px solid var(--accent);
+  border-radius: 0.65rem;
+}
+
+.formula-sheet-code {
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: var(--accent-text);
+}
+
+.formula-sheet-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.84rem;
+}
+
+.formula-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.formula-detail-key {
+  font-weight: 700;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+.formula-detail-val {
+  color: var(--text-secondary);
+}
+
+.formula-example-row {
+  padding: 0.55rem 0.75rem;
+  background: var(--bg-subtle);
+  border-radius: 0.55rem;
+}
+
+@media (max-width: 920px) {
+  .home-dashboard-grid,
+  .calendar-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
