@@ -143,7 +143,7 @@ export default function HomeView({
     const diff = Math.round((targetUTC - todayUTC) / 86400000);
     if (diff === 0) return t.upcomingDeadlines.todayBadge;
     if (diff === 1) return t.upcomingDeadlines.tomorrowBadge;
-    return `${diff} ${t.upcomingDeadlines.daysLeft}`;
+    return `${diff} ${diff === 1 ? t.upcomingDeadlines.dayLeftSingular || 'päev jäänud' : t.upcomingDeadlines.daysLeft || 'päeva jäänud'}`;
   }
 
   function handleHomeDrop(e) {
@@ -578,11 +578,17 @@ export default function HomeView({
                     <h3 className="continue-banner-title">{resumeMaterial.title}</h3>
                     <div className="continue-banner-meta">
                       <span>
-                        {resumeStats.totalCards} {t.home.cardsCount}
+                        {resumeStats.totalCards}{' '}
+                        {resumeStats.totalCards === 1
+                          ? t.home.cardsCountSingular || 'mälukaart'
+                          : t.home.cardsCount || 'mälukaarti'}
                       </span>
                       <span>•</span>
                       <span>
-                        {resumeStats.totalExercises} {t.home.exercisesCount}
+                        {resumeStats.totalExercises}{' '}
+                        {resumeStats.totalExercises === 1
+                          ? t.home.exercisesCountSingular || 'harjutus'
+                          : t.home.exercisesCount || 'harjutust'}
                       </span>
                       <span>•</span>
                       <span>
@@ -672,15 +678,24 @@ export default function HomeView({
                           <div className="material-stats-row">
                             <span className="stat-pill">
                               <BookOpen size={14} />
-                              {(mat.topics || []).length} {t.home.topicsCount}
+                              {(mat.topics || []).length}{' '}
+                              {(mat.topics || []).length === 1
+                                ? t.home.topicsCountSingular || 'teema'
+                                : t.home.topicsCount || 'teemat'}
                             </span>
                             <span className="stat-pill">
                               <Layers size={14} />
-                              {stats.totalCards} {t.home.cardsCount}
+                              {stats.totalCards}{' '}
+                              {stats.totalCards === 1
+                                ? t.home.cardsCountSingular || 'mälukaart'
+                                : t.home.cardsCount || 'mälukaarti'}
                             </span>
                             <span className="stat-pill">
                               <CheckSquare size={14} />
-                              {stats.totalExercises} {t.home.exercisesCount}
+                              {stats.totalExercises}{' '}
+                              {stats.totalExercises === 1
+                                ? t.home.exercisesCountSingular || 'harjutus'
+                                : t.home.exercisesCount || 'harjutust'}
                             </span>
                           </div>
                         </div>

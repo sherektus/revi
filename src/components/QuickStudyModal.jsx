@@ -549,15 +549,27 @@ export default function QuickStudyModal({
             <div className="completion-stats-grid">
               <div className="c-stat-card">
                 <span className="c-stat-num">{sessionSteps.length}</span>
-                <span className="c-stat-label">{isEN ? 'Total Steps' : 'Õppesammu'}</span>
+                <span className="c-stat-label">
+                  {sessionSteps.length === 1
+                    ? (isEN ? 'Step' : 'Õppesamm')
+                    : (isEN ? 'Total Steps' : 'Õppesammu')}
+                </span>
               </div>
               <div className="c-stat-card">
                 <span className="c-stat-num accent-text">{sessionStats.exercisesCorrect}</span>
-                <span className="c-stat-label">{isEN ? 'Correct Exercises' : 'Õiget harjutust'}</span>
+                <span className="c-stat-label">
+                  {sessionStats.exercisesCorrect === 1
+                    ? (isEN ? 'Correct Exercise' : 'Õige harjutus')
+                    : (isEN ? 'Correct Exercises' : 'Õiget harjutust')}
+                </span>
               </div>
               <div className="c-stat-card">
                 <span className="c-stat-num">{sessionStats.exercisesMistakes}</span>
-                <span className="c-stat-label">{isEN ? 'Logged in Mistake Journal' : 'Viga Vigade märkmikus'}</span>
+                <span className="c-stat-label">
+                  {sessionStats.exercisesMistakes === 1
+                    ? (isEN ? 'Mistake Logged' : 'Viga märgitud')
+                    : (isEN ? 'Mistakes Logged' : 'Viga märgitud')}
+                </span>
               </div>
             </div>
 

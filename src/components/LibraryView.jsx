@@ -481,10 +481,16 @@ export default function LibraryView({
                     <div className="subject-title-row">
                       <h2 className="subject-category-name">{grp.subject}</h2>
                       <span className="badge badge-neutral">
-                        {grp.materials.length} {t.library.materialsInSubject || 'materjali'}
+                        {grp.materials.length}{' '}
+                        {grp.materials.length === 1
+                          ? t.library.materialsInSubjectSingular || 'materjal'
+                          : t.library.materialsInSubject || 'materjali'}
                       </span>
                       <span className="badge badge-violet">
-                        {grp.topics.length} {t.library.topicsInSubject || 'teemat'}
+                        {grp.topics.length}{' '}
+                        {grp.topics.length === 1
+                          ? t.library.topicsInSubjectSingular || 'teema'
+                          : t.library.topicsInSubject || 'teemat'}
                       </span>
                     </div>
 
@@ -563,25 +569,45 @@ export default function LibraryView({
                           {tp.bulletPointsCount > 0 && (
                             <span className="feature-count-tag" title="Kordamispunktid">
                               <BookOpen size={12} />
-                              <span>{tp.bulletPointsCount} {t.library.pointsTag || 'punkti'}</span>
+                              <span>
+                                {tp.bulletPointsCount}{' '}
+                                {tp.bulletPointsCount === 1
+                                  ? t.library.pointsTagSingular || 'punkt'
+                                  : t.library.pointsTag || 'punkti'}
+                              </span>
                             </span>
                           )}
                           {tp.formulasCount > 0 && (
                             <span className="feature-count-tag formula-tag" title="Valemid">
                               <Sigma size={12} />
-                              <span>{tp.formulasCount} {t.library.formulasTag || 'valemit'}</span>
+                              <span>
+                                {tp.formulasCount}{' '}
+                                {tp.formulasCount === 1
+                                  ? t.library.formulasTagSingular || 'valem'
+                                  : t.library.formulasTag || 'valemit'}
+                              </span>
                             </span>
                           )}
                           {tp.cardsCount > 0 && (
                             <span className="feature-count-tag" title="Mälukaardid">
                               <Layers size={12} />
-                              <span>{tp.cardsCount} {t.library.cardsTag || 'kaarti'}</span>
+                              <span>
+                                {tp.cardsCount}{' '}
+                                {tp.cardsCount === 1
+                                  ? t.library.cardsTagSingular || 'kaart'
+                                  : t.library.cardsTag || 'kaarti'}
+                              </span>
                             </span>
                           )}
                           {tp.exercisesCount > 0 && (
                             <span className="feature-count-tag" title="Harjutused">
                               <CheckSquare size={12} />
-                              <span>{tp.exercisesCount} {t.library.exercisesTag || 'ülesannet'}</span>
+                              <span>
+                                {tp.exercisesCount}{' '}
+                                {tp.exercisesCount === 1
+                                  ? t.library.exercisesTagSingular || 'ülesanne'
+                                  : t.library.exercisesTag || 'ülesannet'}
+                              </span>
                             </span>
                           )}
                         </div>
@@ -703,9 +729,17 @@ export default function LibraryView({
                           <strong>{mat.title}</strong>
                           <span className="combine-mat-meta">
                             {mat.subject} • {(mat.topics || []).length}{' '}
-                            {t.home.topicsCount} • {(mat.flashcards || []).length}{' '}
-                            {t.home.cardsCount} • {(mat.exercises || []).length}{' '}
-                            {t.home.exercisesCount}
+                            {(mat.topics || []).length === 1
+                              ? t.home.topicsCountSingular || 'teema'
+                              : t.home.topicsCount || 'teemat'}{' '}
+                            • {(mat.flashcards || []).length}{' '}
+                            {(mat.flashcards || []).length === 1
+                              ? t.home.cardsCountSingular || 'mälukaart'
+                              : t.home.cardsCount || 'mälukaarti'}{' '}
+                            • {(mat.exercises || []).length}{' '}
+                            {(mat.exercises || []).length === 1
+                              ? t.home.exercisesCountSingular || 'harjutus'
+                              : t.home.exercisesCount || 'harjutust'}
                           </span>
                         </div>
                       </label>
