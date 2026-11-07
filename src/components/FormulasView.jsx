@@ -7,6 +7,11 @@ import {
   Calculator
 } from 'lucide-react';
 import { DEFAULT_ENABLED_FEATURES } from '../data/sampleMaterial';
+import {
+  cleanPunctuationAndNoise,
+  enrichFormulaMetadata,
+  isGenuineFormulaExpression
+} from '../utils/contentGenerator';
 
 export default function FormulasView({
   t,
@@ -33,16 +38,43 @@ export default function FormulasView({
       if (selectedMaterialId !== 'ALL' && mat.id !== selectedMaterialId) {
         continue;
       }
+      const isEN = mat.contentLang === 'en';
       for (const tp of mat.topics || []) {
+        const cleanTopicTitle = cleanPunctuationAndNoise(tp.title);
         for (const f of tp.formulas || []) {
+          const rawExpr = typeof f === 'string' ? f : f.expression || '';
+          if (!isGenuineFormulaExpression(rawExpr)) continue;
+
+          const sourceRef = (typeof f === 'object' && f.sourceRef) || tp.sourceRef;
+          const enriched = enrichFormulaMetadata({
+            rawLabel: typeof f === 'object' ? f.label : '',
+            rawExpression: rawExpr,
+            topicHeading: cleanTopicTitle,
+            sentences: tp.bulletPoints || [tp.summary].filter(Boolean),
+            refLabel: sourceRef?.label || '',
+            isEN
+          });
+
           list.push({
-            ...f,
-            topicTitle: tp.title,
+            ...(typeof f === 'object' ? f : {}),
+            label:
+              typeof f === 'object' &&
+              f.label &&
+              !/^(?:valem\s*(?:\/|või)\s*seos|põhiseos|formula\s*\/\s*relation|core\s*relation)/i.test(
+                f.label
+              )
+                ? cleanPunctuationAndNoise(f.label)
+                : enriched.label,
+            expression: enriched.expression,
+            symbols: (typeof f === 'object' && f.symbols) || enriched.symbols,
+            units: (typeof f === 'object' && f.units) || enriched.units,
+            example: (typeof f === 'object' && f.example) || enriched.example,
+            topicTitle: cleanTopicTitle,
             materialId: mat.id,
             materialTitle: mat.title,
             subject: mat.subject,
             materialObj: mat,
-            sourceRef: f.sourceRef || tp.sourceRef
+            sourceRef
           });
         }
       }

@@ -40,7 +40,12 @@ import {
   getTopicMasteryBreakdown
 } from '../utils/storage';
 import { DEFAULT_ENABLED_FEATURES } from '../data/sampleMaterial';
-import { generateSimilarExercise } from '../utils/contentGenerator';
+import {
+  generateSimilarExercise,
+  cleanPunctuationAndNoise,
+  isGenuineFormulaExpression,
+  enrichFormulaMetadata
+} from '../utils/contentGenerator';
 import FormulasView from './FormulasView';
 
 export default function MaterialStudyView({
@@ -902,10 +907,10 @@ export default function MaterialStudyView({
                       setTopicFilter(tm.topic.id);
                       setTab('summary');
                     }}
-                    title={`${tm.topic.title} — ${statusText}`}
+                    title={`${cleanPunctuationAndNoise(tm.topic.title)} — ${statusText}`}
                   >
                     <span>
-                      {tm.index + 1}. {tm.topic.title.slice(0, 26)}
+                      {tm.index + 1}. {cleanPunctuationAndNoise(tm.topic.title).slice(0, 26)}
                     </span>
                     <strong>• {statusText}</strong>
                   </button>
@@ -1066,18 +1071,58 @@ export default function MaterialStudyView({
                 className={`topic-pill ${selectedTopicId === tp.id ? 'active' : ''}`}
                 onClick={() => setTopicFilter(tp.id)}
               >
-                {idx + 1}. {tp.title}
+                {idx + 1}. {cleanPunctuationAndNoise(tp.title)}
               </button>
             ))}
           </div>
 
           <div className="topics-list">
-            {displayedTopics.map((tp, idx) => (
+            {displayedTopics.map((tp, idx) => {
+              const cleanTitle = cleanPunctuationAndNoise(tp.title);
+              const cleanSummary = cleanPunctuationAndNoise(tp.summary);
+              const normSummary = cleanSummary.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+
+              const distinctBullets = (tp.bulletPoints || [])
+                .map((bp) => cleanPunctuationAndNoise(bp))
+                .filter((bp) => {
+                  if (!bp || bp.length < 3) return false;
+                  const normBp = bp.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+                  return normBp !== normSummary;
+                });
+
+              const validConcepts = (tp.concepts || []).filter((c) => {
+                const term = cleanPunctuationAndNoise(c.term || '');
+                const def = cleanPunctuationAndNoise(c.definition || '');
+                if (!term || !def) return false;
+                return term.toLowerCase() !== def.replace(/[.!?]+$/, '').toLowerCase();
+              });
+
+              const validFormulas = (tp.formulas || [])
+                .map((f) => {
+                  const rawExpr = typeof f === 'string' ? f : f.expression || '';
+                  if (!isGenuineFormulaExpression(rawExpr)) return null;
+                  const enriched = enrichFormulaMetadata({
+                    rawLabel: typeof f === 'object' ? f.label : '',
+                    rawExpression: rawExpr,
+                    topicHeading: cleanTitle,
+                    sentences: distinctBullets,
+                    refLabel: tp.sourceRef?.label || '',
+                    isEN: material.contentLang === 'en'
+                  });
+                  return {
+                    ...(typeof f === 'object' ? f : {}),
+                    label: enriched.label,
+                    expression: enriched.expression
+                  };
+                })
+                .filter(Boolean);
+
+              return (
               <section key={tp.id} className="topic-card">
                 <div className="topic-card-header">
                   <div className="topic-heading-group">
                     <span className="topic-index-badge">{idx + 1}</span>
-                    <h2 className="topic-title">{tp.title}</h2>
+                    <h2 className="topic-title">{cleanTitle}</h2>
                   </div>
 
                   {tp.sourceRef && (
@@ -1098,56 +1143,58 @@ export default function MaterialStudyView({
                   )}
                 </div>
 
-                <p className="topic-summary-lead">{tp.summary}</p>
+                <p className="topic-summary-lead">{cleanSummary}</p>
 
-                {tp.bulletPoints && tp.bulletPoints.length > 0 && (
+                {distinctBullets.length > 0 && (
                   <div className="topic-SubSection">
                     <h3 className="subsection-title">
                       {t.material.summary.keyPoints}
                     </h3>
                     <ul className="topic-bullets">
-                      {tp.bulletPoints.map((bp, bIdx) => (
+                      {distinctBullets.map((bp, bIdx) => (
                         <li key={bIdx}>{bp}</li>
                       ))}
                     </ul>
                   </div>
                 )}
 
-                <div className="topic-two-col">
-                  {tp.concepts && tp.concepts.length > 0 && (
-                    <div className="concepts-panel">
-                      <h3 className="subsection-title">
-                        <BookOpen size={15} />
-                        <span>{t.material.summary.keyConcepts}</span>
-                      </h3>
-                      <div className="concepts-list">
-                        {tp.concepts.map((c, cIdx) => (
-                          <div key={cIdx} className="concept-item">
-                            <dt className="concept-term">{c.term}</dt>
-                            <dd className="concept-def">{c.definition}</dd>
-                          </div>
-                        ))}
+                {(validConcepts.length > 0 || validFormulas.length > 0) && (
+                  <div className="topic-two-col">
+                    {validConcepts.length > 0 && (
+                      <div className="concepts-panel">
+                        <h3 className="subsection-title">
+                          <BookOpen size={15} />
+                          <span>{t.material.summary.keyConcepts}</span>
+                        </h3>
+                        <div className="concepts-list">
+                          {validConcepts.map((c, cIdx) => (
+                            <div key={cIdx} className="concept-item">
+                              <dt className="concept-term">{cleanPunctuationAndNoise(c.term)}</dt>
+                              <dd className="concept-def">{cleanPunctuationAndNoise(c.definition)}</dd>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {tp.formulas && tp.formulas.length > 0 && (
-                    <div className="formulas-panel">
-                      <h3 className="subsection-title">
-                        <Calculator size={15} />
-                        <span>{t.material.summary.formulas}</span>
-                      </h3>
-                      <div className="formulas-list">
-                        {tp.formulas.map((f, fIdx) => (
-                          <div key={fIdx} className="formula-card">
-                            <span className="formula-label">{f.label}</span>
-                            <code className="formula-code">{f.expression}</code>
-                          </div>
-                        ))}
+                    {validFormulas.length > 0 && (
+                      <div className="formulas-panel">
+                        <h3 className="subsection-title">
+                          <Calculator size={15} />
+                          <span>{t.material.summary.formulas}</span>
+                        </h3>
+                        <div className="formulas-list">
+                          {validFormulas.map((f, fIdx) => (
+                            <div key={fIdx} className="formula-card">
+                              <span className="formula-label">{f.label}</span>
+                              <code className="formula-code">{f.expression}</code>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Slide Figures belonging to this topic */}
                 {features.figures !== false &&
@@ -1245,7 +1292,8 @@ export default function MaterialStudyView({
                     </div>
                   )}
               </section>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

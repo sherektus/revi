@@ -1,4 +1,5 @@
 import { sampleMaterials, DEFAULT_ENABLED_FEATURES } from '../data/sampleMaterial';
+import { generateStudyContent } from './contentGenerator';
 
 const KEYS = {
   UI_LANG: 'kordur_ui_lang',
@@ -328,8 +329,35 @@ export function loadMaterials() {
         };
       }
 
+      // Automatically upgrade already-uploaded user materials to the clean summarized schema (v3)
+      if (!mat.isSample && Array.isArray(mat.pages) && mat.pages.length > 0 && mat.contentSchemaVersion !== 3) {
+        try {
+          const regenerated = generateStudyContent({
+            pages: mat.pages,
+            fileType: mat.fileType || 'PDF',
+            contentLang: mat.contentLang || 'et',
+            title: mat.title || ''
+          });
+          const userEditedCards = (mat.flashcards || []).filter((fc) => fc.isUserEdited);
+          const userEditedExercises = (mat.exercises || []).filter((ex) => ex.isUserEdited);
+
+          return {
+            ...mat,
+            contentSchemaVersion: 3,
+            enabledFeatures: mergedFeatures,
+            topics: regenerated.topics,
+            figures: regenerated.figures?.length ? regenerated.figures : mat.figures || [],
+            flashcards: [...userEditedCards, ...regenerated.flashcards],
+            exercises: [...userEditedExercises, ...regenerated.exercises]
+          };
+        } catch (err) {
+          console.warn('Could not regenerate study content for material:', mat.id, err);
+        }
+      }
+
       return {
         ...mat,
+        contentSchemaVersion: mat.contentSchemaVersion || 3,
         figures: mat.figures || [],
         enabledFeatures: mergedFeatures
       };
@@ -1137,6 +1165,7 @@ export function combineMaterialsIntoCollection({
 
   return {
     id: colId,
+    contentSchemaVersion: 3,
     isSample: false,
     isCollection: materialsToCombine.length > 1,
     sourceFileNames,

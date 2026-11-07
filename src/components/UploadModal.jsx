@@ -204,6 +204,7 @@ export default function UploadModal({
         const now = new Date().toISOString();
         const newMaterial = {
           id: `mat-${Date.now()}`,
+          contentSchemaVersion: 3,
           isSample: false,
           isCollection: false,
           title: finalTitle,

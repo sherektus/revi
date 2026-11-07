@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import { isNoiseOrUrlLine, stripUrlsAndNoise } from './academicClassifier';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
@@ -208,18 +209,23 @@ async function parsePdfFile(file, contentLang) {
         lines.push(currentLine.join(' ').replace(/\s+/g, ' ').trim());
       }
 
-      const content = lines.filter(Boolean).join('\n').trim();
+      const cleanedLines = lines
+        .map((l) => stripUrlsAndNoise(l))
+        .filter((l) => l.length > 1 && !isNoiseOrUrlLine(l));
+
+      const content = cleanedLines.join('\n').trim();
       const extractedFigures = [];
 
       // Check if page mentions a figure/graph/diagram OR is a visual diagram slide with brief caption text
-      const figureCaptionLine = lines.find((l) =>
+      const figureCaptionLine = cleanedLines.find((l) =>
         /\b(?:joonis|skeem|graafik|diagramm|epüür|lõige|vaade|fig(?:ure)?\.?)\s*\d*/i.test(l)
       );
-      const nonHeaderLines = lines.filter(
+      const nonHeaderLines = cleanedLines.filter(
         (l) =>
           l.trim().length > 2 &&
           !/\b(?:capt\.|prof\.|mni\s*\d+|teema\s*\d+)\b/i.test(l) &&
-          !/^\d+$/.test(l.trim())
+          !/^\d+$/.test(l.trim()) &&
+          !isNoiseOrUrlLine(l)
       );
       const isDiagramSlide =
         i > 1 && nonHeaderLines.length >= 1 && nonHeaderLines.length <= 3 && content.length < 180;
@@ -256,9 +262,11 @@ async function parsePdfFile(file, contentLang) {
         }
       }
 
-      if (content.length > 0) {
+      if (content.length > 0 || extractedFigures.length > 0) {
         const firstLine =
-          nonHeaderLines[0] || lines.find((l) => l.trim().length > 2) || `${pagePrefix} ${i}`;
+          nonHeaderLines[0] ||
+          cleanedLines.find((l) => l.trim().length > 2) ||
+          `${pagePrefix} ${i}`;
         const cleanTitle = firstLine
           .replace(/^[•●▪\-*]+\s*/, '')
           .replace(/[,:;]+$/, '')
@@ -268,7 +276,7 @@ async function parsePdfFile(file, contentLang) {
           pageNumber: i,
           unitType: 'page',
           title: `${pagePrefix} ${i}: ${cleanTitle}`,
-          content,
+          content: content || cleanTitle,
           extractedFigures
         });
       }
@@ -442,9 +450,12 @@ async function parsePptxFile(file, contentLang) {
         }
       }
 
-      const content = lines.join('\n').trim();
+      const cleanedSlideLines = lines
+        .map((l) => stripUrlsAndNoise(l))
+        .filter((l) => l.length > 1 && !isNoiseOrUrlLine(l));
+      const content = cleanedSlideLines.join('\n').trim();
       if (content || extractedFigures.length > 0) {
-        const firstLine = lines[0] || `${slidePrefix} ${slideNumber}`;
+        const firstLine = cleanedSlideLines[0] || `${slidePrefix} ${slideNumber}`;
         const cleanTitle = firstLine.length > 70 ? firstLine.slice(0, 67) + '...' : firstLine;
         pages.push({
           pageNumber: slideNumber,
