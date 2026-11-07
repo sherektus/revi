@@ -863,11 +863,13 @@ export function isNoiseOrUrlLine(str) {
     return true;
   }
 
-  // Lecturer / course code boilerplate headers
+  // Lecturer / course code boilerplate headers & slide stamps
   if (
     /^(?:koostas|autor|lektor|õppejõud|allikas|viide|copyright|©|kõik õigused)/i.test(
       trimmed
-    )
+    ) ||
+    /\b(?:capt\.|prof\.|dots\.|lektor|mni\s*\d+)\b/i.test(trimmed) ||
+    /^(?:laevade\s+ehitus|teema\s*\d+)\b/i.test(trimmed)
   ) {
     return true;
   }

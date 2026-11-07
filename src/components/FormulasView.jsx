@@ -6,6 +6,7 @@ import {
   ExternalLink,
   Calculator
 } from 'lucide-react';
+import MathFormula from './MathFormula';
 import { DEFAULT_ENABLED_FEATURES } from '../data/sampleMaterial';
 import {
   cleanPunctuationAndNoise,
@@ -170,7 +171,7 @@ export default function FormulasView({
               <h3 className="formula-sheet-title">{item.label}</h3>
 
               <div className="formula-sheet-expression-box">
-                <code className="formula-sheet-code">{item.expression}</code>
+                <MathFormula expression={item.expression} />
               </div>
 
               <div className="formula-sheet-details">

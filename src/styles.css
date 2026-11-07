@@ -170,29 +170,151 @@ html[data-font-size='xxlarge'] {
   font-size: 23.2px;
 }
 
-/* Enhanced Contrast Mode for Low Vision */
+/* ==========================================================================
+   ENHANCED ACCESSIBILITY & LOW-VISION MODE (WCAG 2.1 / 2.2 AA & AAA)
+   ========================================================================== */
+
+/* Enhanced Contrast Mode for Low Vision - Light Mode */
 html[data-high-contrast='true'] {
-  --border-color: #9d998b;
-  --border-strong: #747164;
-  --text-secondary: #3b3f33;
+  --bg-main: #f4f1e8;
+  --bg-card: #ffffff;
+  --bg-subtle: #e4dfd2;
+  --bg-elevated: #ffffff;
+  --bg-selected: #dce5c4;
+
+  --text-primary: #12140f;
+  --text-secondary: #22261b;
+  --text-muted: #3a4030;
+
+  --border-color: #2e3525;
+  --border-strong: #12140f;
+
+  --accent: #3b4724;
+  --accent-hover: #262f15;
+  --accent-contrast: #ffffff;
+  --accent-soft: rgba(59, 71, 36, 0.22);
+  --accent-border: #3b4724;
+  --accent-text: #262f15;
+
+  --success: #2b4c19;
+  --success-text: #19330c;
+  --success-soft: #dbeefd;
+  --success-border: #2b4c19;
+
+  --warning: #6b4004;
+  --warning-text: #482a01;
+  --warning-soft: #fbe9cd;
+  --warning-border: #6b4004;
+
+  --danger: #7d1a10;
+  --danger-text: #540e06;
+  --danger-soft: #f8ded9;
+  --danger-border: #7d1a10;
 }
 
+/* Enhanced Contrast Mode for Low Vision - Dark Mode */
 [data-theme='dark'][data-high-contrast='true'],
 html[data-theme='dark'][data-high-contrast='true'] {
-  --border-color: #69715d;
-  --border-strong: #98a188;
-  --text-secondary: #dce0d3;
-  --bg-card: #20231b;
+  --bg-main: #0d0f0c;
+  --bg-card: #171a14;
+  --bg-subtle: #24291f;
+  --bg-elevated: #1e2319;
+  --bg-selected: #2d381e;
+
+  --text-primary: #ffffff;
+  --text-secondary: #f0f4e8;
+  --text-muted: #d2d9c6;
+
+  --border-color: #a4b38d;
+  --border-strong: #ffffff;
+
+  --accent: #cde0a6;
+  --accent-hover: #e0f0be;
+  --accent-contrast: #0d0f0c;
+  --accent-soft: rgba(205, 224, 166, 0.25);
+  --accent-border: #cde0a6;
+  --accent-text: #eaf5d2;
+
+  --success: #b5e49b;
+  --success-text: #d8f7c4;
+  --success-soft: #172d10;
+  --success-border: #b5e49b;
+
+  --warning: #f2c779;
+  --warning-text: #fce3b1;
+  --warning-soft: #2e220b;
+  --warning-border: #f2c779;
+
+  --danger: #ff9187;
+  --danger-text: #ffc4be;
+  --danger-soft: #38120e;
+  --danger-border: #ff9187;
 }
 
+/* Typographic enhancements for low-vision users */
+html[data-high-contrast='true'] body {
+  font-weight: 500;
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+  word-spacing: 0.04em;
+}
+
+html[data-high-contrast='true'] h1,
+html[data-high-contrast='true'] h2,
+html[data-high-contrast='true'] h3,
+html[data-high-contrast='true'] h4,
+html[data-high-contrast='true'] .brand-text,
+html[data-high-contrast='true'] .exercise-question-title,
+html[data-high-contrast='true'] .flashcard-main-text {
+  font-weight: 800 !important;
+}
+
+/* Reinforced solid visual boundaries (minimum 2px) */
 html[data-high-contrast='true'] .card,
 html[data-high-contrast='true'] .dashboard-panel,
 html[data-high-contrast='true'] .exercise-card,
 html[data-high-contrast='true'] .flashcard-face,
 html[data-high-contrast='true'] .calendar-container,
-html[data-high-contrast='true'] .btn-secondary,
-html[data-high-contrast='true'] .exercise-option-btn {
-  border-width: 2px;
+html[data-high-contrast='true'] .calendar-month-card,
+html[data-high-contrast='true'] .calendar-event-card,
+html[data-high-contrast='true'] .calendar-day-cell,
+html[data-high-contrast='true'] .btn,
+html[data-high-contrast='true'] .icon-btn,
+html[data-high-contrast='true'] .nav-link,
+html[data-high-contrast='true'] .study-tab-btn,
+html[data-high-contrast='true'] .exercise-option-btn,
+html[data-high-contrast='true'] .cozy-timer-pill,
+html[data-high-contrast='true'] .form-input,
+html[data-high-contrast='true'] .form-select,
+html[data-high-contrast='true'] .form-textarea,
+html[data-high-contrast='true'] .modal-content,
+html[data-high-contrast='true'] .badge {
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+/* Explicit underlined text links */
+html[data-high-contrast='true'] a:not(.btn):not(.brand-btn):not(.skip-to-content-link) {
+  text-decoration: underline !important;
+  text-underline-offset: 3px !important;
+  text-decoration-thickness: 2px !important;
+}
+
+/* Double-ring focus indicator for absolute clarity on any background */
+html[data-high-contrast='true'] :focus-visible {
+  outline: 3px solid var(--accent) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 5px var(--bg-main), 0 0 0 7px var(--border-strong) !important;
+}
+
+/* Stronger selected item emphasis */
+html[data-high-contrast='true'] .exercise-option-btn.option-selected {
+  border-width: 3px !important;
+  box-shadow: inset 0 0 0 2px var(--accent) !important;
+}
+
+html[data-high-contrast='true'] .calendar-day-cell.selected-day {
+  border-width: 3px !important;
 }
 
 /* Keyboard focus visibility in Olive Green */
@@ -1825,15 +1947,53 @@ button {
   border: 1px solid var(--accent-border);
 }
 
-.formula-code {
-  font-size: 0.94rem;
-  font-weight: 600;
-  color: var(--accent-text);
-  background: var(--bg-subtle);
-  padding: 0.35rem 0.6rem;
-  border-radius: 0.35rem;
-  display: inline-block;
+.formula-expression-wrap {
+  padding: 0.75rem 1rem;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-left: 3.5px solid var(--accent);
+  border-radius: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.8rem;
   overflow-x: auto;
+  overflow-y: hidden;
+}
+
+[data-theme='dark'] .formula-expression-wrap {
+  background: color-mix(in srgb, var(--bg-card) 90%, #000);
+  border-color: rgba(255, 255, 255, 0.08);
+  border-left-color: var(--accent);
+}
+
+.math-formula-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  font-size: 1.18rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.math-formula-display .katex-display {
+  margin: 0.15rem 0 !important;
+  text-align: center;
+}
+
+.math-formula-display .katex {
+  font-size: 1.15em;
+  color: var(--text-primary);
+}
+
+.math-fallback-text {
+  font-family: 'STIX Two Math', 'KaTeX_Math', 'Cambria Math', 'Times New Roman', serif;
+  font-size: 1.15rem;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  text-align: center;
 }
 
 .formula-symbols-caption {
@@ -3641,17 +3801,23 @@ button {
 }
 
 .formula-sheet-expression-box {
-  padding: 0.85rem 1rem;
+  padding: 0.85rem 1.15rem;
   background: var(--bg-main);
-  border: 1px solid var(--accent-border);
+  border: 1px solid var(--border-color);
   border-left: 4px solid var(--accent);
-  border-radius: 0.65rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.2rem;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
-.formula-sheet-code {
-  font-size: 0.96rem;
-  font-weight: 600;
-  color: var(--accent-text);
+[data-theme='dark'] .formula-sheet-expression-box {
+  background: color-mix(in srgb, var(--bg-card) 90%, #000);
+  border-color: rgba(255, 255, 255, 0.08);
+  border-left-color: var(--accent);
 }
 
 .formula-sheet-details {

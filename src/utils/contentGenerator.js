@@ -59,13 +59,17 @@ function buildSchematicSvgForTopic({ heading, keyFormula, concepts, refLabel }) 
 export function cleanPunctuationAndNoise(text) {
   if (!text) return '';
   let s = String(text)
-    // Remove leading bullets, arrows, dots, dashes, or orphan punctuation
-    .replace(/^[•●▪◦‣⁃\-–—*+>·.,;:\s]+/, '')
+    // Remove leading unicode bullets, arrows, dots, dashes, orphan punctuation
+    .replace(/^[\s\u00A0\u2022\u2023\u25E6\u2043\u2219•●▪◦‣⁃\-–—*+>·.,;:()]+/u, '')
+    // Remove leading enumeration numbers like "1.", "1 -", "1)", "36."
+    .replace(/^\d+[\s.)\-–—]+\s*/, '')
+    // Repeat leading symbol strip in case there was "1 • ..."
+    .replace(/^[\s\u00A0\u2022\u2023\u25E6\u2043\u2219•●▪◦‣⁃\-–—*+>·.,;:()]+/u, '')
     // Replace runs of 2+ dots ("...... ....ehk" or "....") with a clean separator
     .replace(/\.{2,}\s*\.{0,}\s*(?=ehk\b|st\b|s\.t\b|ning\b|ja\b)/gi, ', ')
     .replace(/\.{2,}\s*/g, '. ')
     // Fix glued sentences where a lowercase word is immediately followed by an uppercase sentence starter
-    .replace(/([a-zõäöüšž])(\s+)(Kui\b|Siis\b|Kuna\b|Sest\b|Seega\b|Samuti\b|Näiteks\b|Archimedese\b|Laev(?:a|al)?\b)/g, '$1.$2$3')
+    .replace(/([a-zõäöüšž])(\s+)(Kui\b|Siis\b|Kuna\b|Sest\b|Seega\b|Samuti\b|Näiteks\b|Archimedese\b|Laev(?:a|al)?\b|Teisisõnu\b)/g, '$1.$2$3')
     // Normalize spaces before punctuation
     .replace(/\s+([,.;:!?])/g, '$1')
     // Collapse multiple punctuation marks like "..", ",.", ".,"
@@ -464,6 +468,26 @@ export function isGenuineFormulaExpression(str) {
   const s = String(str).trim();
   if (s.length < 3 || s.length > 140) return false;
 
+  // Strict rejection of URLs, query parameters, YouTube links, and video IDs
+  if (
+    /https?:\/\/|www\.|youtube\.com|youtu\.be|\bwatch\?|\bindex=|\blist=|\bchannel=|\buser=|\bv=[A-Za-z0-9_-]{5,}/i.test(s) ||
+    /&[a-z0-9_]+=|[?&](?:list|index|t|v|feature|app|si)=/i.test(s) ||
+    /\b(?:http|ftp|mailto|file):/i.test(s) ||
+    /^[a-z0-9_-]+=[a-z0-9_-]+&[a-z0-9_-]+=/i.test(s) ||
+    /_[0-9A-Za-z]+_g&/i.test(s)
+  ) {
+    return false;
+  }
+
+  // Reject if it contains URL query parameter tokens like '&' with '='
+  if (s.includes('&') && s.includes('=')) return false;
+
+  // Reject random alphanumeric tokens with underscores from URLs like "PmlTk_3NN_g"
+  if (/[a-zA-Z0-9]{4,}_[a-zA-Z0-9]{2,}/.test(s)) return false;
+
+  // Reject if not valid study text
+  if (!isValidStudyText(s)) return false;
+
   // Must contain an equality, inequality, derivative/integral, or clear math operator
   const hasMathRel = /[=≈≠≤≥±→∑∫√]|(?:\b[fygvsa]\([xtu₀]\))|(?:\^[0-9n+-])|[²³⁴]/.test(s);
   if (!hasMathRel) return false;
@@ -619,8 +643,12 @@ function extractTopicFormulas({ rawLines, sentences, heading, sourceRef, topicId
   const numericAssignments = [];
 
   for (const line of rawLines) {
-    const cleaned = cleanPunctuationAndNoise(line);
+    if (isNoiseOrUrlLine(line) || /https?:\/\/|youtube\.com|youtu\.be|\bwatch\?|\bindex=|\blist=/i.test(line)) {
+      continue;
+    }
+    const cleaned = cleanPunctuationAndNoise(stripUrlsAndNoise(line));
     if (!cleaned || cleaned.length > 130) continue;
+    if (!isValidStudyText(cleaned)) continue;
 
     // Check if it's a pure short numerical assignment like "G=9700t" or "B = 9700 t"
     const numAssignMatch = cleaned.match(/^([A-Za-zÕÄÖÜŠŽõäöüšž₀₁₂₃]+)\s*=\s*([\d.,]+\s*[a-zA-Z°%³²/]*)$/);

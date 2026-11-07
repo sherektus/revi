@@ -35,6 +35,7 @@ import {
   ZoomIn,
   X
 } from 'lucide-react';
+import MathFormula from './MathFormula';
 import {
   calculateMaterialStats,
   getTopicMasteryBreakdown
@@ -1195,7 +1196,9 @@ export default function MaterialStudyView({
                                   <span className="formula-unit-badge">{f.units}</span>
                                 )}
                               </div>
-                              <code className="formula-code">{f.expression}</code>
+                              <div className="formula-expression-wrap">
+                                <MathFormula expression={f.expression} />
+                              </div>
                               {f.symbols && f.symbols !== '—' && (
                                 <p className="formula-symbols-caption">{f.symbols}</p>
                               )}
