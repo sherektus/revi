@@ -471,6 +471,8 @@ export default function Navbar({
             type="button"
             className="btn btn-primary nav-add-btn"
             onClick={() => onOpenUploadModal()}
+            title={t.nav.addMaterial}
+            aria-label={t.nav.addMaterial}
           >
             <Plus size={16} strokeWidth={2.5} />
             <span className="nav-add-label">{t.nav.addMaterial}</span>
