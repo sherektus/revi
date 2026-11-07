@@ -209,7 +209,7 @@ export default function Navbar({
               aria-label={t.appName}
             >
               <span className="brand-icon">
-                <Layers size={19} strokeWidth={2.2} />
+                <Layers size={24} strokeWidth={2.4} />
               </span>
               <span className="brand-text">{t.appName}</span>
             </button>
