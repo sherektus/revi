@@ -42,6 +42,7 @@ export default function Navbar({
   const [timerSettings, setTimerSettings] = useState(() => loadTimerSettings());
   const [isTimerSettingsOpen, setIsTimerSettingsOpen] = useState(false);
   const timerSettingsRef = useRef(null);
+  const clockBtnRef = useRef(null);
 
   const focusDuration = timerSettings.focusMinutes || 25;
   const breakDuration = timerSettings.breakMinutes || 5;
@@ -129,15 +130,28 @@ export default function Navbar({
     updateDurations(timerSettings.focusMinutes, next);
   }
 
-  function handleClockWheel(e) {
-    e.preventDefault();
-    const delta = e.deltaY < 0 ? 5 : -5;
-    if (timerMode === 'focus') {
-      stepFocus(delta);
-    } else {
-      stepBreak(e.deltaY < 0 ? 1 : -1);
+  useEffect(() => {
+    const el = clockBtnRef.current;
+    if (!el) return;
+
+    function handleWheel(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const delta = e.deltaY < 0 ? 5 : -5;
+      if (timerMode === 'focus') {
+        const next = Math.min(180, Math.max(5, timerSettings.focusMinutes + delta));
+        updateDurations(next, timerSettings.breakMinutes);
+      } else {
+        const next = Math.min(60, Math.max(1, timerSettings.breakMinutes + (e.deltaY < 0 ? 1 : -1)));
+        updateDurations(timerSettings.focusMinutes, next);
+      }
     }
-  }
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', handleWheel);
+    };
+  }, [timerMode, timerSettings, isRunning]);
 
   const mins = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
   const secs = String(secondsLeft % 60).padStart(2, '0');
@@ -263,10 +277,10 @@ export default function Navbar({
               </button>
 
               <button
+                ref={clockBtnRef}
                 type="button"
                 className="timer-clock-btn"
                 onClick={() => setIsTimerSettingsOpen((prev) => !prev)}
-                onWheel={handleClockWheel}
                 title={`${t.nav.timerSettingsTitle || 'Õpirütm'}: ${timerSettings.focusMinutes}m / ${timerSettings.breakMinutes}m (Klõpsa või keri hiirerulliga)`}
               >
                 <span className="timer-clock">

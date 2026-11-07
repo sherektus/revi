@@ -4,7 +4,7 @@ export const translations = {
     appTagline: 'Rahulik ja nutikas abiline õppematerjalide kordamiseks',
     nav: {
       home: 'Avaleht',
-      library: 'Minu teek',
+      library: 'Minu\u00A0teek',
       calendar: 'Kalender',
       mockExam: 'Proovitöö',
       formulas: 'Valemileht',

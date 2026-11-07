@@ -620,6 +620,7 @@ button {
   border-radius: 0.35rem;
   transition: all 0.15s ease;
   cursor: pointer;
+  overscroll-behavior: contain;
 }
 
 .timer-clock-btn:hover {
@@ -653,17 +654,24 @@ button {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  z-index: 60;
-  width: 295px;
+  z-index: 100;
+  width: 305px;
+  max-width: calc(100vw - 2rem);
   padding: 1.05rem;
   background: var(--bg-card);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border-color);
   border-radius: 1.15rem;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
   font-size: 0.85rem;
+  white-space: normal;
+}
+
+[data-theme='dark'] .timer-settings-popover {
+  background: var(--bg-card);
+  border-color: var(--border-strong);
 }
 
 .timer-settings-header {
@@ -825,12 +833,16 @@ button {
 }
 
 .timer-hint-caption {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  line-height: 1.4;
-  padding: 0.35rem 0.55rem;
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  padding: 0.45rem 0.65rem;
   background: var(--bg-subtle);
-  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.55rem;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 /* --- NAVBAR RIGHT & ACTION CLUSTERS --- */

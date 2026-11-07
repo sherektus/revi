@@ -833,7 +833,9 @@ export function isNoiseOrUrlLine(str) {
   if (
     /\b(?:https?:\/\/|ftp:\/\/|www\.|youtu\.be|youtube\.com|watch\?v=|moodle\.|ois\.|taltech\.ee|ut\.ee|tlu\.ee|emu\.ee|doi\.org|wikipedia\.org)\b/i.test(
       trimmed
-    )
+    ) ||
+    /&[a-z0-9_]+=[^&\s]+|\bwatch\?|\bindex=|\blist=|\bv=[A-Za-z0-9_-]{5,}/i.test(trimmed) ||
+    /_[0-9A-Za-z]{2,}_g&/i.test(trimmed)
   ) {
     return true;
   }
@@ -883,8 +885,12 @@ export function isNoiseOrUrlLine(str) {
 export function stripUrlsAndNoise(str) {
   if (!str || typeof str !== 'string') return '';
   return str
+    .replace(/(?:https?:\/\/|ftp:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/[^\s)]+/gi, '')
     .replace(/https?:\/\/[^\s)]+/gi, '')
     .replace(/www\.[^\s)]+/gi, '')
+    .replace(/\bwatch\?[^\s)]+/gi, '')
+    .replace(/\b(?:v|list|index|t)=[A-Za-z0-9_-]+(?:&[A-Za-z0-9_=-]+)*/gi, '')
+    .replace(/&[a-z0-9_]+=[^&\s]+/gi, '')
     .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, '')
     .replace(/\s{2,}/g, ' ')
     .trim();

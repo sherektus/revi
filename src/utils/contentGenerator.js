@@ -13,7 +13,11 @@ export function isValidStudyText(str) {
   if (/www\.[a-z0-9]/i.test(trimmed)) return false;
   if (/youtube\.com|youtu\.be/i.test(trimmed)) return false;
   if (/^https?$/i.test(trimmed)) return false;
+  if (/\b(?:watch\?|index=|list=|feature=|si=)\b/i.test(trimmed)) return false;
+  if (/&[a-z0-9_]+=|[?&](?:list|index|t|v|feature)=/i.test(trimmed)) return false;
+  if (/^[a-z0-9_-]+=[a-z0-9_-]+&/i.test(trimmed)) return false;
   if (/^(?:link|allikas|viide|url|veebiviide)\b/i.test(trimmed) && trimmed.length < 30) return false;
+  if (/mõiste\s*[„"'](?:https?|www|url)[”"']/i.test(trimmed)) return false;
   return true;
 }
 

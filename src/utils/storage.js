@@ -1,5 +1,5 @@
 import { sampleMaterials, DEFAULT_ENABLED_FEATURES } from '../data/sampleMaterial';
-import { generateStudyContent } from './contentGenerator';
+import { generateStudyContent, isGenuineFormulaExpression } from './contentGenerator';
 
 const KEYS = {
   UI_LANG: 'kordur_ui_lang',
@@ -397,8 +397,8 @@ export function loadMaterials() {
         };
       }
 
-      // Automatically upgrade already-uploaded user materials to the clean summarized schema (v5)
-      if (!mat.isSample && Array.isArray(mat.pages) && mat.pages.length > 0 && (mat.contentSchemaVersion || 0) < 5) {
+      // Automatically upgrade already-uploaded user materials to the clean summarized schema (v7)
+      if (!mat.isSample && Array.isArray(mat.pages) && mat.pages.length > 0 && (mat.contentSchemaVersion || 0) < 7) {
         try {
           const regenerated = generateStudyContent({
             pages: mat.pages,
@@ -411,7 +411,7 @@ export function loadMaterials() {
 
           return {
             ...mat,
-            contentSchemaVersion: 5,
+            contentSchemaVersion: 7,
             enabledFeatures: mergedFeatures,
             topics: regenerated.topics,
             figures: regenerated.figures?.length ? regenerated.figures : mat.figures || [],
@@ -425,14 +425,64 @@ export function loadMaterials() {
 
       return {
         ...mat,
-        contentSchemaVersion: mat.contentSchemaVersion || 5,
+        contentSchemaVersion: mat.contentSchemaVersion || 7,
         figures: mat.figures || [],
         enabledFeatures: mergedFeatures
       };
     });
 
-    localStorage.setItem(matKey, JSON.stringify(upgraded));
-    return upgraded;
+    // Deep sanitizer: Purges any stray URL parameters, video IDs, or malformed formulas from previously cached materials
+    const isBadUrlText = (str) => {
+      if (!str || typeof str !== 'string') return false;
+      return (
+        /https?:\/\/|www\.|youtube\.com|youtu\.be|\bwatch\?|\bindex=|\blist=|\bchannel=|\bv=[A-Za-z0-9_-]{5,}|&[a-z0-9_]+=|_NN_g/i.test(
+          str
+        ) ||
+        /mõiste\s*[„"'](?:https?|www|url)[”"']/i.test(str)
+      );
+    };
+
+    const fullySanitized = upgraded.map((mat) => {
+      const cleanFlashcards = (mat.flashcards || []).filter(
+        (fc) =>
+          !isBadUrlText(fc.question) &&
+          !isBadUrlText(fc.answer) &&
+          !isBadUrlText(fc.term) &&
+          !/^(?:https?|www|url)$/i.test(fc.term?.trim() || '')
+      );
+
+      const cleanExercises = (mat.exercises || []).filter(
+        (ex) => !isBadUrlText(ex.question) && !isBadUrlText(ex.solution)
+      );
+
+      const cleanTopics = (mat.topics || []).map((tp) => {
+        let cleanTitle = tp.title;
+        if (isBadUrlText(cleanTitle)) {
+          cleanTitle = `Teema ${tp.id ? tp.id.replace(/\D/g, '') || '1' : '1'}`;
+        }
+        const cleanFormulas = (tp.formulas || []).filter((f) => {
+          const expr = typeof f === 'string' ? f : f?.expression || '';
+          const lbl = typeof f === 'object' ? f?.label || '' : '';
+          if (isBadUrlText(expr) || isBadUrlText(lbl)) return false;
+          return isGenuineFormulaExpression(expr);
+        });
+        return {
+          ...tp,
+          title: cleanTitle,
+          formulas: cleanFormulas
+        };
+      });
+
+      return {
+        ...mat,
+        topics: cleanTopics,
+        flashcards: cleanFlashcards,
+        exercises: cleanExercises
+      };
+    });
+
+    localStorage.setItem(matKey, JSON.stringify(fullySanitized));
+    return fullySanitized;
   } catch {
     return sampleMaterials;
   }
