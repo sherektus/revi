@@ -309,9 +309,11 @@ export function loadNavState() {
     const raw = localStorage.getItem(getScopedKey(KEYS.NAV_STATE));
     if (!raw) return { currentView: 'home', activeMaterialId: null };
     const parsed = JSON.parse(raw);
+    const validViews = ['home', 'library', 'calendar', 'mockExam', 'formulas', 'study'];
+    const currentView = validViews.includes(parsed?.currentView) ? parsed.currentView : 'home';
     return {
-      currentView: parsed.currentView || 'home',
-      activeMaterialId: parsed.activeMaterialId || null
+      currentView,
+      activeMaterialId: parsed?.activeMaterialId || null
     };
   } catch {
     return { currentView: 'home', activeMaterialId: null };
@@ -500,8 +502,38 @@ export function saveMaterials(materials) {
 }
 
 export function createDefaultProgressForMaterial(material) {
-  const visibleCards = (material.flashcards || []).filter((c) => !c.hidden);
-  const visibleExercises = (material.exercises || []).filter((e) => !e.hidden);
+  if (!material || typeof material !== 'object') {
+    return {
+      activeTab: 'summary',
+      selectedTopicId: 'all',
+      flashcards: {
+        currentIndex: 0,
+        isFlipped: false,
+        statusById: {},
+        historyById: {},
+        activeDeckIds: [],
+        isReviewOnlyMode: false,
+        isSessionFinished: false
+      },
+      exercises: {
+        currentIndex: 0,
+        answersById: {},
+        historyById: {},
+        activeExerciseIds: [],
+        isRetryOnlyMode: false,
+        isSessionFinished: false
+      },
+      quickTest: {
+        hasCompleted: false,
+        lastScore: null,
+        recommendedTopicId: null,
+        topicResults: {}
+      },
+      updatedAt: new Date().toISOString()
+    };
+  }
+  const visibleCards = (material.flashcards || []).filter((c) => c && !c.hidden);
+  const visibleExercises = (material.exercises || []).filter((e) => e && !e.hidden);
   return {
     activeTab: 'summary', // 'summary' | 'flashcards' | 'exercises' | 'quickTest' | 'formulas'
     selectedTopicId: 'all',
@@ -533,12 +565,13 @@ export function createDefaultProgressForMaterial(material) {
 }
 
 export function loadAllProgress(materials = []) {
+  const safeMaterials = Array.isArray(materials) ? materials.filter((m) => m && m.id) : [];
   try {
     const raw = localStorage.getItem(getScopedKey(KEYS.PROGRESS));
     const parsed = raw ? JSON.parse(raw) : {};
-    const result = { ...parsed };
+    const result = (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? { ...parsed } : {};
 
-    for (const mat of materials) {
+    for (const mat of safeMaterials) {
       const def = createDefaultProgressForMaterial(mat);
       if (!result[mat.id]) {
         result[mat.id] = def;
@@ -567,7 +600,7 @@ export function loadAllProgress(materials = []) {
     return result;
   } catch {
     const fallback = {};
-    for (const mat of materials) {
+    for (const mat of safeMaterials) {
       fallback[mat.id] = createDefaultProgressForMaterial(mat);
     }
     return fallback;
@@ -606,7 +639,9 @@ export function saveLastSession(sessionInfo) {
 export function loadSpacedRepetition() {
   try {
     const raw = localStorage.getItem(getScopedKey(KEYS.SPACED_REP));
-    return raw ? JSON.parse(raw) : {};
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
   } catch {
     return {};
   }
@@ -947,7 +982,9 @@ export function saveCalendarEvents(events) {
 export function loadStudyPlans() {
   try {
     const raw = localStorage.getItem(getScopedKey(KEYS.STUDY_PLANS));
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
   } catch {
     return [];
   }

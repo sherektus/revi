@@ -37,6 +37,48 @@ import {
   loadErrorNotebook
 } from '../utils/storage';
 
+class WidgetErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(err) {
+    console.warn(`Widget "${this.props.widgetId}" error:`, err);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          padding: '1rem',
+          margin: '0.75rem 0',
+          borderRadius: '12px',
+          background: 'rgba(239, 68, 68, 0.08)',
+          border: '1px solid rgba(239, 68, 68, 0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          color: '#F87171',
+          fontSize: '0.88rem'
+        }}>
+          <span>Ploki „{this.props.label || this.props.widgetId}” kuvamisel tekkis tõrge.</span>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => this.setState({ hasError: false })}
+            style={{ color: '#F87171' }}
+          >
+            Proovi uuesti
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function HomeView({
   t,
   uiLang,
@@ -268,8 +310,9 @@ export default function HomeView({
         {widgets.map((widget, wIdx) => {
           if (!widget.visible) return null;
 
-          // 1. QUICK STUDY WIDGET: "Mul on aega" (5, 15, 30, 60 min)
-          if (widget.id === 'quickStudy') {
+          const renderWidgetInner = () => {
+            // 1. QUICK STUDY WIDGET: "Mul on aega" (5, 15, 30, 60 min)
+            if (widget.id === 'quickStudy') {
             return (
               <section key="quickStudy" className="dashboard-widget-section quick-study-widget-section">
                 <div className="quick-study-banner-card">
@@ -676,8 +719,22 @@ export default function HomeView({
           }
 
           return null;
-        })}
-      </div>
+        };
+
+        const content = renderWidgetInner();
+        if (!content) return null;
+
+        return (
+          <WidgetErrorBoundary
+            key={widget.id}
+            widgetId={widget.id}
+            label={uiLang === 'en' ? widget.labelEN : widget.labelET}
+          >
+            {content}
+          </WidgetErrorBoundary>
+        );
+      })}
+    </div>
 
       {/* 6. OMA TÖÖLAUD CUSTOMIZER MODAL */}
       {isCustomizerOpen && (

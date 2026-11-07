@@ -582,10 +582,11 @@ export default function App() {
       ? t.privacy?.navBadge || 'Privaatne'
       : activeProfileObj?.name;
 
+  const safeMaterials = Array.isArray(materials) ? materials.filter(Boolean) : [];
   const activeMaterial =
-    materials.find((m) => m.id === activeMaterialId) || materials[0];
+    safeMaterials.find((m) => m.id === activeMaterialId) || safeMaterials[0];
   const existingSubjects = Array.from(
-    new Set(materials.map((m) => m.subject).filter(Boolean))
+    new Set(safeMaterials.map((m) => m?.subject).filter(Boolean))
   );
 
   const toastMessage =
