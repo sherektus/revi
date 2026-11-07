@@ -117,6 +117,26 @@ export default function Navbar({
     }
   }
 
+  function stepFocus(delta) {
+    const next = Math.min(180, Math.max(5, timerSettings.focusMinutes + delta));
+    updateDurations(next, timerSettings.breakMinutes);
+  }
+
+  function stepBreak(delta) {
+    const next = Math.min(60, Math.max(1, timerSettings.breakMinutes + delta));
+    updateDurations(timerSettings.focusMinutes, next);
+  }
+
+  function handleClockWheel(e) {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 5 : -5;
+    if (timerMode === 'focus') {
+      stepFocus(delta);
+    } else {
+      stepBreak(e.deltaY < 0 ? 1 : -1);
+    }
+  }
+
   const mins = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
   const secs = String(secondsLeft % 60).padStart(2, '0');
 
@@ -242,7 +262,8 @@ export default function Navbar({
                 type="button"
                 className="timer-clock-btn"
                 onClick={() => setIsTimerSettingsOpen((prev) => !prev)}
-                title={t.nav.timerSettingsTitle || 'Muuda õppimise ja pausi kestvust'}
+                onWheel={handleClockWheel}
+                title={`${t.nav.timerSettingsTitle || 'Õpirütm'}: ${timerSettings.focusMinutes}m / ${timerSettings.breakMinutes}m (Klõpsa või keri hiirerulliga)`}
               >
                 <span className="timer-clock">
                   {mins}:{secs}
@@ -265,7 +286,7 @@ export default function Navbar({
                   isTimerSettingsOpen ? 'active' : ''
                 }`}
                 onClick={() => setIsTimerSettingsOpen((prev) => !prev)}
-                title={t.nav.timerSettingsTitle || 'Kestvuse seaded'}
+                title={t.nav.timerSettingsTitle || 'Õpirütmi seaded'}
                 aria-label={t.nav.timerSettingsTitle}
                 aria-expanded={isTimerSettingsOpen}
               >
@@ -290,17 +311,18 @@ export default function Navbar({
               )}
             </div>
 
-            {/* Custom duration popover */}
+            {/* Revi akadeemiline õpirütmi paneel */}
             {isTimerSettingsOpen && (
               <div
                 className="timer-settings-popover"
                 role="dialog"
-                aria-label={t.nav.timerSettingsTitle}
+                aria-label="Õpirütmi seaded"
               >
                 <div className="timer-settings-header">
-                  <span className="timer-settings-title">
-                    {t.nav.timerSettingsTitle}
-                  </span>
+                  <div className="timer-header-title-box">
+                    <span className="timer-settings-title">Õpirütm</span>
+                    <span className="timer-settings-sub">Vali sobiv tempo või kohanda vabalt</span>
+                  </div>
                   <button
                     type="button"
                     className="icon-btn-xs"
@@ -311,96 +333,117 @@ export default function Navbar({
                   </button>
                 </div>
 
-                {/* Õppimise kestvus */}
-                <div className="timer-duration-section">
-                  <div className="timer-duration-label-row">
-                    <span>{t.nav.timerFocusDuration}</span>
-                    <strong className="timer-active-val">
-                      {timerSettings.focusMinutes} min
-                    </strong>
-                  </div>
-                  <div className="timer-presets-row">
-                    {[15, 20, 25, 30, 45, 60].map((mVal) => (
+                {/* 3 Akadeemilist põhirütmi */}
+                <div className="timer-rhythm-presets">
+                  <button
+                    type="button"
+                    className={`timer-rhythm-card ${
+                      timerSettings.focusMinutes === 25 &&
+                      timerSettings.breakMinutes === 5
+                        ? 'active'
+                        : ''
+                    }`}
+                    onClick={() => updateDurations(25, 5)}
+                  >
+                    <div className="rhythm-card-header">
+                      <strong>Klassikaline</strong>
+                      <span className="rhythm-tag">25 / 5 min</span>
+                    </div>
+                    <span className="rhythm-desc">Hea lühikeseks kordamiseks ja fookuse hoidmiseks</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`timer-rhythm-card ${
+                      timerSettings.focusMinutes === 50 &&
+                      timerSettings.breakMinutes === 10
+                        ? 'active'
+                        : ''
+                    }`}
+                    onClick={() => updateDurations(50, 10)}
+                  >
+                    <div className="rhythm-card-header">
+                      <strong>Süvaõpe</strong>
+                      <span className="rhythm-tag">50 / 10 min</span>
+                    </div>
+                    <span className="rhythm-desc">Pikemate peatükkide ja ülesannete lahendamiseks</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`timer-rhythm-card ${
+                      timerSettings.focusMinutes === 90 &&
+                      timerSettings.breakMinutes === 15
+                        ? 'active'
+                        : ''
+                    }`}
+                    onClick={() => updateDurations(90, 15)}
+                  >
+                    <div className="rhythm-card-header">
+                      <strong>Loengurütm</strong>
+                      <span className="rhythm-tag">90 / 15 min</span>
+                    </div>
+                    <span className="rhythm-desc">Akadeemiline paaristund mahukate materjalide läbitöötamiseks</span>
+                  </button>
+                </div>
+
+                {/* Kohanda minutid */}
+                <div className="timer-stepper-section">
+                  <div className="timer-stepper-row">
+                    <div className="stepper-label-box">
+                      <span className="stepper-title">Õppimine</span>
+                      <span className="stepper-meta">Fookusaeg</span>
+                    </div>
+                    <div className="stepper-controls">
                       <button
-                        key={mVal}
                         type="button"
-                        className={`timer-preset-btn ${
-                          timerSettings.focusMinutes === mVal ? 'active' : ''
-                        }`}
-                        onClick={() =>
-                          updateDurations(mVal, timerSettings.breakMinutes)
-                        }
+                        className="stepper-btn"
+                        onClick={() => stepFocus(-5)}
+                        aria-label="Vähenda 5 minutit"
                       >
-                        {mVal}m
+                        −5m
                       </button>
-                    ))}
+                      <span className="stepper-value">{timerSettings.focusMinutes}m</span>
+                      <button
+                        type="button"
+                        className="stepper-btn"
+                        onClick={() => stepFocus(5)}
+                        aria-label="Suurenda 5 minutit"
+                      >
+                        +5m
+                      </button>
+                    </div>
                   </div>
-                  <div className="timer-custom-input-row">
-                    <label htmlFor="custom-focus-input">
-                      {t.nav.timerCustom || 'Määra ise'}:
-                    </label>
-                    <input
-                      id="custom-focus-input"
-                      type="number"
-                      min="1"
-                      max="180"
-                      value={timerSettings.focusMinutes}
-                      onChange={(e) =>
-                        updateDurations(
-                          e.target.value,
-                          timerSettings.breakMinutes
-                        )
-                      }
-                      className="timer-number-input"
-                    />
-                    <span>min</span>
+
+                  <div className="timer-stepper-row">
+                    <div className="stepper-label-box">
+                      <span className="stepper-title">Paus</span>
+                      <span className="stepper-meta">Puhkehetk</span>
+                    </div>
+                    <div className="stepper-controls">
+                      <button
+                        type="button"
+                        className="stepper-btn"
+                        onClick={() => stepBreak(-1)}
+                        aria-label="Vähenda 1 minut"
+                      >
+                        −1m
+                      </button>
+                      <span className="stepper-value">{timerSettings.breakMinutes}m</span>
+                      <button
+                        type="button"
+                        className="stepper-btn"
+                        onClick={() => stepBreak(1)}
+                        aria-label="Suurenda 1 minut"
+                      >
+                        +1m
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                {/* Pausi kestvus */}
-                <div className="timer-duration-section mt-2">
-                  <div className="timer-duration-label-row">
-                    <span>{t.nav.timerBreakDuration}</span>
-                    <strong className="timer-active-val">
-                      {timerSettings.breakMinutes} min
-                    </strong>
-                  </div>
-                  <div className="timer-presets-row">
-                    {[3, 5, 10, 15, 20].map((bVal) => (
-                      <button
-                        key={bVal}
-                        type="button"
-                        className={`timer-preset-btn ${
-                          timerSettings.breakMinutes === bVal ? 'active' : ''
-                        }`}
-                        onClick={() =>
-                          updateDurations(timerSettings.focusMinutes, bVal)
-                        }
-                      >
-                        {bVal}m
-                      </button>
-                    ))}
-                  </div>
-                  <div className="timer-custom-input-row">
-                    <label htmlFor="custom-break-input">
-                      {t.nav.timerCustom || 'Määra ise'}:
-                    </label>
-                    <input
-                      id="custom-break-input"
-                      type="number"
-                      min="1"
-                      max="60"
-                      value={timerSettings.breakMinutes}
-                      onChange={(e) =>
-                        updateDurations(
-                          timerSettings.focusMinutes,
-                          e.target.value
-                        )
-                      }
-                      className="timer-number-input"
-                    />
-                    <span>min</span>
-                  </div>
+                <div className="timer-hint-caption">
+                  <span>💡 Nipp: kellaajal hiirerulliga kerides saab aega muuta otse päisest.</span>
                 </div>
               </div>
             )}
