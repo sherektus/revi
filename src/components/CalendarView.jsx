@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Calendar as CalendarIcon,
   Plus,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Clock,
   BookOpen,
   CheckCircle2,
@@ -45,6 +46,58 @@ export default function CalendarView({
   const [selectedDateStr, setSelectedDateStr] = useState(
     initialDate.toISOString().slice(0, 10)
   );
+
+  // Month & Year scrollable picker dropdown states
+  const [isMonthOpen, setIsMonthOpen] = useState(false);
+  const [isYearOpen, setIsYearOpen] = useState(false);
+  const monthPickerRef = useRef(null);
+  const yearPickerRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        monthPickerRef.current &&
+        !monthPickerRef.current.contains(event.target)
+      ) {
+        setIsMonthOpen(false);
+      }
+      if (
+        yearPickerRef.current &&
+        !yearPickerRef.current.contains(event.target)
+      ) {
+        setIsYearOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const availableYears = useMemo(() => {
+    const current = new Date().getFullYear();
+    const years = [];
+    for (let y = current - 7; y <= current + 12; y++) {
+      years.push(y);
+    }
+    return years;
+  }, []);
+
+  function handleMonthWheel(e) {
+    if (e.deltaY > 0) {
+      handleNextMonth();
+    } else if (e.deltaY < 0) {
+      handlePrevMonth();
+    }
+  }
+
+  function handleYearWheel(e) {
+    if (e.deltaY > 0) {
+      setViewYear((y) => y + 1);
+    } else if (e.deltaY < 0) {
+      setViewYear((y) => y - 1);
+    }
+  }
 
   // Event Add/Edit Modal state
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
@@ -226,9 +279,103 @@ export default function CalendarView({
             >
               <ChevronLeft size={20} />
             </button>
-            <h2 className="calendar-month-title">
-              {t.calendar.months[viewMonth]} {viewYear}
-            </h2>
+
+            <div className="calendar-picker-group">
+              {/* Kuu valija: klõpsatav ja allapoole keritav / rullitav */}
+              <div className="calendar-picker-wrapper" ref={monthPickerRef}>
+                <button
+                  type="button"
+                  className={`calendar-picker-trigger ${isMonthOpen ? 'active' : ''}`}
+                  onClick={() => {
+                    setIsMonthOpen((prev) => !prev);
+                    setIsYearOpen(false);
+                  }}
+                  onWheel={handleMonthWheel}
+                  title="Klõpsa kuude nimekirja avamiseks või keri hiirerulliga"
+                  aria-haspopup="listbox"
+                  aria-expanded={isMonthOpen}
+                >
+                  <span className="picker-label">{t.calendar.months[viewMonth]}</span>
+                  <ChevronDown
+                    size={15}
+                    className={`picker-chevron ${isMonthOpen ? 'open' : ''}`}
+                  />
+                </button>
+
+                {isMonthOpen && (
+                  <div
+                    className="calendar-picker-dropdown scrollable-dropdown"
+                    role="listbox"
+                  >
+                    {t.calendar.months.map((mName, mIdx) => (
+                      <button
+                        key={mIdx}
+                        type="button"
+                        className={`calendar-picker-item ${
+                          mIdx === viewMonth ? 'selected' : ''
+                        }`}
+                        onClick={() => {
+                          setViewMonth(mIdx);
+                          setIsMonthOpen(false);
+                        }}
+                        role="option"
+                        aria-selected={mIdx === viewMonth}
+                      >
+                        {mName}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Aasta valija: klõpsatav ja allapoole keritav / rullitav */}
+              <div className="calendar-picker-wrapper" ref={yearPickerRef}>
+                <button
+                  type="button"
+                  className={`calendar-picker-trigger ${isYearOpen ? 'active' : ''}`}
+                  onClick={() => {
+                    setIsYearOpen((prev) => !prev);
+                    setIsMonthOpen(false);
+                  }}
+                  onWheel={handleYearWheel}
+                  title="Klõpsa aastate nimekirja avamiseks või keri hiirerulliga"
+                  aria-haspopup="listbox"
+                  aria-expanded={isYearOpen}
+                >
+                  <span className="picker-label">{viewYear}</span>
+                  <ChevronDown
+                    size={15}
+                    className={`picker-chevron ${isYearOpen ? 'open' : ''}`}
+                  />
+                </button>
+
+                {isYearOpen && (
+                  <div
+                    className="calendar-picker-dropdown scrollable-dropdown years-dropdown"
+                    role="listbox"
+                  >
+                    {availableYears.map((yearVal) => (
+                      <button
+                        key={yearVal}
+                        type="button"
+                        className={`calendar-picker-item ${
+                          yearVal === viewYear ? 'selected' : ''
+                        }`}
+                        onClick={() => {
+                          setViewYear(yearVal);
+                          setIsYearOpen(false);
+                        }}
+                        role="option"
+                        aria-selected={yearVal === viewYear}
+                      >
+                        {yearVal}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
             <button
               type="button"
               className="icon-btn"

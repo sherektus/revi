@@ -109,7 +109,7 @@ export default function Navbar({
               onClick={() => onNavigate('home')}
             >
               <BookOpen size={16} />
-              <span>{t.nav.home}</span>
+              <span className="nav-link-label">{t.nav.home}</span>
             </button>
             <button
               type="button"
@@ -117,7 +117,7 @@ export default function Navbar({
               onClick={() => onNavigate('library')}
             >
               <Library size={16} />
-              <span>{t.nav.library}</span>
+              <span className="nav-link-label">{t.nav.library}</span>
             </button>
             <button
               type="button"
@@ -125,7 +125,7 @@ export default function Navbar({
               onClick={() => onNavigate('calendar')}
             >
               <Calendar size={16} />
-              <span>{t.nav.calendar}</span>
+              <span className="nav-link-label">{t.nav.calendar}</span>
             </button>
             <button
               type="button"
@@ -133,7 +133,7 @@ export default function Navbar({
               onClick={() => onNavigate('mockExam')}
             >
               <ClipboardCheck size={16} />
-              <span>{t.nav.mockExam}</span>
+              <span className="nav-link-label">{t.nav.mockExam}</span>
             </button>
             <button
               type="button"
@@ -141,7 +141,7 @@ export default function Navbar({
               onClick={() => onNavigate('formulas')}
             >
               <Sigma size={16} />
-              <span>{t.nav.formulas}</span>
+              <span className="nav-link-label">{t.nav.formulas}</span>
             </button>
           </nav>
         </div>
@@ -158,7 +158,7 @@ export default function Navbar({
               }
             >
               <Coffee size={13} />
-              <span>
+              <span className="timer-mode-label">
                 {timerMode === 'focus' ? t.nav.timerFocus : t.nav.timerBreak}
               </span>
             </button>
@@ -195,7 +195,9 @@ export default function Navbar({
             title={t.privacy?.modalTitle}
           >
             <ShieldCheck size={15} className="privacy-shield-icon" />
-            <span>{activeProfileName || t.privacy?.navBadge || 'Privaatne'}</span>
+            <span className="privacy-device-label">
+              {activeProfileName || t.privacy?.navBadge || 'Privaatne'}
+            </span>
           </button>
 
           <button
@@ -204,77 +206,79 @@ export default function Navbar({
             onClick={() => onOpenUploadModal()}
           >
             <Plus size={16} strokeWidth={2.5} />
-            <span>{t.nav.addMaterial}</span>
+            <span className="nav-add-label">{t.nav.addMaterial}</span>
           </button>
 
-          <div
-            className="lang-switcher"
-            role="group"
-            aria-label={t.nav.langSwitch}
-          >
+          <div className="nav-controls-group">
+            <div
+              className="lang-switcher"
+              role="group"
+              aria-label={t.nav.langSwitch}
+            >
+              <button
+                type="button"
+                className={`lang-btn ${uiLang === 'et' ? 'active' : ''}`}
+                onClick={() => onChangeLang('et')}
+                aria-pressed={uiLang === 'et'}
+              >
+                ET
+              </button>
+              <button
+                type="button"
+                className={`lang-btn ${uiLang === 'en' ? 'active' : ''}`}
+                onClick={() => onChangeLang('en')}
+                aria-pressed={uiLang === 'en'}
+              >
+                EN
+              </button>
+            </div>
+
             <button
               type="button"
-              className={`lang-btn ${uiLang === 'et' ? 'active' : ''}`}
-              onClick={() => onChangeLang('et')}
-              aria-pressed={uiLang === 'et'}
+              className="theme-toggle-btn"
+              onClick={onToggleTheme}
+              title={theme === 'light' ? t.nav.darkMode : t.nav.lightMode}
+              aria-label={theme === 'light' ? t.nav.darkMode : t.nav.lightMode}
             >
-              ET
+              <Sun
+                size={16}
+                className={`theme-icon sun-icon ${theme === 'light' ? 'active' : ''}`}
+              />
+              <Moon
+                size={16}
+                className={`theme-icon moon-icon ${theme === 'dark' ? 'active' : ''}`}
+              />
             </button>
+
+            {/* Teksti suurendamise nupp vaevnägijatele ja mugavaks lugemiseks */}
             <button
               type="button"
-              className={`lang-btn ${uiLang === 'en' ? 'active' : ''}`}
-              onClick={() => onChangeLang('en')}
-              aria-pressed={uiLang === 'en'}
+              className={`a11y-action-btn ${fontSize !== 'normal' ? 'active' : ''}`}
+              onClick={cycleFontSize}
+              title={`${t.nav.textSize}: ${fontSizeLabel}`}
+              aria-label={`${t.nav.textSize}: ${fontSizeLabel}`}
             >
-              EN
+              <Type size={14} />
+              <span className="font-size-tag">
+                {fontSize === 'xlarge' ? '130%' : fontSize === 'large' ? '115%' : '100%'}
+              </span>
+            </button>
+
+            {/* Vaevnägijate vaade (kõrge kontrast) */}
+            <button
+              type="button"
+              className={`a11y-action-btn ${highContrast ? 'active' : ''}`}
+              onClick={onToggleHighContrast}
+              title={highContrast ? t.nav.highContrastOn : t.nav.highContrast}
+              aria-label={highContrast ? t.nav.highContrastOn : t.nav.highContrast}
+              aria-pressed={highContrast}
+            >
+              <Eye size={15} />
+              <span className="sr-only">
+                {highContrast ? t.nav.highContrastOn : t.nav.highContrastOff}
+              </span>
             </button>
           </div>
-
-          <button
-            type="button"
-            className="theme-toggle-btn"
-            onClick={onToggleTheme}
-            title={theme === 'light' ? t.nav.darkMode : t.nav.lightMode}
-            aria-label={theme === 'light' ? t.nav.darkMode : t.nav.lightMode}
-          >
-            <Sun
-              size={17}
-              className={`theme-icon sun-icon ${theme === 'light' ? 'active' : ''}`}
-            />
-            <Moon
-              size={17}
-              className={`theme-icon moon-icon ${theme === 'dark' ? 'active' : ''}`}
-            />
-          </button>
-
-          {/* Teksti suurendamise nupp vaevnägijatele ja mugavaks lugemiseks */}
-          <button
-            type="button"
-            className={`a11y-action-btn ${fontSize !== 'normal' ? 'active' : ''}`}
-            onClick={cycleFontSize}
-            title={`${t.nav.textSize}: ${fontSizeLabel}`}
-            aria-label={`${t.nav.textSize}: ${fontSizeLabel}`}
-          >
-            <Type size={14} />
-            <span className="font-size-tag">
-              {fontSize === 'xlarge' ? '130%' : fontSize === 'large' ? '115%' : '100%'}
-            </span>
-          </button>
-
-          {/* Vaevnägijate vaade (kõrge kontrast) */}
-          <button
-            type="button"
-            className={`a11y-action-btn ${highContrast ? 'active' : ''}`}
-            onClick={onToggleHighContrast}
-            title={highContrast ? t.nav.highContrastOn : t.nav.highContrast}
-            aria-label={highContrast ? t.nav.highContrastOn : t.nav.highContrast}
-            aria-pressed={highContrast}
-          >
-            <Eye size={15} />
-            <span className="sr-only">
-              {highContrast ? t.nav.highContrastOn : t.nav.highContrastOff}
-            </span>
-          </button>
         </div>
       </div>
     </header>
