@@ -29,7 +29,11 @@ import {
   Sparkles,
   Sigma,
   ListOrdered,
-  Clock
+  Clock,
+  Image as ImageIcon,
+  Search,
+  ZoomIn,
+  X
 } from 'lucide-react';
 import {
   calculateMaterialStats,
@@ -60,6 +64,11 @@ export default function MaterialStudyView({
 
   // Edit / Add Modal state for Flashcards & Exercises
   const [editingItem, setEditingItem] = useState(null); // { mode: 'card' | 'exercise', isNew: boolean, data: {...} }
+
+  // Figures tab search, topic filter & zoom modal state
+  const [figureSearch, setFigureSearch] = useState('');
+  const [figureTopicFilter, setFigureTopicFilter] = useState('ALL');
+  const [zoomedFigure, setZoomedFigure] = useState(null);
 
   // 5-Minute Quick Test state
   const [qtRunning, setQtRunning] = useState(false);
@@ -823,6 +832,7 @@ export default function MaterialStudyView({
           <div className="feature-checkbox-grid mt-2">
             {[
               'summary',
+              'figures',
               'quickTest',
               'flashcards',
               'exercises',
@@ -951,6 +961,22 @@ export default function MaterialStudyView({
             <span>{t.material.tabs.summary}</span>
             <span className="tab-count-pill">
               {(material.topics || []).length}
+            </span>
+          </button>
+        )}
+
+        {features.figures !== false && (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'figures'}
+            className={`study-tab-btn ${activeTab === 'figures' ? 'active' : ''}`}
+            onClick={() => setTab('figures')}
+          >
+            <ImageIcon size={17} />
+            <span>{t.material.tabs.figures}</span>
+            <span className="tab-count-pill">
+              {(material.figures || []).length}
             </span>
           </button>
         )}
@@ -1122,9 +1148,358 @@ export default function MaterialStudyView({
                     </div>
                   )}
                 </div>
+
+                {/* Slide Figures belonging to this topic */}
+                {features.figures !== false &&
+                  (material.figures || []).filter(
+                    (fig) =>
+                      fig.topicId === tp.id ||
+                      (fig.sourceRef &&
+                        tp.sourceRef &&
+                        fig.sourceRef.number === tp.sourceRef.number)
+                  ).length > 0 && (
+                    <div className="topic-figures-block mt-3">
+                      <div className="topic-figures-header">
+                        <h3 className="subsection-title" style={{ marginBottom: 0 }}>
+                          <ImageIcon size={15} />
+                          <span>{t.material.summary.topicFigures}</span>
+                        </h3>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => setTab('figures')}
+                        >
+                          <span>{t.material.figures.indexHeading}</span>
+                        </button>
+                      </div>
+
+                      <div className="topic-figures-grid mt-2">
+                        {(material.figures || [])
+                          .filter(
+                            (fig) =>
+                              fig.topicId === tp.id ||
+                              (fig.sourceRef &&
+                                tp.sourceRef &&
+                                fig.sourceRef.number === tp.sourceRef.number)
+                          )
+                          .map((fig) => (
+                            <figure key={fig.id} className="slide-figure-card">
+                              <div
+                                className="figure-visual-frame"
+                                onClick={() => setZoomedFigure(fig)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') setZoomedFigure(fig);
+                                }}
+                                title={t.material.figures.enlargeBtn}
+                              >
+                                {fig.imageUrl ? (
+                                  <img
+                                    src={fig.imageUrl}
+                                    alt={fig.title}
+                                    className="figure-visual-img"
+                                  />
+                                ) : fig.svgMarkup ? (
+                                  <div
+                                    className="figure-visual-svg"
+                                    dangerouslySetInnerHTML={{
+                                      __html: fig.svgMarkup
+                                    }}
+                                  />
+                                ) : null}
+                                <span className="figure-zoom-pill">
+                                  <ZoomIn size={13} />
+                                  <span>{t.material.figures.enlargeBtn}</span>
+                                </span>
+                              </div>
+
+                              <figcaption className="figure-caption-block">
+                                <div className="figure-caption-top">
+                                  <strong>{fig.title}</strong>
+                                  {fig.sourceRef && (
+                                    <button
+                                      type="button"
+                                      className="source-ref-btn"
+                                      onClick={() =>
+                                        onOpenSourceViewer(
+                                          material,
+                                          fig.sourceRef.number || 1
+                                        )
+                                      }
+                                    >
+                                      <FileText size={12} />
+                                      <span>{fig.sourceRef.label}</span>
+                                    </button>
+                                  )}
+                                </div>
+                                {fig.description && (
+                                  <p className="figure-desc-text">
+                                    {fig.description}
+                                  </p>
+                                )}
+                              </figcaption>
+                            </figure>
+                          ))}
+                      </div>
+                    </div>
+                  )}
               </section>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* TAB: JOONISED (SLIDE FIGURES & DIAGRAMS LIST) */}
+      {activeTab === 'figures' && (
+        <div className="figures-tab-content">
+          <div className="topic-card mb-2">
+            <div className="topic-card-header">
+              <div>
+                <h2 className="topic-title">{t.material.figures.title}</h2>
+                <p className="page-subtitle mt-2">
+                  {t.material.figures.subtitle}
+                </p>
+              </div>
+              <span className="badge badge-violet">
+                <ImageIcon size={14} />
+                <span>
+                  {(material.figures || []).length} {t.home.figuresCount}
+                </span>
+              </span>
+            </div>
+
+            {/* Structured Quick List / Index of All Slide Figures */}
+            {(material.figures || []).length > 0 && (
+              <div className="figures-index-box mt-3">
+                <h3 className="subsection-title">
+                  <ListOrdered size={15} />
+                  <span>{t.material.figures.indexHeading}</span>
+                </h3>
+                <ol className="figures-quick-index-list">
+                  {(material.figures || []).map((fig, fIdx) => {
+                    const topicObj = (material.topics || []).find(
+                      (tp) => tp.id === fig.topicId
+                    );
+                    return (
+                      <li key={fig.id} className="figures-quick-index-item">
+                        <a
+                          href={`#figure-card-${fig.id}`}
+                          className="figures-index-link"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setFigureTopicFilter('ALL');
+                            setFigureSearch('');
+                            const el = document.getElementById(
+                              `figure-card-${fig.id}`
+                            );
+                            if (el) {
+                              el.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                              });
+                            }
+                          }}
+                        >
+                          <span className="figure-index-num">
+                            {fig.figureNumber || fIdx + 1}
+                          </span>
+                          <span className="figure-index-title">{fig.title}</span>
+                          {topicObj && (
+                            <span className="badge badge-neutral">
+                              {topicObj.title}
+                            </span>
+                          )}
+                        </a>
+                        {fig.sourceRef && (
+                          <button
+                            type="button"
+                            className="source-ref-btn"
+                            onClick={() =>
+                              onOpenSourceViewer(
+                                material,
+                                fig.sourceRef.number || 1
+                              )
+                            }
+                          >
+                            <FileText size={12} />
+                            <span>{fig.sourceRef.label}</span>
+                            <ExternalLink size={11} />
+                          </button>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            )}
+          </div>
+
+          {/* Search & Topic Filter for Figures */}
+          <div className="library-toolbar mb-2">
+            <div className="search-input-wrap">
+              <Search size={18} className="search-icon" />
+              <input
+                type="search"
+                className="form-input search-input"
+                placeholder={t.material.figures.searchPlaceholder}
+                value={figureSearch}
+                onChange={(e) => setFigureSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="filter-select-wrap">
+              <select
+                className="form-select"
+                value={figureTopicFilter}
+                onChange={(e) => setFigureTopicFilter(e.target.value)}
+              >
+                <option value="ALL">
+                  {t.material.figures.allTopicsFilter}
+                </option>
+                {(material.topics || []).map((tp, idx) => (
+                  <option key={tp.id} value={tp.id}>
+                    {idx + 1}. {tp.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Detailed Figures List */}
+          {(() => {
+            const q = figureSearch.trim().toLowerCase();
+            const filteredFigs = (material.figures || []).filter((fig) => {
+              const matchesTopic =
+                figureTopicFilter === 'ALL' || fig.topicId === figureTopicFilter;
+              const matchesQuery =
+                !q ||
+                (fig.title || '').toLowerCase().includes(q) ||
+                (fig.description || '').toLowerCase().includes(q) ||
+                (fig.callouts || []).some((c) => c.toLowerCase().includes(q));
+              return matchesTopic && matchesQuery;
+            });
+
+            if (filteredFigs.length === 0) {
+              return (
+                <div className="empty-state-card">
+                  <ImageIcon size={34} className="empty-icon" />
+                  <p>{t.material.figures.emptyFigures}</p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="figures-detailed-list">
+                {filteredFigs.map((fig, fIdx) => {
+                  const topicObj = (material.topics || []).find(
+                    (tp) => tp.id === fig.topicId
+                  );
+                  return (
+                    <article
+                      key={fig.id}
+                      id={`figure-card-${fig.id}`}
+                      className="topic-card figure-detail-card"
+                    >
+                      <div className="topic-card-header">
+                        <div className="topic-heading-group">
+                          <span className="topic-index-badge">
+                            {fig.figureNumber || fIdx + 1}
+                          </span>
+                          <div>
+                            <h3 className="topic-title">{fig.title}</h3>
+                            {topicObj && (
+                              <span className="badge badge-neutral mt-1">
+                                {topicObj.title}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="study-topbar-actions">
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => setZoomedFigure(fig)}
+                          >
+                            <ZoomIn size={14} />
+                            <span>{t.material.figures.enlargeBtn}</span>
+                          </button>
+
+                          {fig.sourceRef && (
+                            <button
+                              type="button"
+                              className="source-ref-btn"
+                              onClick={() =>
+                                onOpenSourceViewer(
+                                  material,
+                                  fig.sourceRef.number || 1
+                                )
+                              }
+                            >
+                              <FileText size={14} />
+                              <span>
+                                {t.material.figures.openSlideBtn} (
+                                {fig.sourceRef.label})
+                              </span>
+                              <ExternalLink size={12} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div
+                        className="figure-showcase-stage"
+                        onClick={() => setZoomedFigure(fig)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') setZoomedFigure(fig);
+                        }}
+                      >
+                        {fig.imageUrl ? (
+                          <img
+                            src={fig.imageUrl}
+                            alt={fig.title}
+                            className="figure-showcase-img"
+                          />
+                        ) : fig.svgMarkup ? (
+                          <div
+                            className="figure-showcase-svg"
+                            dangerouslySetInnerHTML={{ __html: fig.svgMarkup }}
+                          />
+                        ) : null}
+                      </div>
+
+                      <div className="topic-two-col mt-3">
+                        <div className="concepts-panel">
+                          <h4 className="subsection-title">
+                            <BookOpen size={15} />
+                            <span>{t.material.figures.descriptionLabel}</span>
+                          </h4>
+                          <p className="figure-desc-text">{fig.description}</p>
+                        </div>
+
+                        {fig.callouts && fig.callouts.length > 0 && (
+                          <div className="formulas-panel">
+                            <h4 className="subsection-title">
+                              <ListOrdered size={15} />
+                              <span>{t.material.figures.calloutsLabel}</span>
+                            </h4>
+                            <ul className="topic-bullets">
+                              {fig.callouts.map((c, cIdx) => (
+                                <li key={cIdx}>{c}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -2310,6 +2685,97 @@ export default function MaterialStudyView({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Zoomed Figure Modal */}
+      {zoomedFigure && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setZoomedFigure(null)}
+        >
+          <div
+            className="modal-card figure-zoom-modal"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="modal-header">
+              <div className="modal-title-wrap">
+                <span className="modal-icon-badge">
+                  <ImageIcon size={18} />
+                </span>
+                <div>
+                  <h2>{zoomedFigure.title}</h2>
+                  {zoomedFigure.sourceRef && (
+                    <p className="modal-subtitle-caption">
+                      {zoomedFigure.sourceRef.label}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="modal-header-actions">
+                {zoomedFigure.sourceRef && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => {
+                      const num = zoomedFigure.sourceRef.number || 1;
+                      setZoomedFigure(null);
+                      onOpenSourceViewer(material, num);
+                    }}
+                  >
+                    <FileText size={14} />
+                    <span>{t.material.figures.openSlideBtn}</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="icon-btn"
+                  onClick={() => setZoomedFigure(null)}
+                  aria-label={t.material.figures.closeZoomBtn}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div className="modal-body">
+              <div className="figure-zoom-stage">
+                {zoomedFigure.imageUrl ? (
+                  <img
+                    src={zoomedFigure.imageUrl}
+                    alt={zoomedFigure.title}
+                    className="figure-zoom-img"
+                  />
+                ) : zoomedFigure.svgMarkup ? (
+                  <div
+                    className="figure-zoom-svg"
+                    dangerouslySetInnerHTML={{ __html: zoomedFigure.svgMarkup }}
+                  />
+                ) : null}
+              </div>
+
+              {zoomedFigure.description && (
+                <p className="figure-desc-text mt-3">
+                  {zoomedFigure.description}
+                </p>
+              )}
+
+              {zoomedFigure.callouts && zoomedFigure.callouts.length > 0 && (
+                <div className="formulas-panel mt-2">
+                  <h4 className="subsection-title">
+                    {t.material.figures.calloutsLabel}
+                  </h4>
+                  <ul className="topic-bullets">
+                    {zoomedFigure.callouts.map((c, idx) => (
+                      <li key={idx}>{c}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

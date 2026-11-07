@@ -3,6 +3,9 @@ import { sampleMaterials, DEFAULT_ENABLED_FEATURES } from '../data/sampleMateria
 const KEYS = {
   UI_LANG: 'kordur_ui_lang',
   THEME: 'kordur_theme',
+  DEVICE_ID: 'revi_device_id_v1',
+  PROFILES: 'revi_profiles_v1',
+  ACTIVE_PROFILE: 'revi_active_profile_v1',
   MATERIALS: 'kordur_materials_v1',
   PROGRESS: 'kordur_progress_v1',
   LAST_SESSION: 'kordur_last_session_v1',
@@ -14,6 +17,88 @@ const KEYS = {
 
 const DB_NAME = 'kordur_files_db';
 const STORE_NAME = 'original_files';
+
+/**
+ * Generates or retrieves a unique Device Workspace ID for this specific visiting computer/browser.
+ * Ensures every computer visiting the web app has its own private local workspace.
+ */
+export function getOrCreateDeviceId() {
+  try {
+    let devId = localStorage.getItem(KEYS.DEVICE_ID);
+    if (!devId) {
+      const rand =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID().slice(0, 8).toUpperCase()
+          : Math.random().toString(36).slice(2, 10).toUpperCase();
+      devId = `REVI-${rand}`;
+      localStorage.setItem(KEYS.DEVICE_ID, devId);
+    }
+    return devId;
+  } catch {
+    return 'REVI-LOCAL';
+  }
+}
+
+export function loadPersonalProfiles() {
+  try {
+    const raw = localStorage.getItem(KEYS.PROFILES);
+    if (!raw) {
+      const def = [{ id: 'default', name: 'Minu isiklik töölaud', isDefault: true }];
+      localStorage.setItem(KEYS.PROFILES, JSON.stringify(def));
+      return def;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      const def = [{ id: 'default', name: 'Minu isiklik töölaud', isDefault: true }];
+      localStorage.setItem(KEYS.PROFILES, JSON.stringify(def));
+      return def;
+    }
+    return parsed;
+  } catch {
+    return [{ id: 'default', name: 'Minu isiklik töölaud', isDefault: true }];
+  }
+}
+
+export function savePersonalProfiles(profiles) {
+  try {
+    localStorage.setItem(KEYS.PROFILES, JSON.stringify(profiles));
+  } catch {
+    // ignore
+  }
+}
+
+export function getActiveProfileId() {
+  try {
+    const saved = localStorage.getItem(KEYS.ACTIVE_PROFILE);
+    return saved || 'default';
+  } catch {
+    return 'default';
+  }
+}
+
+export function setActiveProfileId(profileId) {
+  try {
+    localStorage.setItem(KEYS.ACTIVE_PROFILE, profileId || 'default');
+  } catch {
+    // ignore
+  }
+}
+
+function getScopedKey(baseKey) {
+  const activeProfile = getActiveProfileId();
+  if (!activeProfile || activeProfile === 'default') {
+    return baseKey;
+  }
+  return `${baseKey}__${activeProfile}`;
+}
+
+function getScopedDbKey(materialId) {
+  const activeProfile = getActiveProfileId();
+  if (!activeProfile || activeProfile === 'default') {
+    return materialId;
+  }
+  return `${activeProfile}::${materialId}`;
+}
 
 function openFilesDB() {
   return new Promise((resolve) => {
@@ -60,7 +145,7 @@ export async function saveOriginalFileBlob(materialId, fileOrFiles) {
     };
     await new Promise((resolve) => {
       const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).put(record, materialId);
+      tx.objectStore(STORE_NAME).put(record, getScopedDbKey(materialId));
       tx.oncomplete = () => resolve();
       tx.onerror = () => resolve();
     });
@@ -75,7 +160,7 @@ export async function getOriginalFileBlob(materialId) {
     if (!db) return null;
     return await new Promise((resolve) => {
       const tx = db.transaction(STORE_NAME, 'readonly');
-      const req = tx.objectStore(STORE_NAME).get(materialId);
+      const req = tx.objectStore(STORE_NAME).get(getScopedDbKey(materialId));
       req.onsuccess = () => {
         if (req.result && req.result.buffer) {
           const blob = new Blob([req.result.buffer], { type: req.result.type });
@@ -104,7 +189,7 @@ export async function deleteOriginalFileBlob(materialId) {
     if (!db) return;
     await new Promise((resolve) => {
       const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).delete(materialId);
+      tx.objectStore(STORE_NAME).delete(getScopedDbKey(materialId));
       tx.oncomplete = () => resolve();
       tx.onerror = () => resolve();
     });
@@ -149,7 +234,7 @@ export function saveTheme(theme) {
 
 export function loadNavState() {
   try {
-    const raw = localStorage.getItem(KEYS.NAV_STATE);
+    const raw = localStorage.getItem(getScopedKey(KEYS.NAV_STATE));
     if (!raw) return { currentView: 'home', activeMaterialId: null };
     const parsed = JSON.parse(raw);
     return {
@@ -163,7 +248,7 @@ export function loadNavState() {
 
 export function saveNavState(navState) {
   try {
-    localStorage.setItem(KEYS.NAV_STATE, JSON.stringify(navState));
+    localStorage.setItem(getScopedKey(KEYS.NAV_STATE), JSON.stringify(navState));
   } catch {
     // ignore
   }
@@ -175,14 +260,15 @@ export function saveNavState(navState) {
  */
 export function loadMaterials() {
   try {
-    const raw = localStorage.getItem(KEYS.MATERIALS);
+    const matKey = getScopedKey(KEYS.MATERIALS);
+    const raw = localStorage.getItem(matKey);
     if (!raw) {
-      localStorage.setItem(KEYS.MATERIALS, JSON.stringify(sampleMaterials));
+      localStorage.setItem(matKey, JSON.stringify(sampleMaterials));
       return sampleMaterials;
     }
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed) || parsed.length === 0) {
-      localStorage.setItem(KEYS.MATERIALS, JSON.stringify(sampleMaterials));
+      localStorage.setItem(matKey, JSON.stringify(sampleMaterials));
       return sampleMaterials;
     }
 
@@ -249,7 +335,7 @@ export function loadMaterials() {
       };
     });
 
-    localStorage.setItem(KEYS.MATERIALS, JSON.stringify(upgraded));
+    localStorage.setItem(matKey, JSON.stringify(upgraded));
     return upgraded;
   } catch {
     return sampleMaterials;
@@ -258,7 +344,7 @@ export function loadMaterials() {
 
 export function saveMaterials(materials) {
   try {
-    localStorage.setItem(KEYS.MATERIALS, JSON.stringify(materials));
+    localStorage.setItem(getScopedKey(KEYS.MATERIALS), JSON.stringify(materials));
   } catch (e) {
     console.warn('Could not save materials to localStorage:', e);
   }
@@ -299,7 +385,7 @@ export function createDefaultProgressForMaterial(material) {
 
 export function loadAllProgress(materials = []) {
   try {
-    const raw = localStorage.getItem(KEYS.PROGRESS);
+    const raw = localStorage.getItem(getScopedKey(KEYS.PROGRESS));
     const parsed = raw ? JSON.parse(raw) : {};
     const result = { ...parsed };
 
@@ -341,7 +427,7 @@ export function loadAllProgress(materials = []) {
 
 export function saveAllProgress(progressMap) {
   try {
-    localStorage.setItem(KEYS.PROGRESS, JSON.stringify(progressMap));
+    localStorage.setItem(getScopedKey(KEYS.PROGRESS), JSON.stringify(progressMap));
   } catch (e) {
     console.warn('Could not save progress to localStorage:', e);
   }
@@ -349,7 +435,7 @@ export function saveAllProgress(progressMap) {
 
 export function loadLastSession() {
   try {
-    const raw = localStorage.getItem(KEYS.LAST_SESSION);
+    const raw = localStorage.getItem(getScopedKey(KEYS.LAST_SESSION));
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -358,7 +444,7 @@ export function loadLastSession() {
 
 export function saveLastSession(sessionInfo) {
   try {
-    localStorage.setItem(KEYS.LAST_SESSION, JSON.stringify(sessionInfo));
+    localStorage.setItem(getScopedKey(KEYS.LAST_SESSION), JSON.stringify(sessionInfo));
   } catch {
     // ignore
   }
@@ -370,7 +456,7 @@ export function saveLastSession(sessionInfo) {
  */
 export function loadSpacedRepetition() {
   try {
-    const raw = localStorage.getItem(KEYS.SPACED_REP);
+    const raw = localStorage.getItem(getScopedKey(KEYS.SPACED_REP));
     return raw ? JSON.parse(raw) : {};
   } catch {
     return {};
@@ -379,7 +465,7 @@ export function loadSpacedRepetition() {
 
 export function saveSpacedRepetition(srMap) {
   try {
-    localStorage.setItem(KEYS.SPACED_REP, JSON.stringify(srMap));
+    localStorage.setItem(getScopedKey(KEYS.SPACED_REP), JSON.stringify(srMap));
   } catch {
     // ignore
   }
@@ -686,9 +772,10 @@ const DEFAULT_SAMPLE_EVENTS = [
 
 export function loadCalendarEvents() {
   try {
-    const raw = localStorage.getItem(KEYS.CALENDAR_EVENTS);
+    const evKey = getScopedKey(KEYS.CALENDAR_EVENTS);
+    const raw = localStorage.getItem(evKey);
     if (!raw) {
-      localStorage.setItem(KEYS.CALENDAR_EVENTS, JSON.stringify(DEFAULT_SAMPLE_EVENTS));
+      localStorage.setItem(evKey, JSON.stringify(DEFAULT_SAMPLE_EVENTS));
       return DEFAULT_SAMPLE_EVENTS;
     }
     const parsed = JSON.parse(raw);
@@ -700,7 +787,7 @@ export function loadCalendarEvents() {
 
 export function saveCalendarEvents(events) {
   try {
-    localStorage.setItem(KEYS.CALENDAR_EVENTS, JSON.stringify(events));
+    localStorage.setItem(getScopedKey(KEYS.CALENDAR_EVENTS), JSON.stringify(events));
   } catch {
     // ignore
   }
@@ -708,7 +795,7 @@ export function saveCalendarEvents(events) {
 
 export function loadStudyPlans() {
   try {
-    const raw = localStorage.getItem(KEYS.STUDY_PLANS);
+    const raw = localStorage.getItem(getScopedKey(KEYS.STUDY_PLANS));
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -717,7 +804,7 @@ export function loadStudyPlans() {
 
 export function saveStudyPlans(plans) {
   try {
-    localStorage.setItem(KEYS.STUDY_PLANS, JSON.stringify(plans));
+    localStorage.setItem(getScopedKey(KEYS.STUDY_PLANS), JSON.stringify(plans));
   } catch {
     // ignore
   }

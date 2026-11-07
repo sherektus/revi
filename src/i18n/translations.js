@@ -400,6 +400,38 @@ export const translations = {
       rawPdfPreview: 'PDF-dokumendi eelvaade',
       extractedTextView: 'Failist loetud tekst lehekülgede ja slaidide kaupa'
     },
+    privacy: {
+      navBadge: 'Privaatne',
+      modalTitle: 'Isiklik ja privaatne töölaud selles arvutis',
+      modalSubtitle:
+        'Iga veebilehte külastava arvuti jaoks on Revi kogemus 100% personaalne. Sinu üles laaditud failid ja õppematerjalid salvestatakse ainult sinu seadmesse ning teised külastajad neid ei näe.',
+      guaranteeTitle: 'Kuidas sinu materjalide privaatsus on tagatud?',
+      guaranteePoint1:
+        'Kõik üles laaditud PDF-, PPTX- ja TXT-failid töödeldakse otse sinu arvuti brauseris (IndexedDB ja LocalStorage) — faile ei saadeta ühtsesse avalikku pilveserverisse.',
+      guaranteePoint2:
+        'Teised veebilehe külastajad teistes arvutites või telefonides näevad ainult enda seadmesse lisatud materjale ja näidismaterjali „Tuletised“.',
+      guaranteePoint3:
+        'Kui kasutad ühist arvutit (nt raamatukogus või pereliikmega), saad allpool luua eraldi isikliku profiili või pärast õppimist oma üleslaadimised ühe klõpsuga kustutada.',
+      deviceIdLabel: 'Selle arvuti unikaalne seadmetunnus',
+      activeProfileLabel: 'Aktiivne isiklik töölaud selles arvutis',
+      defaultProfileName: 'Minu isiklik töölaud',
+      newProfilePlaceholder: 'Uue profiili nimi (nt Kadi või Eksamiperiood)...',
+      createProfileBtn: 'Loo uus profiil',
+      switchProfileBtn: 'Aktiveeri',
+      activeBadge: 'Aktiivne',
+      deleteProfileBtn: 'Kustuta profiil',
+      backupSectionTitle: 'Varukoopia ja teise arvutisse tõstmine',
+      backupSectionDesc:
+        'Kuna andmed on privaatselt ainult selles arvutis, saad soovi korral oma teegi ja edenemise failina alla laadida ning teises arvutis taastada.',
+      exportBtn: 'Laadi minu andmed alla (.json)',
+      importBtn: 'Taasta andmed failist',
+      importSuccessToast: 'Isiklikud andmed on edukalt taastatud!',
+      clearDeviceBtn: 'Kustuta sellest profiilist kõik üles laaditud materjalid',
+      clearDeviceConfirm:
+        'Kas oled kindel? See eemaldab sellest profiilist kõik sinu üles laaditud failid ja taastab algse näidismaterjali.',
+      clearedToast: 'Üles laaditud materjalid on sellest seadmest kustutatud.',
+      closeBtn: 'Selge, sulge'
+    },
     subjects: [
       'Matemaatiline analüüs',
       'Füüsika',
@@ -811,6 +843,38 @@ export const translations = {
       slideFiguresHeading: 'Figures on this slide',
       rawPdfPreview: 'PDF Document Preview',
       extractedTextView: 'Extracted text by page / slide'
+    },
+    privacy: {
+      navBadge: 'Private',
+      modalTitle: 'Personal & Private Workspace on This Computer',
+      modalSubtitle:
+        'Every computer visiting Revi gets a 100% personal experience. Your uploaded files and study materials are stored exclusively on your device — other visitors can never see them.',
+      guaranteeTitle: 'How your privacy is guaranteed:',
+      guaranteePoint1:
+        'All uploaded PDF, PPTX, and TXT files are parsed and stored directly inside your browser on this computer (IndexedDB & LocalStorage) — never uploaded to a shared public server.',
+      guaranteePoint2:
+        'Other visitors on other computers or phones only ever see their own local materials and the built-in “Derivatives” sample.',
+      guaranteePoint3:
+        'If you share this computer with someone else, you can create a separate personal profile below or clear your uploaded materials with one click when finished.',
+      deviceIdLabel: 'Unique Device Workspace ID for this computer',
+      activeProfileLabel: 'Active personal workspace on this computer',
+      defaultProfileName: 'My Personal Workspace',
+      newProfilePlaceholder: 'New profile name (e.g., Alex or Finals Prep)...',
+      createProfileBtn: 'Create profile',
+      switchProfileBtn: 'Switch to profile',
+      activeBadge: 'Active',
+      deleteProfileBtn: 'Delete profile',
+      backupSectionTitle: 'Personal Backup & Transfer to Another Computer',
+      backupSectionDesc:
+        'Because your materials live privately on this computer only, you can export a backup file anytime to restore your library on another device.',
+      exportBtn: 'Export my workspace (.json)',
+      importBtn: 'Import workspace file',
+      importSuccessToast: 'Personal workspace restored successfully!',
+      clearDeviceBtn: 'Clear all uploaded materials from this profile',
+      clearDeviceConfirm:
+        'Are you sure? This will remove all uploaded materials from this profile on this computer and restore the default sample material.',
+      clearedToast: 'Uploaded materials cleared from this device.',
+      closeBtn: 'Got it, close'
     },
     subjects: [
       'Matemaatiline analüüs',
