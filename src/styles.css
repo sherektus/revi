@@ -476,10 +476,12 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 4.1rem;
-  padding: 0.45rem 1.4rem;
-  gap: 0.65rem;
-  max-width: 100%;
+  min-height: 4.25rem;
+  padding: 0.5rem 1.4rem;
+  gap: 0.75rem 1rem;
+  max-width: 1560px;
+  margin: 0 auto;
+  flex-wrap: wrap;
 }
 
 .navbar-brand-section {
@@ -491,45 +493,44 @@ button {
 .brand-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.65rem;
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   color: var(--text-primary);
   white-space: nowrap;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .brand-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 0.72rem;
-  background: var(--brand-logo-gradient);
-  color: #FFFFFF;
-  box-shadow: var(--brand-logo-shadow);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 0.75rem;
+  background: var(--brand-logo-gradient, var(--accent));
+  color: var(--accent-contrast);
+  box-shadow: 0 4px 14px rgba(89, 99, 63, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   flex-shrink: 0;
   transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease;
 }
 
 .brand-btn:hover .brand-icon {
   transform: translateY(-1px) scale(1.05);
-  background: var(--brand-logo-gradient-hover);
-  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.38), 0 3px 8px rgba(245, 158, 11, 0.3);
+  box-shadow: 0 6px 18px rgba(89, 99, 63, 0.35);
 }
 
 .brand-icon svg {
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.24));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 0.2rem;
-  flex-wrap: nowrap;
-  flex-shrink: 0;
+  gap: 0.35rem;
+  flex-wrap: wrap;
 }
 
 .nav-link {
@@ -832,65 +833,128 @@ button {
   border-radius: 0.5rem;
 }
 
+/* --- NAVBAR RIGHT & ACTION CLUSTERS --- */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.navbar-actions-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-shrink: 0;
+}
+
+.navbar-tools-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-shrink: 0;
+}
+
+/* Primary Action Button: Lisa materjal */
+.nav-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.35rem;
+  padding: 0.42rem 0.95rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.86rem;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border: 1px solid transparent;
+  box-shadow: 0 2px 6px rgba(89, 99, 63, 0.22);
+  transition: all 0.16s ease;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.nav-add-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(89, 99, 63, 0.32);
+}
+
 /* --- PRIVACY & PROFILE PILL --- */
 .privacy-device-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.32rem 0.6rem;
+  gap: 0.4rem;
+  min-height: 2.35rem;
+  padding: 0.38rem 0.8rem;
   border-radius: 999px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-secondary);
   transition: all 0.16s ease;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .privacy-device-pill:hover {
   border-color: var(--accent);
   color: var(--text-primary);
+  background: var(--bg-subtle);
 }
 
 .privacy-shield-icon {
   color: var(--success);
 }
 
-.nav-add-btn {
-  padding: 0.36rem 0.75rem;
-  font-size: 0.82rem;
-  flex-shrink: 0;
-  gap: 0.35rem;
-}
-
-/* --- NAV UTILITY CONTROLS GROUP --- */
-.nav-controls-group {
+/* --- PREFERENCES & ACCESSIBILITY HUB --- */
+.nav-pref-hub {
   display: inline-flex;
   align-items: center;
-  gap: 0.22rem;
+  gap: 0.25rem;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 0.65rem;
-  padding: 0.12rem 0.22rem;
+  border-radius: 999px;
+  padding: 0.18rem 0.4rem;
+  box-shadow: var(--shadow-sm);
   flex-shrink: 0;
 }
 
+.nav-pref-divider {
+  width: 1px;
+  height: 1.25rem;
+  background: var(--border-color);
+  margin: 0 0.15rem;
+  flex-shrink: 0;
+}
+
+/* Language Switcher */
 .lang-switcher {
   display: inline-flex;
   align-items: center;
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
   padding: 0.1rem;
-  border-radius: 0.5rem;
+  border-radius: 999px;
+  gap: 0.15rem;
 }
 
 .lang-btn {
-  padding: 0.18rem 0.42rem;
-  border-radius: 0.38rem;
-  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.95rem;
+  height: 1.85rem;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
   font-weight: 700;
   color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
   transition: all 0.15s ease;
 }
 
@@ -899,18 +963,20 @@ button {
   color: var(--accent-contrast);
 }
 
+/* Theme Toggle Button */
 .theme-toggle-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.8rem;
-  height: 1.8rem;
-  border-radius: 0.45rem;
+  min-width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
   background: transparent;
   border: 1px solid transparent;
   color: var(--text-secondary);
   transition: all 0.15s ease;
   padding: 0;
+  cursor: pointer;
 }
 
 .theme-toggle-btn:hover {
@@ -919,50 +985,23 @@ button {
 }
 
 .theme-icon {
-  opacity: 0.45;
+  opacity: 0.55;
   transition: opacity 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
 .theme-icon.active {
   opacity: 1;
   color: var(--accent);
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
-.a11y-action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  padding: 0.2rem 0.42rem;
-  height: 1.8rem;
-  border-radius: 0.45rem;
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-secondary);
-  font-size: 0.74rem;
-  font-weight: 700;
-  transition: all 0.16s ease;
-}
-
-.a11y-action-btn:hover {
-  background: var(--bg-subtle);
-  color: var(--text-primary);
-}
-
-.a11y-action-btn.active {
-  background: var(--accent-soft);
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
-/* --- FONT SIZE STEPPER (DECREASE / INCREASE / RESET) --- */
+/* Font Size Stepper */
 .font-size-stepper {
   display: inline-flex;
   align-items: center;
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
-  border-radius: 0.55rem;
+  border-radius: 999px;
   padding: 0.1rem;
   gap: 0.15rem;
   transition: all 0.15s ease;
@@ -976,9 +1015,9 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.55rem;
-  height: 1.55rem;
-  border-radius: 0.4rem;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
   background: transparent;
   color: var(--text-secondary);
   border: none;
@@ -1002,11 +1041,14 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.18rem 0.45rem;
-  border-radius: 0.4rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
   background: transparent;
   border: none;
   color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -1024,9 +1066,69 @@ button {
 
 .font-size-tag {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 700;
   line-height: 1;
+}
+
+/* Low-vision Accessibility Toggle */
+.a11y-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  transition: all 0.16s ease;
+  cursor: pointer;
+  padding: 0;
+}
+
+.a11y-action-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.a11y-action-btn.active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+}
+
+/* Keyboard Shortcuts Button */
+.shortcuts-hub-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-width: 2.1rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.16s ease;
+  padding: 0 0.45rem;
+}
+
+.shortcuts-hub-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.shortcuts-k-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 800;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 0.35rem;
+  padding: 0.05rem 0.28rem;
+  color: var(--accent);
 }
 
 /* --- BUTTONS & BADGES --- */
@@ -2967,43 +3069,20 @@ button {
   border-radius: 0.75rem;
 }
 
-/* --- RESPONSIVE DESIGN (MOBILE & TABLET NAVBAR) --- */
-@media (max-width: 1360px) {
-  .timer-mode-label {
-    display: none;
-  }
-}
-
-@media (max-width: 1240px) {
+/* --- RESPONSIVE DESIGN (NAVBAR & TASKBAR SCALING) --- */
+@media (max-width: 1120px) {
   .navbar-inner {
-    padding: 0.4rem 1.15rem;
-    gap: 0.5rem;
-  }
-  .nav-link {
-    padding: 0.38rem 0.52rem;
-    font-size: 0.82rem;
-    gap: 0.28rem;
-  }
-  .privacy-device-label {
-    display: none;
-  }
-  .privacy-device-pill {
-    padding: 0.32rem 0.45rem;
-  }
-  .nav-add-label {
-    display: none;
-  }
-  .nav-add-btn {
-    padding: 0.36rem 0.55rem;
+    padding: 0.45rem 1rem;
+    gap: 0.55rem;
   }
 }
 
-@media (max-width: 1040px) {
+@media (max-width: 980px) {
   .navbar-inner {
     flex-wrap: wrap;
     min-height: auto;
-    padding: 0.5rem 1rem 0.55rem;
-    gap: 0.45rem;
+    padding: 0.5rem 1rem 0.6rem;
+    gap: 0.5rem;
   }
 
   .navbar-brand-section {
@@ -3013,6 +3092,7 @@ button {
   .navbar-right {
     order: 2;
     margin-left: auto;
+    gap: 0.45rem;
   }
 
   .nav-links {
@@ -3022,12 +3102,27 @@ button {
     overflow-x: auto;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
-    padding: 0.2rem 0 0.1rem;
+    padding: 0.25rem 0 0.1rem;
     gap: 0.35rem;
   }
 
   .nav-links::-webkit-scrollbar {
     display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .privacy-device-label {
+    display: none;
+  }
+  .nav-add-label {
+    display: none;
+  }
+  .timer-mode-label {
+    display: none;
+  }
+  .navbar-right {
+    gap: 0.35rem;
   }
 }
 

@@ -205,10 +205,10 @@ export default function MaterialStudyView({
         if (e.code === 'Space') {
           e.preventDefault();
           handleFlipCard();
-        } else if (e.key === '1') {
+        } else if (e.key === '1' || e.key.toLowerCase() === 'r') {
           e.preventDefault();
           handleMarkCard('review');
-        } else if (e.key === '2') {
+        } else if (e.key === '2' || e.key.toLowerCase() === 'k') {
           e.preventDefault();
           handleMarkCard('knew');
         } else if (e.code === 'ArrowLeft') {
