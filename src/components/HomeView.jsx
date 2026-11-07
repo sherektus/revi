@@ -768,8 +768,8 @@ export default function HomeView({
                 </h2>
                 <p className="modal-subtitle">
                   {uiLang === 'en'
-                    ? 'Reorder or hide home page blocks. Customize your accent color while preserving Revi’s visual harmony.'
-                    : 'Liiguta või peida avalehe plokke. Vali aktsentvärv, mis sobib sinu stiiliga.'}
+                    ? 'Reorder or hide home page blocks.'
+                    : 'Liiguta või peida avalehe plokke.'}
                 </p>
               </div>
               <button
