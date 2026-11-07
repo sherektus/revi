@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Plus,
   UploadCloud,
@@ -11,9 +11,31 @@ import {
   RefreshCw,
   Calendar,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  Sliders,
+  SlidersHorizontal,
+  Eye,
+  EyeOff,
+  ArrowUp,
+  ArrowDown,
+  RotateCcw,
+  AlertCircle,
+  HelpCircle,
+  Zap,
+  BookmarkPlus,
+  Palette,
+  X
 } from 'lucide-react';
-import { calculateMaterialStats } from '../utils/storage';
+import {
+  calculateMaterialStats,
+  loadDashboardConfig,
+  saveDashboardConfig,
+  DEFAULT_DASHBOARD_WIDGETS,
+  loadAccentTheme,
+  saveAccentTheme,
+  ACCENT_PALETTES,
+  loadErrorNotebook
+} from '../utils/storage';
 
 export default function HomeView({
   t,
@@ -27,10 +49,25 @@ export default function HomeView({
   onOpenUploadModal,
   onOpenMaterial,
   onNavigateLibrary,
-  onNavigateCalendar
+  onNavigateCalendar,
+  onOpenQuickStudy,
+  onOpenErrorNotebook,
+  onOpenExplainModal
 }) {
   const [isDragging, setIsDragging] = useState(false);
   const homeFileInputRef = useRef(null);
+
+  // 6. Oma töölaud state (modular widgets & palette)
+  const [widgets, setWidgets] = useState(() => loadDashboardConfig());
+  const [currentPaletteId, setCurrentPaletteId] = useState(() => loadAccentTheme());
+  const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
+  const [mistakes, setMistakes] = useState(() => loadErrorNotebook());
+
+  useEffect(() => {
+    setMistakes(loadErrorNotebook());
+  }, []);
+
+  const unresolvedMistakes = (mistakes || []).filter((m) => !m.resolved);
 
   const sortedRecent = [...materials].sort((a, b) => {
     const tA = new Date(a.lastOpenedAt || a.createdAt || 0).getTime();
@@ -76,14 +113,62 @@ export default function HomeView({
     }
   }
 
+  // Dashboard customization helpers
+  function moveWidget(index, direction) {
+    const target = index + direction;
+    if (target < 0 || target >= widgets.length) return;
+    const next = [...widgets];
+    const temp = next[index];
+    next[index] = next[target];
+    next[target] = temp;
+    setWidgets(next);
+    saveDashboardConfig(next);
+  }
+
+  function toggleWidgetVisibility(widgetId) {
+    const next = widgets.map((w) =>
+      w.id === widgetId ? { ...w, visible: !w.visible } : w
+    );
+    setWidgets(next);
+    saveDashboardConfig(next);
+  }
+
+  function handleSelectPalette(id) {
+    setCurrentPaletteId(id);
+    saveAccentTheme(id);
+  }
+
+  function handleResetDashboard() {
+    setWidgets(DEFAULT_DASHBOARD_WIDGETS);
+    saveDashboardConfig(DEFAULT_DASHBOARD_WIDGETS);
+    handleSelectPalette('sapphire');
+  }
+
+  const isWidgetVisible = (id) => {
+    const found = widgets.find((w) => w.id === id);
+    return found ? found.visible !== false : true;
+  };
+
   return (
     <div className="home-view container">
       {/* Hero & Upload Dropzone Section */}
       <section className="hero-section">
         <div className="hero-content">
-          <div className="hero-badge">
-            <Sparkles size={15} />
-            <span>{t.hero.badge}</span>
+          <div className="hero-badge-row">
+            <div className="hero-badge">
+              <Sparkles size={15} />
+              <span>{t.hero.badge}</span>
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm customize-dashboard-btn"
+              onClick={() => setIsCustomizerOpen(true)}
+              title="Kohanda töölaua paigutust ja aktsentvärve"
+            >
+              <Palette size={14} className="accent-text" />
+              <span>{uiLang === 'en' ? 'Customize Dashboard' : 'Oma töölaud'}</span>
+            </button>
           </div>
 
           <h1 className="hero-title">{t.hero.title}</h1>
@@ -114,6 +199,17 @@ export default function HomeView({
               >
                 <Play size={17} />
                 <span>{t.hero.continueBtn}</span>
+              </button>
+            )}
+
+            {onOpenQuickStudy && (
+              <button
+                type="button"
+                className="btn btn-secondary btn-lg"
+                onClick={() => onOpenQuickStudy(15)}
+              >
+                <Clock size={17} className="accent-text" />
+                <span>{uiLang === 'en' ? '“I have 15 min”' : '„Mul on 15 minutit”'}</span>
               </button>
             )}
           </div>
@@ -167,306 +263,559 @@ export default function HomeView({
         </div>
       </section>
 
-      {/* TWO-COLUMN DASHBOARD: "Täna korrata" & "Lähenevad tähtajad" */}
-      <section className="home-dashboard-grid">
-        {/* 1. "Täna korrata" (Due Today Spaced Repetition Card) */}
-        <div className="dashboard-panel due-today-panel">
-          <div className="panel-header">
-            <div>
-              <div className="continue-banner-eyebrow">
-                <RefreshCw size={14} />
-                <span>{t.dueToday.title}</span>
-              </div>
-              <h2 className="panel-title">{t.dueToday.title}</h2>
-              <p className="panel-subtitle">{t.dueToday.subtitle}</p>
-            </div>
-          </div>
+      {/* RENDER CUSTOMIZED DASHBOARD WIDGETS IN USER-CONFIGURED ORDER */}
+      <div className="dashboard-widgets-container">
+        {widgets.map((widget, wIdx) => {
+          if (!widget.visible) return null;
 
-          {dueTodayQueue && dueTodayQueue.length > 0 ? (
-            <div className="due-today-content">
-              <div className="due-preview-list">
-                {dueTodayQueue.slice(0, 3).map((item) => (
-                  <div key={item.itemKey} className="due-preview-item">
-                    <span
-                      className={`badge ${
-                        item.difficultyTag === 'hard'
-                          ? 'badge-warning'
-                          : 'badge-violet'
-                      }`}
-                    >
-                      {item.difficultyTag === 'hard'
-                        ? t.dueToday.tagHard
-                        : item.difficultyTag === 'planned'
-                        ? t.dueToday.tagPlanned
-                        : t.dueToday.tagDue}
-                    </span>
-                    <p className="due-preview-question">
-                      {item.itemType === 'flashcard'
-                        ? item.card.question
-                        : item.exercise.question}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                className="btn btn-primary btn-lg btn-full mt-3"
-                onClick={onStartDueToday}
-              >
-                <Play size={17} />
-                <span>
-                  {t.dueToday.startBtnPrefix} ({dueTodayQueue.length}{' '}
-                  {dueTodayQueue.length === 1
-                    ? t.dueToday.questionSingular
-                    : t.dueToday.questionPlural}
-                  )
-                </span>
-              </button>
-            </div>
-          ) : (
-            <div className="due-empty-box">
-              <CheckCircle2 size={28} className="accent-text mb-2" />
-              <h3>{t.dueToday.emptyTitle}</h3>
-              <p>{t.dueToday.emptySubtitle}</p>
-            </div>
-          )}
-        </div>
-
-        {/* 2. "Lähenevad tähtajad" (Upcoming Deadlines from Calendar) */}
-        <div className="dashboard-panel deadlines-panel">
-          <div className="panel-header">
-            <div>
-              <div className="continue-banner-eyebrow">
-                <Calendar size={14} />
-                <span>{t.nav.calendar}</span>
-              </div>
-              <h2 className="panel-title">{t.upcomingDeadlines.title}</h2>
-              <p className="panel-subtitle">{t.upcomingDeadlines.subtitle}</p>
-            </div>
-
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={onNavigateCalendar}
-            >
-              <span>{t.upcomingDeadlines.viewCalendarBtn}</span>
-              <ArrowRight size={14} />
-            </button>
-          </div>
-
-          {upcomingEvents.length === 0 ? (
-            <div className="due-empty-box">
-              <p>{t.upcomingDeadlines.emptyText}</p>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm mt-2"
-                onClick={onNavigateCalendar}
-              >
-                <Plus size={15} />
-                <span>{t.upcomingDeadlines.addEventBtn}</span>
-              </button>
-            </div>
-          ) : (
-            <div className="deadlines-mini-list">
-              {upcomingEvents.map((ev) => {
-                const linkedMats = materials.filter((m) =>
-                  (ev.linkedMaterialIds || []).includes(m.id)
-                );
-                return (
-                  <div key={ev.id} className="deadline-mini-card">
-                    <div className="deadline-mini-top">
-                      <div className="material-badges" style={{ marginBottom: 0 }}>
-                        <span className="badge badge-violet">
-                          {t.calendar.types[ev.type] || ev.type}
-                        </span>
-                        <span className="badge badge-neutral">{ev.subject}</span>
-                      </div>
-                      <span className="badge badge-warning">
-                        <Clock size={12} />
-                        {getDaysRemainingLabel(ev.date)}
+          // 1. QUICK STUDY WIDGET: "Mul on aega" (5, 15, 30, 60 min)
+          if (widget.id === 'quickStudy') {
+            return (
+              <section key="quickStudy" className="dashboard-widget-section quick-study-widget-section">
+                <div className="quick-study-banner-card">
+                  <div className="banner-left">
+                    <div className="continue-banner-eyebrow">
+                      <Clock size={15} className="accent-text" />
+                      <span>{uiLang === 'en' ? 'Quick Micro-Sessions' : '1. „Mul on aega” kiirõpe'}</span>
+                      <span className="badge badge-accent">
+                        {uiLang === 'en' ? 'Focused' : 'Konkreetne õppimiskord'}
                       </span>
                     </div>
+                    <h2 className="quick-study-headline">
+                      {uiLang === 'en'
+                        ? 'How much time do you have right now?'
+                        : 'Kui palju sul praegu õppimiseks aega on?'}
+                    </h2>
+                    <p className="quick-study-desc">
+                      {uiLang === 'en'
+                        ? 'Revi curates an exact, timed session: recall questions, core explanations, and practice exercises with hints.'
+                        : 'Revi koostab valitud ajaks konkreetse kava: kordamisküsimused, põhiselgitused ja harjutused koos vihjetega.'}
+                    </p>
+                  </div>
 
-                    <h3
-                      className="deadline-mini-title"
-                      onClick={onNavigateCalendar}
-                    >
-                      {ev.title}
+                  <div className="banner-right quick-time-buttons-grid">
+                    {[
+                      { mins: 5, label: '5 min', descET: '2 küsimust', descEN: '2 questions' },
+                      { mins: 15, label: '15 min', descET: '2 kordamist + 3 harjutust', descEN: '2 recall + 3 exercises', primary: true },
+                      { mins: 30, label: '30 min', descET: 'Põhjalikum tsükkel', descEN: 'In-depth cycle' },
+                      { mins: 60, label: '60 min', descET: 'Täielik kordamiskord', descEN: 'Full master session' }
+                    ].map((item) => (
+                      <button
+                        key={item.mins}
+                        type="button"
+                        className={`quick-time-card ${item.primary ? 'featured' : ''}`}
+                        onClick={() => onOpenQuickStudy && onOpenQuickStudy(item.mins)}
+                      >
+                        <span className="time-badge">{item.label}</span>
+                        <span className="time-meta">{uiLang === 'en' ? item.descEN : item.descET}</span>
+                        <Play size={13} className="time-play-icon" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            );
+          }
+
+          // 2. ERROR NOTEBOOK WIDGET: "Vigade märkmik"
+          if (widget.id === 'errorNotebook') {
+            return (
+              <section key="errorNotebook" className="dashboard-widget-section error-notebook-widget-section">
+                <div className="error-notebook-banner-card">
+                  <div className="error-banner-info">
+                    <div className="continue-banner-eyebrow">
+                      <BookmarkPlus size={15} className="accent-text" />
+                      <span>{uiLang === 'en' ? 'Mistake Journal' : '2. Vigade märkmik'}</span>
+                      <span className="badge badge-warning">
+                        {unresolvedMistakes.length}{' '}
+                        {uiLang === 'en' ? 'to review' : 'ootab kinnistamist'}
+                      </span>
+                    </div>
+                    <h3 className="error-banner-title">
+                      {uiLang === 'en'
+                        ? 'Learn deeply from each incorrect attempt'
+                        : 'Valede vastuste automaatne diagnostika'}
                     </h3>
-
-                    <p className="deadline-mini-date">
-                      {ev.date} {ev.time ? `• ${ev.time}` : ''}
+                    <p className="error-banner-desc">
+                      {uiLang === 'en'
+                        ? 'Distinguishes formula selection slips from calculation errors, explains how to think correctly, and provides similar follow-up problems.'
+                        : 'Revi eristab valemi valimise vea arvutusveast, selgitab õiget mõttekäiku ning pakub sarnast harjutust.'}
                     </p>
 
-                    {linkedMats.length > 0 && (
-                      <div className="deadline-linked-pills">
-                        {linkedMats.map((lm) => (
-                          <button
-                            key={lm.id}
-                            type="button"
-                            className="source-ref-btn"
-                            onClick={() => onOpenMaterial(lm.id)}
-                          >
-                            <BookOpen size={12} />
-                            <span>{lm.title.slice(0, 34)}...</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Active Session / Continue Studying Banner */}
-      {resumeMaterial && (
-        <section className="continue-banner-section">
-          <div className="continue-banner-card">
-            <div className="continue-banner-info">
-              <div className="continue-banner-eyebrow">
-                <span className="pulse-dot" />
-                <span>{t.home.continueBannerTitle}</span>
-                <span className="badge badge-outline">
-                  {resumeMaterial.subject}
-                </span>
-              </div>
-              <h3 className="continue-banner-title">{resumeMaterial.title}</h3>
-              <div className="continue-banner-meta">
-                <span>
-                  {resumeStats.totalCards} {t.home.cardsCount}
-                </span>
-                <span>•</span>
-                <span>
-                  {resumeStats.totalExercises} {t.home.exercisesCount}
-                </span>
-                <span>•</span>
-                <span>
-                  {t.home.progressLabel}: <strong>{resumeStats.progressPercent}%</strong>
-                </span>
-              </div>
-            </div>
-
-            <div className="continue-banner-right">
-              <div className="continue-progress-mini">
-                <div className="progress-track">
-                  <div
-                    className="progress-fill"
-                    style={{ width: `${resumeStats.progressPercent}%` }}
-                  />
-                </div>
-              </div>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() =>
-                  onOpenMaterial(
-                    resumeMaterial.id,
-                    lastSession?.materialId === resumeMaterial.id
-                      ? lastSession.activeTab
-                      : undefined
-                  )
-                }
-              >
-                <Play size={16} />
-                <span>{t.home.continueAction}</span>
-              </button>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Recently Opened Materials Section */}
-      <section className="recent-materials-section">
-        <div className="section-header">
-          <div>
-            <h2 className="section-title">{t.home.recentTitle}</h2>
-          </div>
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={onNavigateLibrary}
-          >
-            <span>{t.home.viewAllLibrary}</span>
-            <ArrowRight size={16} />
-          </button>
-        </div>
-
-        <div className="materials-grid">
-          {sortedRecent.slice(0, 6).map((mat) => {
-            const stats = calculateMaterialStats(mat, progressMap[mat.id]);
-            return (
-              <article key={mat.id} className="material-card">
-                <div className="material-card-top">
-                  <div className="material-badges">
-                    <span className="badge badge-violet">{mat.subject}</span>
-                    <span className="badge badge-neutral">
-                      {mat.fileType || 'DOC'} • {(mat.contentLang || 'et').toUpperCase()}
-                    </span>
-                    {mat.isCollection && (
-                      <span className="badge badge-sample">{t.library.collectionBadge}</span>
-                    )}
-                    {mat.isSample && (
-                      <span className="badge badge-sample">{t.home.sampleBadge}</span>
-                    )}
-                  </div>
-
-                  <h3
-                    className="material-card-title"
-                    onClick={() => onOpenMaterial(mat.id)}
-                  >
-                    {mat.title}
-                  </h3>
-
-                  <div className="material-stats-row">
-                    <span className="stat-pill">
-                      <BookOpen size={14} />
-                      {(mat.topics || []).length} {t.home.topicsCount}
-                    </span>
-                    <span className="stat-pill">
-                      <Layers size={14} />
-                      {stats.totalCards} {t.home.cardsCount}
-                    </span>
-                    <span className="stat-pill">
-                      <CheckSquare size={14} />
-                      {stats.totalExercises} {t.home.exercisesCount}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="material-card-bottom">
-                  <div className="progress-row">
-                    <div className="progress-label-line">
-                      <span>{t.home.progressLabel}</span>
-                      <span className="progress-pct">{stats.progressPercent}%</span>
-                    </div>
-                    <div className="progress-track">
-                      <div
-                        className="progress-fill"
-                        style={{ width: `${stats.progressPercent}%` }}
-                      />
+                    <div className="error-types-pills mt-2">
+                      <span className="badge badge-neutral">📐 Valemi valik</span>
+                      <span className="badge badge-neutral">🔢 Arvutusviga</span>
+                      <span className="badge badge-neutral">💡 Mõisteline arusaam</span>
                     </div>
                   </div>
 
-                  <div className="material-card-actions">
+                  <div className="error-banner-actions">
+                    {onOpenExplainModal && (
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={() => onOpenExplainModal(null, null)}
+                      >
+                        <Sparkles size={15} />
+                        <span>{uiLang === 'en' ? 'Explain in own words' : 'Selgita oma sõnadega'}</span>
+                      </button>
+                    )}
                     <button
                       type="button"
-                      className="btn btn-primary btn-full"
-                      onClick={() => onOpenMaterial(mat.id)}
+                      className="btn btn-primary"
+                      onClick={onOpenErrorNotebook}
                     >
-                      <Play size={15} />
+                      <BookmarkPlus size={16} />
+                      <span>{uiLang === 'en' ? 'Open Mistake Journal' : 'Ava vigade märkmik'}</span>
+                    </button>
+                  </div>
+                </div>
+              </section>
+            );
+          }
+
+          // 3. UPCOMING DEADLINES WIDGET
+          if (widget.id === 'deadlines') {
+            return (
+              <section key="deadlines" className="dashboard-widget-section deadlines-widget-section">
+                <div className="dashboard-panel deadlines-panel">
+                  <div className="panel-header">
+                    <div>
+                      <div className="continue-banner-eyebrow">
+                        <Calendar size={14} />
+                        <span>{t.nav.calendar}</span>
+                      </div>
+                      <h2 className="panel-title">{t.upcomingDeadlines.title}</h2>
+                      <p className="panel-subtitle">{t.upcomingDeadlines.subtitle}</p>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={onNavigateCalendar}
+                    >
+                      <span>{t.upcomingDeadlines.viewCalendarBtn}</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+
+                  {upcomingEvents.length === 0 ? (
+                    <div className="due-empty-box">
+                      <p>{t.upcomingDeadlines.emptyText}</p>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm mt-2"
+                        onClick={onNavigateCalendar}
+                      >
+                        <Plus size={15} />
+                        <span>{t.upcomingDeadlines.addEventBtn}</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="deadlines-mini-grid">
+                      {upcomingEvents.map((ev) => (
+                        <div key={ev.id} className="deadline-mini-card">
+                          <div className="deadline-mini-top">
+                            <div className="material-badges" style={{ marginBottom: 0 }}>
+                              <span className="badge badge-violet">
+                                {t.calendar.types[ev.type] || ev.type}
+                              </span>
+                              <span className="badge badge-neutral">{ev.subject}</span>
+                            </div>
+                            <span className="badge badge-warning">
+                              <Clock size={12} />
+                              {getDaysRemainingLabel(ev.date)}
+                            </span>
+                          </div>
+
+                          <h3
+                            className="deadline-mini-title"
+                            onClick={onNavigateCalendar}
+                          >
+                            {ev.title}
+                          </h3>
+
+                          {ev.topics && ev.topics.length > 0 && (
+                            <p className="deadline-mini-topics">
+                              {ev.topics.join(' • ')}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </section>
+            );
+          }
+
+          // 4. DUE TODAY (DAILY SPACED REPETITION)
+          if (widget.id === 'dueToday') {
+            return (
+              <section key="dueToday" className="dashboard-widget-section due-today-widget-section">
+                <div className="dashboard-panel due-today-panel">
+                  <div className="panel-header">
+                    <div>
+                      <div className="continue-banner-eyebrow">
+                        <RefreshCw size={14} />
+                        <span>{t.dueToday.title}</span>
+                      </div>
+                      <h2 className="panel-title">{t.dueToday.title}</h2>
+                      <p className="panel-subtitle">{t.dueToday.subtitle}</p>
+                    </div>
+                  </div>
+
+                  {dueTodayQueue && dueTodayQueue.length > 0 ? (
+                    <div className="due-today-content">
+                      <div className="due-preview-list">
+                        {dueTodayQueue.slice(0, 3).map((item) => (
+                          <div key={item.itemKey} className="due-preview-item">
+                            <span
+                              className={`badge ${
+                                item.difficultyTag === 'hard'
+                                  ? 'badge-warning'
+                                  : 'badge-violet'
+                              }`}
+                            >
+                              {item.difficultyTag === 'hard'
+                                ? t.dueToday.tagHard
+                                : item.difficultyTag === 'planned'
+                                ? t.dueToday.tagPlanned
+                                : t.dueToday.tagDue}
+                            </span>
+                            <p className="due-preview-question">
+                              {item.itemType === 'flashcard'
+                                ? item.card.question
+                                : item.exercise.question}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-lg btn-full mt-3"
+                        onClick={onStartDueToday}
+                      >
+                        <Play size={17} />
+                        <span>
+                          {t.dueToday.startBtnPrefix} ({dueTodayQueue.length}{' '}
+                          {dueTodayQueue.length === 1
+                            ? t.dueToday.questionSingular
+                            : t.dueToday.questionPlural}
+                          )
+                        </span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="due-empty-box">
+                      <CheckCircle2 size={28} className="accent-text mb-2" />
+                      <h3>{t.dueToday.emptyTitle}</h3>
+                      <p>{t.dueToday.emptySubtitle}</p>
+                    </div>
+                  )}
+                </div>
+              </section>
+            );
+          }
+
+          // 5. CONTINUE STUDYING / ACTIVE SESSION
+          if (widget.id === 'continueStudy' && resumeMaterial) {
+            return (
+              <section key="continueStudy" className="dashboard-widget-section continue-banner-section">
+                <div className="continue-banner-card">
+                  <div className="continue-banner-info">
+                    <div className="continue-banner-eyebrow">
+                      <span className="pulse-dot" />
+                      <span>{t.home.continueBannerTitle}</span>
+                      <span className="badge badge-outline">
+                        {resumeMaterial.subject}
+                      </span>
+                    </div>
+                    <h3 className="continue-banner-title">{resumeMaterial.title}</h3>
+                    <div className="continue-banner-meta">
+                      <span>
+                        {resumeStats.totalCards} {t.home.cardsCount}
+                      </span>
+                      <span>•</span>
+                      <span>
+                        {resumeStats.totalExercises} {t.home.exercisesCount}
+                      </span>
+                      <span>•</span>
+                      <span>
+                        {t.home.progressLabel}: <strong>{resumeStats.progressPercent}%</strong>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="continue-banner-right">
+                    <div className="continue-progress-mini">
+                      <div className="progress-track">
+                        <div
+                          className="progress-fill"
+                          style={{ width: `${resumeStats.progressPercent}%` }}
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() =>
+                        onOpenMaterial(
+                          resumeMaterial.id,
+                          lastSession?.materialId === resumeMaterial.id
+                            ? lastSession.activeTab
+                            : undefined
+                        )
+                      }
+                    >
+                      <Play size={16} />
                       <span>{t.home.continueAction}</span>
                     </button>
                   </div>
                 </div>
-              </article>
+              </section>
             );
-          })}
+          }
+
+          // 6. SUBJECTS & RECENT MATERIALS OVERVIEW
+          if (widget.id === 'subjectsOverview') {
+            return (
+              <section key="subjectsOverview" className="dashboard-widget-section recent-materials-section">
+                <div className="section-header">
+                  <div>
+                    <h2 className="section-title">{t.home.recentTitle}</h2>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={onNavigateLibrary}
+                  >
+                    <span>{t.home.viewAllLibrary}</span>
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+
+                <div className="materials-grid">
+                  {sortedRecent.slice(0, 6).map((mat) => {
+                    const stats = calculateMaterialStats(mat, progressMap[mat.id]);
+                    return (
+                      <article key={mat.id} className="material-card">
+                        <div className="material-card-top">
+                          <div className="material-badges">
+                            <span className="badge badge-violet">{mat.subject}</span>
+                            <span className="badge badge-neutral">
+                              {mat.fileType || 'DOC'} • {(mat.contentLang || 'et').toUpperCase()}
+                            </span>
+                            {mat.isCollection && (
+                              <span className="badge badge-sample">{t.library.collectionBadge}</span>
+                            )}
+                            {mat.isSample && (
+                              <span className="badge badge-sample">{t.home.sampleBadge}</span>
+                            )}
+                          </div>
+
+                          <h3
+                            className="material-card-title"
+                            onClick={() => onOpenMaterial(mat.id)}
+                          >
+                            {mat.title}
+                          </h3>
+
+                          <div className="material-stats-row">
+                            <span className="stat-pill">
+                              <BookOpen size={14} />
+                              {(mat.topics || []).length} {t.home.topicsCount}
+                            </span>
+                            <span className="stat-pill">
+                              <Layers size={14} />
+                              {stats.totalCards} {t.home.cardsCount}
+                            </span>
+                            <span className="stat-pill">
+                              <CheckSquare size={14} />
+                              {stats.totalExercises} {t.home.exercisesCount}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="material-card-bottom">
+                          <div className="progress-row">
+                            <div className="progress-label-line">
+                              <span>{t.home.progressLabel}</span>
+                              <span className="progress-pct">{stats.progressPercent}%</span>
+                            </div>
+                            <div className="progress-track">
+                              <div
+                                className="progress-fill"
+                                style={{ width: `${stats.progressPercent}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="material-card-actions">
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-full"
+                              onClick={() => onOpenMaterial(mat.id)}
+                            >
+                              <Play size={15} />
+                              <span>{t.home.continueAction}</span>
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          }
+
+          return null;
+        })}
+      </div>
+
+      {/* 6. OMA TÖÖLAUD CUSTOMIZER MODAL */}
+      {isCustomizerOpen && (
+        <div
+          className="modal-backdrop dashboard-customizer-backdrop"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsCustomizerOpen(false);
+          }}
+        >
+          <div className="modal-card dashboard-customizer-card">
+            <div className="modal-header">
+              <div className="modal-header-left">
+                <div className="badge badge-primary">
+                  <Palette size={13} />
+                  <span>{uiLang === 'en' ? 'Personalize' : 'Isikupärastamine'}</span>
+                </div>
+                <h2 className="modal-title">
+                  {uiLang === 'en' ? 'My Dashboard & Style' : 'Oma töölaud ja stiil'}
+                </h2>
+                <p className="modal-subtitle">
+                  {uiLang === 'en'
+                    ? 'Reorder or hide home page blocks. Customize your accent color while preserving Revi’s visual harmony.'
+                    : 'Liiguta või peida avalehe plokke. Vali aktsentvärv, mis sobib sinu stiiliga.'}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn btn-ghost btn-icon modal-close-btn"
+                onClick={() => setIsCustomizerOpen(false)}
+                aria-label="Sulge"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body dashboard-customizer-body">
+              {/* Part 1: Accent Color Palette */}
+              <div className="form-group mb-4">
+                <label className="form-label font-bold flex items-center gap-1.5 mb-2">
+                  <Palette size={16} className="accent-text" />
+                  <span>{uiLang === 'en' ? 'Select Accent Color:' : 'Vali kujunduse aktsentvärv:'}</span>
+                </label>
+                <div className="palette-swatches-grid">
+                  {ACCENT_PALETTES.map((pal) => (
+                    <button
+                      key={pal.id}
+                      type="button"
+                      className={`palette-swatch-btn ${currentPaletteId === pal.id ? 'active' : ''}`}
+                      onClick={() => handleSelectPalette(pal.id)}
+                    >
+                      <span
+                        className="palette-color-circle"
+                        style={{ backgroundColor: pal.hex }}
+                      />
+                      <span className="palette-name">
+                        {uiLang === 'en' ? pal.nameEN : pal.nameET}
+                      </span>
+                      {currentPaletteId === pal.id && (
+                        <CheckCircle2 size={16} className="palette-check-icon" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Part 2: Reorder & Hide Dashboard Blocks */}
+              <div className="form-group mb-3">
+                <div className="flex-between items-center mb-2">
+                  <label className="form-label font-bold flex items-center gap-1.5">
+                    <SlidersHorizontal size={16} className="accent-text" />
+                    <span>{uiLang === 'en' ? 'Dashboard Blocks (Order & Visibility):' : 'Avalehe plokid (järjekord ja nähtavus):'}</span>
+                  </label>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={handleResetDashboard}
+                  >
+                    <RotateCcw size={13} />
+                    <span>{uiLang === 'en' ? 'Reset defaults' : 'Taasta algolek'}</span>
+                  </button>
+                </div>
+
+                <div className="widget-config-list">
+                  {widgets.map((w, idx) => (
+                    <div
+                      key={w.id}
+                      className={`widget-config-item ${w.visible ? 'visible' : 'hidden-widget'}`}
+                    >
+                      <div className="widget-drag-info">
+                        <span className="widget-num">{idx + 1}</span>
+                        <span className="widget-label font-semibold">
+                          {uiLang === 'en' ? w.labelEN : w.labelET}
+                        </span>
+                      </div>
+
+                      <div className="widget-item-controls">
+                        <button
+                          type="button"
+                          className="icon-btn-xs"
+                          disabled={idx === 0}
+                          onClick={() => moveWidget(idx, -1)}
+                          title="Liiguta üles"
+                        >
+                          <ArrowUp size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          className="icon-btn-xs"
+                          disabled={idx === widgets.length - 1}
+                          onClick={() => moveWidget(idx, 1)}
+                          title="Liiguta alla"
+                        >
+                          <ArrowDown size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          className={`btn btn-sm ${w.visible ? 'btn-ghost' : 'btn-secondary'}`}
+                          onClick={() => toggleWidgetVisibility(w.id)}
+                          title={w.visible ? 'Peida plokk' : 'Näita plokki'}
+                        >
+                          {w.visible ? <Eye size={14} /> : <EyeOff size={14} />}
+                          <span>{w.visible ? (uiLang === 'en' ? 'Visible' : 'Nähtav') : (uiLang === 'en' ? 'Hidden' : 'Peidetud')}</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setIsCustomizerOpen(false)}
+              >
+                {uiLang === 'en' ? 'Save & Close' : 'Salvesta ja sulge'}
+              </button>
+            </div>
+          </div>
         </div>
-      </section>
+      )}
     </div>
   );
 }

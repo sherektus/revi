@@ -19,7 +19,9 @@ import {
   Type,
   Eye,
   SlidersHorizontal,
-  Keyboard
+  Keyboard,
+  BookmarkPlus,
+  Zap
 } from 'lucide-react';
 import { loadTimerSettings, saveTimerSettings } from '../utils/storage';
 
@@ -38,7 +40,9 @@ export default function Navbar({
   onOpenUploadModal,
   activeProfileName,
   onOpenPrivacyModal,
-  onOpenShortcutsModal
+  onOpenShortcutsModal,
+  onOpenQuickStudy,
+  onOpenErrorNotebook
 }) {
   const [timerSettings, setTimerSettings] = useState(() => loadTimerSettings());
   const [isTimerSettingsOpen, setIsTimerSettingsOpen] = useState(false);
@@ -464,9 +468,38 @@ export default function Navbar({
                 <div className="timer-hint-caption">
                   <span>💡 Nipp: kellaajal hiirerulliga kerides saab aega muuta otse päisest.</span>
                 </div>
+
+                {onOpenQuickStudy && (
+                  <div className="timer-quick-study-action mt-2">
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm btn-full"
+                      onClick={() => {
+                        setIsTimerSettingsOpen(false);
+                        onOpenQuickStudy(15);
+                      }}
+                    >
+                      <Zap size={13} />
+                      <span>{uiLang === 'en' ? 'Start 15-min Quick Study' : '⚡ Alusta 15 min kiirõpet'}</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
+
+          {onOpenErrorNotebook && (
+            <button
+              type="button"
+              className="nav-error-notebook-btn"
+              onClick={onOpenErrorNotebook}
+              title={uiLang === 'en' ? 'Mistake Journal' : 'Vigade märkmik'}
+              aria-label="Vigade märkmik"
+            >
+              <BookmarkPlus size={15} />
+              <span className="nav-tool-label">{uiLang === 'en' ? 'Mistakes' : 'Vead'}</span>
+            </button>
+          )}
 
           <button
             type="button"

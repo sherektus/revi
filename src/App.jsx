@@ -11,6 +11,9 @@ import UploadModal from './components/UploadModal';
 import SourceFileModal from './components/SourceFileModal';
 import PersonalWorkspaceModal from './components/PersonalWorkspaceModal';
 import KeyboardShortcutsModal from './components/KeyboardShortcutsModal';
+import QuickStudyModal from './components/QuickStudyModal';
+import ErrorNotebookModal from './components/ErrorNotebookModal';
+import ExplainInOwnWordsModal from './components/ExplainInOwnWordsModal';
 import { translations } from './i18n/translations';
 import {
   getOrCreateDeviceId,
@@ -26,6 +29,8 @@ import {
   saveFontSize,
   loadHighContrast,
   saveHighContrast,
+  loadAccentTheme,
+  applyAccentTheme,
   loadMaterials,
   saveMaterials,
   loadAllProgress,
@@ -85,6 +90,16 @@ export default function App() {
   const [isDueTodayOpen, setIsDueTodayOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [quickStudyState, setQuickStudyState] = useState({
+    isOpen: false,
+    minutes: 15
+  });
+  const [isErrorNotebookOpen, setIsErrorNotebookOpen] = useState(false);
+  const [explainModalState, setExplainModalState] = useState({
+    isOpen: false,
+    concept: null,
+    subject: null
+  });
 
   const [sourceModalState, setSourceModalState] = useState({
     isOpen: false,
@@ -95,6 +110,10 @@ export default function App() {
   const [toastKey, setToastKey] = useState(null);
 
   const t = translations[uiLang] || translations.et;
+
+  useEffect(() => {
+    applyAccentTheme(loadAccentTheme());
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -154,6 +173,9 @@ export default function App() {
         setIsUploadOpen(false);
         setIsDueTodayOpen(false);
         setIsPrivacyOpen(false);
+        setIsErrorNotebookOpen(false);
+        setQuickStudyState((prev) => ({ ...prev, isOpen: false }));
+        setExplainModalState((prev) => ({ ...prev, isOpen: false }));
         setSourceModalState((prev) => ({ ...prev, isOpen: false }));
         return;
       }
@@ -223,6 +245,18 @@ export default function App() {
     setUploadInitialFile(file);
     setUploadInitialSubject(prefillSubject);
     setIsUploadOpen(true);
+  }
+
+  function handleOpenQuickStudy(minutes = 15) {
+    setQuickStudyState({ isOpen: true, minutes });
+  }
+
+  function handleOpenErrorNotebook() {
+    setIsErrorNotebookOpen(true);
+  }
+
+  function handleOpenExplainModal(concept = null, subject = null) {
+    setExplainModalState({ isOpen: true, concept, subject });
   }
 
   function handleOpenMaterial(materialId, preferredTab) {
@@ -588,6 +622,8 @@ export default function App() {
         activeProfileName={activeProfileLabel}
         onOpenPrivacyModal={() => setIsPrivacyOpen(true)}
         onOpenShortcutsModal={() => setIsShortcutsOpen(true)}
+        onOpenQuickStudy={handleOpenQuickStudy}
+        onOpenErrorNotebook={handleOpenErrorNotebook}
       />
 
       {toastMessage && (
@@ -612,6 +648,9 @@ export default function App() {
             onOpenMaterial={handleOpenMaterial}
             onNavigateLibrary={() => setCurrentView('library')}
             onNavigateCalendar={() => setCurrentView('calendar')}
+            onOpenQuickStudy={handleOpenQuickStudy}
+            onOpenErrorNotebook={handleOpenErrorNotebook}
+            onOpenExplainModal={handleOpenExplainModal}
           />
         )}
 
@@ -674,6 +713,8 @@ export default function App() {
             onBackToLibrary={() => setCurrentView('library')}
             onOpenSourceViewer={handleOpenSourceViewer}
             onSwitchPairedSample={(pairedId) => handleOpenMaterial(pairedId)}
+            onOpenErrorNotebook={handleOpenErrorNotebook}
+            onOpenExplainModal={handleOpenExplainModal}
           />
         )}
       </main>
@@ -727,6 +768,35 @@ export default function App() {
         isOpen={isShortcutsOpen}
         t={t}
         onClose={() => setIsShortcutsOpen(false)}
+      />
+
+      <QuickStudyModal
+        isOpen={quickStudyState.isOpen}
+        initialMinutes={quickStudyState.minutes}
+        materials={materials}
+        t={t}
+        onClose={() =>
+          setQuickStudyState((prev) => ({ ...prev, isOpen: false }))
+        }
+        onOpenMaterial={handleOpenMaterial}
+      />
+
+      <ErrorNotebookModal
+        isOpen={isErrorNotebookOpen}
+        onClose={() => setIsErrorNotebookOpen(false)}
+        t={t}
+        isEN={uiLang === 'en'}
+      />
+
+      <ExplainInOwnWordsModal
+        isOpen={explainModalState.isOpen}
+        initialConcept={explainModalState.concept}
+        initialSubject={explainModalState.subject}
+        onClose={() =>
+          setExplainModalState((prev) => ({ ...prev, isOpen: false }))
+        }
+        t={t}
+        isEN={uiLang === 'en'}
       />
     </div>
   );

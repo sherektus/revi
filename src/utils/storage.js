@@ -16,7 +16,10 @@ const KEYS = {
   SPACED_REP: 'kordur_spaced_rep_v1',
   FONT_SIZE: 'revi_font_size_v1',
   HIGH_CONTRAST: 'revi_high_contrast_v1',
-  TIMER_SETTINGS: 'revi_timer_settings_v1'
+  TIMER_SETTINGS: 'revi_timer_settings_v1',
+  ERROR_NOTEBOOK: 'revi_error_notebook_v1',
+  DASHBOARD_CONFIG: 'revi_dashboard_config_v1',
+  ACCENT_PALETTE: 'revi_accent_palette_v1'
 };
 
 const DB_NAME = 'kordur_files_db';
@@ -1387,3 +1390,405 @@ export async function clearActiveProfileMaterials() {
   saveAllProgress(freshProg);
   saveLastSession(null);
 }
+
+/* =========================================================================
+   6. OMA TÖÖLAUD: AKTSENTVÄRVID JA KOHANDATAV PAIGUTUS
+   ========================================================================= */
+
+export const ACCENT_PALETTES = [
+  {
+    id: 'sapphire',
+    nameET: 'Kuninglik safiir',
+    nameEN: 'Royal Sapphire',
+    hex: '#3B5BF6',
+    hover: '#2643D8',
+    soft: 'rgba(59, 91, 246, 0.09)',
+    border: 'rgba(59, 91, 246, 0.28)',
+    text: '#2643D8'
+  },
+  {
+    id: 'emerald',
+    nameET: 'Akadeemiline smaragd',
+    nameEN: 'Academic Emerald',
+    hex: '#059669',
+    hover: '#047857',
+    soft: 'rgba(5, 150, 105, 0.09)',
+    border: 'rgba(5, 150, 105, 0.28)',
+    text: '#047857'
+  },
+  {
+    id: 'terracotta',
+    nameET: 'Soe terrakota',
+    nameEN: 'Warm Terracotta',
+    hex: '#C2410C',
+    hover: '#9A3412',
+    soft: 'rgba(194, 65, 12, 0.09)',
+    border: 'rgba(194, 65, 12, 0.28)',
+    text: '#9A3412'
+  },
+  {
+    id: 'amethyst',
+    nameET: 'Sügav ametüst',
+    nameEN: 'Deep Amethyst',
+    hex: '#7C3AED',
+    hover: '#6D28D9',
+    soft: 'rgba(124, 58, 237, 0.09)',
+    border: 'rgba(124, 58, 237, 0.28)',
+    text: '#6D28D9'
+  },
+  {
+    id: 'teal',
+    nameET: 'Meresinine teal',
+    nameEN: 'Marine Teal',
+    hex: '#0D9488',
+    hover: '#0F766E',
+    soft: 'rgba(13, 148, 136, 0.09)',
+    border: 'rgba(13, 148, 136, 0.28)',
+    text: '#0F766E'
+  },
+  {
+    id: 'ochre',
+    nameET: 'Merevaik & ooker',
+    nameEN: 'Amber & Ochre',
+    hex: '#B45309',
+    hover: '#92400E',
+    soft: 'rgba(180, 83, 9, 0.09)',
+    border: 'rgba(180, 83, 9, 0.28)',
+    text: '#92400E'
+  }
+];
+
+export function loadAccentTheme() {
+  try {
+    const saved = localStorage.getItem(KEYS.ACCENT_PALETTE);
+    if (saved && ACCENT_PALETTES.some((p) => p.id === saved)) {
+      return saved;
+    }
+  } catch {
+    // fallback
+  }
+  return 'sapphire';
+}
+
+export function saveAccentTheme(paletteId) {
+  try {
+    localStorage.setItem(KEYS.ACCENT_PALETTE, paletteId);
+    applyAccentTheme(paletteId);
+  } catch {
+    // ignore
+  }
+}
+
+export function applyAccentTheme(paletteId) {
+  const palette =
+    ACCENT_PALETTES.find((p) => p.id === paletteId) || ACCENT_PALETTES[0];
+  if (typeof document !== 'undefined' && document.documentElement) {
+    const root = document.documentElement;
+    root.style.setProperty('--accent', palette.hex);
+    root.style.setProperty('--accent-hover', palette.hover);
+    root.style.setProperty('--accent-soft', palette.soft);
+    root.style.setProperty('--accent-border', palette.border);
+    root.style.setProperty('--accent-text', palette.text);
+  }
+}
+
+export const DEFAULT_DASHBOARD_WIDGETS = [
+  { id: 'deadlines', visible: true, labelET: 'Tähtajad ja kontrolltööd', labelEN: 'Upcoming Deadlines' },
+  { id: 'quickStudy', visible: true, labelET: '„Mul on aega” kiirõpe', labelEN: 'Quick Study Session' },
+  { id: 'continueStudy', visible: true, labelET: 'Pooleliolev õppimine', labelEN: 'Continue Study' },
+  { id: 'errorNotebook', visible: true, labelET: 'Vigade märkmik', labelEN: 'Mistake Journal' },
+  { id: 'dueToday', visible: true, labelET: 'Igapäevane kordamine', labelEN: 'Daily Review' },
+  { id: 'subjectsOverview', visible: true, labelET: 'Õppeainete ja teemade ülevaade', labelEN: 'Subjects Overview' }
+];
+
+export function loadDashboardConfig() {
+  try {
+    const raw = localStorage.getItem(getScopedKey(KEYS.DASHBOARD_CONFIG));
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Merge with defaults in case new widgets are added
+        const merged = parsed.map((item) => {
+          const def = DEFAULT_DASHBOARD_WIDGETS.find((w) => w.id === item.id);
+          return { ...(def || {}), ...item };
+        });
+        DEFAULT_DASHBOARD_WIDGETS.forEach((def) => {
+          if (!merged.some((m) => m.id === def.id)) {
+            merged.push(def);
+          }
+        });
+        return merged;
+      }
+    }
+  } catch {
+    // fallback
+  }
+  return DEFAULT_DASHBOARD_WIDGETS;
+}
+
+export function saveDashboardConfig(config) {
+  try {
+    localStorage.setItem(getScopedKey(KEYS.DASHBOARD_CONFIG), JSON.stringify(config));
+  } catch {
+    // ignore
+  }
+}
+
+/* =========================================================================
+   2. VIGADE MÄRKMIK: DIAGNOOS, VALE VASTUSE PÕHJENDUS JA SARNASED ÜLESANDED
+   ========================================================================= */
+
+export const INITIAL_SAMPLE_MISTAKE = {
+  id: 'err-sample-1',
+  materialId: 'mat-derivatives',
+  materialTitle: 'Tuletised – funktsiooni muutumiskiirus ja diferentseerimine',
+  subject: 'Matemaatiline analüüs',
+  question: "Arvutusülesanne: leia funktsiooni f(x) = 3x⁴ - 5x² + 7x - 12 tuletis f'(x) ja arvuta selle täpne väärtus kohal x = 1.",
+  userAnswer: "f'(x) = 12x³ - 5x + 7  ning  f'(1) = 14",
+  correctAnswer: "f'(x) = 12x³ - 10x + 7  ning  f'(1) = 9",
+  errorType: 'calculation', // 'formula_selection' | 'calculation' | 'conceptual' | 'condition_missed'
+  errorTypeLabelET: 'Arvutus- või kordajaviga',
+  errorTypeLabelEN: 'Calculation / coefficient error',
+  diagnosis: 'Liikme (-5x²) tuletise võtmisel unustati kordaja 5 korrutada astmenäitajaga 2: (5x²)\' = 10x, mitte 5x.',
+  howToThink: 'Rakenda astmefunktsiooni reeglit järjekindlalt: d/dx [c · xⁿ] = c · n · xⁿ⁻¹. Seega (-5) · 2 · x¹ = -10x. Seejärel asenda x = 1: 12(1) - 10(1) + 7 = 9.',
+  similarTask: {
+    question: "Arvutusülesanne kordamiseks: leia funktsiooni g(x) = 2x³ - 4x² + 3x - 5 tuletis g'(x) ja arvuta g'(1).",
+    solution: "1. Tuletis g'(x) = 6x² - 8x + 3.  2. Kohal x = 1: g'(1) = 6(1) - 8(1) + 3 = 1."
+  },
+  resolved: false,
+  createdAt: new Date().toISOString()
+};
+
+export function diagnoseMistake({
+  question = '',
+  userAnswer = '',
+  correctAnswer = '',
+  hint = '',
+  isEN = false
+}) {
+  const u = String(userAnswer).toLowerCase();
+  const c = String(correctAnswer).toLowerCase();
+  const q = String(question).toLowerCase();
+
+  // 1. Formula selection error
+  const isFormulaMismatch =
+    (u.includes('korrutis') && c.includes('jagatis')) ||
+    (u.includes('puutuja') && c.includes('funktsiooni väärtus')) ||
+    (u.includes('integr') && c.includes('tuletis')) ||
+    /[+*]/.test(u) !== /[+*]/.test(c);
+
+  if (isFormulaMismatch) {
+    return {
+      errorType: 'formula_selection',
+      errorTypeLabelET: 'Valemi või meetodi valimise viga',
+      errorTypeLabelEN: 'Formula or method selection error',
+      diagnosis: isEN
+        ? 'An incorrect formula or calculus rule was applied to this problem structure.'
+        : 'Ülesandele rakendati valet reeglit või seost, mis ei vasta antud matemaatilisele konstruktsioonile.',
+      howToThink: isEN
+        ? 'First analyze the main operation of the expression (product, quotient, or power) before applying derivative rules.'
+        : 'Tuvasta esmalt avaldise põhitehe (kas tegemist on korrutise, liitfunktsiooni või astmega) ning vali reegel vastavalt sellele.'
+    };
+  }
+
+  // 2. Calculation / arithmetic / sign error
+  const hasNumbers = /\d/.test(u) && /\d/.test(c);
+  if (hasNumbers) {
+    const isSignDiff = (u.includes('-') && !c.includes('-')) || (!u.includes('-') && c.includes('-'));
+    return {
+      errorType: 'calculation',
+      errorTypeLabelET: isSignDiff ? 'Märgierinevus (pluss/miinus)' : 'Arvutus- või kordajaviga',
+      errorTypeLabelEN: isSignDiff ? 'Sign difference (+/-)' : 'Calculation or coefficient error',
+      diagnosis: isEN
+        ? 'The algebraic structure was recognized, but an arithmetic or sign discrepancy occurred during evaluation.'
+        : (isSignDiff
+            ? 'Arutluse põhimõte oli õige, kuid tekkis märgikonflikt (negatiivne/positiivne märk).'
+            : 'Tuletise kuju oli üldjoontes õige, kuid koefitsientide korrutamisel või lõppväärtuse arvutamisel tekkis viga.'),
+      howToThink: isEN
+        ? 'Double check intermediate signs and substitute values term-by-term.'
+        : 'Kontrolli eraldi iga liikme märki ja kordajat ning soorita asendamine samm-sammult.'
+    };
+  }
+
+  // 3. Condition or edge case missed
+  if (q.includes('miinimum') || q.includes('maksimum') || q.includes('kasvab') || q.includes('kahaneb')) {
+    return {
+      errorType: 'condition_missed',
+      errorTypeLabelET: 'Tingimuse või tunnuse märkamata jätmine',
+      errorTypeLabelEN: 'Condition or criterion missed',
+      diagnosis: isEN
+        ? 'A necessary stationary or boundary condition was missed.'
+        : 'Tähelepanuta jäi oluline ekstreemumi või monotoonsuse lisatingimus (nt f\'(x) = 0).',
+      howToThink: isEN
+        ? 'Remember that local extrema occur where the derivative equals zero or does not exist.'
+        : 'Meenuta, et lokaalsed ekstreemumid saavad tekkida vaid seal, kus tuletis võrdub nulliga.'
+    };
+  }
+
+  // 4. Conceptual misunderstanding (default)
+  return {
+    errorType: 'conceptual',
+    errorTypeLabelET: 'Mõiste või tähenduse vääritimõistmine',
+    errorTypeLabelEN: 'Conceptual misunderstanding',
+    diagnosis: isEN
+      ? 'The chosen answer reflects a confusion between distinct theoretical concepts.'
+      : 'Valitud vastus viitab kahe erineva mõiste või füüsikalise/geomeetrilise tähenduse segi ajamisele.',
+    howToThink: isEN
+      ? 'Contrast the definition with similar concepts and verify what the question specifically asks for.'
+      : 'Võrdle mõiste definitsiooni lähedaste terminitega ning pööra tähelepanu küsimuse täpsele fookusele.'
+  };
+}
+
+export function generateSimilarTask({ question, correctAnswer, isEN = false }) {
+  if (question.includes('3x⁴ - 5x²') || question.includes('f(x) =')) {
+    return {
+      question: isEN
+        ? "Follow-up problem: Find the derivative of f(x) = 2x³ - 6x² + 4x - 1 and evaluate f'(1)."
+        : "Järgmine proovikivi: leia funktsiooni f(x) = 2x³ - 6x² + 4x - 1 tuletis f'(x) ja arvuta f'(1).",
+      solution: isEN
+        ? "1. f'(x) = 6x² - 12x + 4.  2. f'(1) = 6(1) - 12(1) + 4 = -2."
+        : "1. f'(x) = 6x² - 12x + 4.  2. f'(1) = 6(1) - 12(1) + 4 = -2."
+    };
+  }
+  if (question.includes('puutuja') || question.includes('tangent') || question.includes('tõus')) {
+    return {
+      question: isEN
+        ? "Follow-up problem: Find the tangent slope k of y = x² + 2x at x₀ = 3."
+        : "Järgmine proovikivi: leia funktsiooni y = x² + 2x graafiku puutuja tõus k kohal x₀ = 3.",
+      solution: isEN
+        ? "1. y' = 2x + 2.  2. k = y'(3) = 2(3) + 2 = 8."
+        : "1. y' = 2x + 2.  2. k = y'(3) = 2(3) + 2 = 8."
+    };
+  }
+  if (question.includes('kiirus') || question.includes('s(t)')) {
+    return {
+      question: isEN
+        ? "Follow-up problem: A particle moves with s(t) = 2t² + 5t. Find the instantaneous velocity v(4)."
+        : "Järgmine proovikivi: punktmass liigub seaduse s(t) = 2t² + 5t järgi. Leia hetkkiirus v(4).",
+      solution: isEN
+        ? "1. v(t) = s'(t) = 4t + 5.  2. v(4) = 4(4) + 5 = 21 m/s."
+        : "1. v(t) = s'(t) = 4t + 5.  2. v(4) = 4(4) + 5 = 21 m/s."
+    };
+  }
+
+  return {
+    question: isEN
+      ? `Targeted follow-up: Explain the fundamental rule needed to solve: "${question.slice(0, 70)}..."`
+      : `Suunatud kordamisülesanne: milline reegel või valem võimaldab lahendada ülesannet: „${question.slice(0, 70)}...“?`,
+    solution: isEN
+      ? `Correct answer to remember: ${correctAnswer}`
+      : `Meelde jäetav õige seos: ${correctAnswer}`
+  };
+}
+
+export function loadErrorNotebook() {
+  try {
+    const raw = localStorage.getItem(getScopedKey(KEYS.ERROR_NOTEBOOK));
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch {
+    // fallback
+  }
+  // Return sample mistake initially so users can see the notebook immediately
+  return [INITIAL_SAMPLE_MISTAKE];
+}
+
+export function saveErrorNotebook(errors) {
+  try {
+    localStorage.setItem(getScopedKey(KEYS.ERROR_NOTEBOOK), JSON.stringify(errors));
+  } catch {
+    // ignore
+  }
+}
+
+export function recordMistake({
+  materialId = '',
+  materialTitle = '',
+  subject = '',
+  question = '',
+  userAnswer = '',
+  correctAnswer = '',
+  sourceRef = null,
+  isEN = false
+}) {
+  try {
+    const current = loadErrorNotebook();
+    // Avoid exact duplicate unresolved entries for the same question within a short period
+    const existingIdx = current.findIndex(
+      (e) => !e.resolved && e.question.trim() === question.trim()
+    );
+
+    const diagnosisInfo = diagnoseMistake({
+      question,
+      userAnswer,
+      correctAnswer,
+      isEN
+    });
+
+    const similarTask = generateSimilarTask({
+      question,
+      correctAnswer,
+      isEN
+    });
+
+    const newMistake = {
+      id: `err-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      materialId,
+      materialTitle,
+      subject,
+      question,
+      userAnswer,
+      correctAnswer,
+      errorType: diagnosisInfo.errorType,
+      errorTypeLabelET: diagnosisInfo.errorTypeLabelET,
+      errorTypeLabelEN: diagnosisInfo.errorTypeLabelEN,
+      diagnosis: diagnosisInfo.diagnosis,
+      howToThink: diagnosisInfo.howToThink,
+      similarTask,
+      sourceRef,
+      resolved: false,
+      createdAt: new Date().toISOString()
+    };
+
+    let updated;
+    if (existingIdx !== -1) {
+      updated = [...current];
+      updated[existingIdx] = { ...updated[existingIdx], ...newMistake, id: updated[existingIdx].id };
+    } else {
+      updated = [newMistake, ...current].slice(0, 50); // keep up to 50 entries
+    }
+
+    saveErrorNotebook(updated);
+    return newMistake;
+  } catch (err) {
+    console.warn('Could not record mistake in notebook:', err);
+    return null;
+  }
+}
+
+export function resolveMistake(errorId, isResolved = true) {
+  try {
+    const current = loadErrorNotebook();
+    const updated = current.map((e) =>
+      e.id === errorId ? { ...e, resolved: isResolved, resolvedAt: isResolved ? new Date().toISOString() : null } : e
+    );
+    saveErrorNotebook(updated);
+    return updated;
+  } catch {
+    return [];
+  }
+}
+
+export function deleteMistake(errorId) {
+  try {
+    const current = loadErrorNotebook();
+    const updated = current.filter((e) => e.id !== errorId);
+    saveErrorNotebook(updated);
+    return updated;
+  } catch {
+    return [];
+  }
+}
+

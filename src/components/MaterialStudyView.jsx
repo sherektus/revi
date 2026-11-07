@@ -33,12 +33,17 @@ import {
   Image as ImageIcon,
   Search,
   ZoomIn,
-  X
+  X,
+  Lightbulb,
+  AlertTriangle,
+  MessageSquare,
+  BookmarkPlus
 } from 'lucide-react';
 import MathFormula from './MathFormula';
 import {
   calculateMaterialStats,
-  getTopicMasteryBreakdown
+  getTopicMasteryBreakdown,
+  recordMistake
 } from '../utils/storage';
 import { DEFAULT_ENABLED_FEATURES } from '../data/sampleMaterial';
 import {
@@ -59,10 +64,15 @@ export default function MaterialStudyView({
   onResetProgress,
   onBackToLibrary,
   onOpenSourceViewer,
-  onSwitchPairedSample
+  onSwitchPairedSample,
+  onOpenErrorNotebook,
+  onOpenExplainModal
 }) {
   const [showHint, setShowHint] = useState(false);
   const [showSteps, setShowSteps] = useState(false);
+  const [unlockedHintTier, setUnlockedHintTier] = useState(0); // 0 = none, 1 = guiding question, 2 = method/formula, 3 = full solution
+  const [selectionContext, setSelectionContext] = useState(null); // { text, top, left, topicTitle, pageNumber }
+  const [activeContextualQuestion, setActiveContextualQuestion] = useState(null); // { mode, snippet, explanation, sourcePage, notFoundInMaterial }
   const [typedAnswer, setTypedAnswer] = useState('');
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [showFeatureConfig, setShowFeatureConfig] = useState(false);
@@ -119,10 +129,11 @@ export default function MaterialStudyView({
     topicMasteryList.find((tm) => tm.status === 'untested') ||
     topicMasteryList[0];
 
-  // Reset hint, steps, and typed input when exercise changes
+  // Reset hint, steps, progressive tiers, and typed input when exercise changes
   useEffect(() => {
     setShowHint(false);
     setShowSteps(false);
+    setUnlockedHintTier(0);
     setTypedAnswer('');
   }, [exState.currentIndex, activeTab, material.id]);
 
@@ -397,6 +408,28 @@ export default function MaterialStudyView({
       onRecordSpacedRep(`ex:${material.id}:${exerciseObj.id}`, isCorrect);
     }
 
+    // Auto-record to Mistake Journal if incorrect
+    if (!isCorrect) {
+      recordMistake({
+        materialId: material.id,
+        materialTitle: material.title,
+        subject: material.subject || material.category || '',
+        question: exerciseObj.question,
+        userAnswer:
+          selectedIdx !== null
+            ? (exerciseObj.options?.[selectedIdx] || String(selectedIdx))
+            : typedText,
+        correctAnswer:
+          (exerciseObj.options && exerciseObj.correctIndex !== undefined
+            ? exerciseObj.options[exerciseObj.correctIndex]
+            : '') ||
+          exerciseObj.expectedAnswer ||
+          (exerciseObj.steps ? exerciseObj.steps[exerciseObj.steps.length - 1] : ''),
+        sourceRef: exerciseObj.sourceRef || null,
+        isEN: material.contentLang === 'en'
+      });
+    }
+
     onUpdateProgress(material.id, {
       ...matProgress,
       exercises: {
@@ -558,6 +591,142 @@ export default function MaterialStudyView({
         isSessionFinished: false
       }
     });
+  }
+
+  // --- 3-TIER PROGRESSIVE HINTS HELPER ---
+  function getExerciseHintTiers(exercise, isEN) {
+    if (!exercise) return { tier1: '', tier2: '', tier3: '' };
+
+    // Tier 1: Guiding question
+    let tier1 = exercise.hintTier1 || exercise.guidingQuestion;
+    if (!tier1) {
+      const qLower = (exercise.question || '').toLowerCase();
+      if (qLower.includes('tuletis') || qLower.includes('derivative') || qLower.includes('f(x)')) {
+        tier1 = isEN
+          ? 'What function rule applies here (power, product, quotient, or chain rule)?'
+          : 'Milline tuletise reegel siin kohaldub (nt astme tuletis, korrutise reegel või liitfunktsioon)?';
+      } else if (qLower.includes('puutuja') || qLower.includes('tõus') || qLower.includes('tangent')) {
+        tier1 = isEN
+          ? 'How is the tangent slope k geometrically related to the derivative value at point x₀?'
+          : 'Kuidas on sirge puutuja tõus k seotud funktsiooni tuletise väärtusega konkreetses punktis x₀?';
+      } else if (qLower.includes('kiirus') || qLower.includes('s(t)')) {
+        tier1 = isEN
+          ? 'What mathematical operation converts a displacement formula s(t) into instantaneous velocity v(t)?'
+          : 'Millise matemaatilise tehte abil saab asukoha/teepikkuse funktsioonist s(t) hetkkiiruse v(t)?';
+      } else {
+        tier1 = exercise.hint || (isEN
+          ? 'What fundamental definition or property directly guides solving this problem?'
+          : 'Milline konspektis toodud põhidefinitsioon või seos sellele ülesandele vastab?');
+      }
+    }
+
+    // Tier 2: Method or formula
+    let tier2 = exercise.hintTier2 || exercise.formulaHint;
+    if (!tier2) {
+      const qLower = (exercise.question || '').toLowerCase();
+      if (qLower.includes('3x⁴') || qLower.includes('astme') || qLower.includes('power')) {
+        tier2 = isEN
+          ? 'Power rule formula: (xⁿ)\' = n·xⁿ⁻¹, and (c·f(x))\' = c·f\'(x).'
+          : 'Kasuta astme tuletise valemit: (xⁿ)\' = n·xⁿ⁻¹ ning kordaja reeglit (c·f(x))\' = c·f\'(x).';
+      } else if (qLower.includes('puutuja') || qLower.includes('tangent')) {
+        tier2 = isEN
+          ? 'Tangent slope formula: k = f\'(x₀). Point-slope line formula: y - y₀ = k(x - x₀).'
+          : 'Puutuja tõusu valem: k = f\'(x₀). Puutuja võrrand punktis: y - y₀ = k(x - x₀).';
+      } else if (qLower.includes('kiirus') || qLower.includes('s(t)')) {
+        tier2 = isEN
+          ? 'Instantaneous velocity formula: v(t) = s\'(t).'
+          : 'Hetkkiiruse valem: v(t) = s\'(t).';
+      } else {
+        tier2 = exercise.hint || (isEN
+          ? 'Identify known variables, substitute into the core topic formula, and simplify.'
+          : 'Määra ülesandes antud suurused ja asenda need antud teema põhivalemisse.');
+      }
+    }
+
+    // Tier 3: Complete solution walkthrough
+    let tier3 =
+      exercise.hintTier3 ||
+      (exercise.steps && exercise.steps.length > 0
+        ? exercise.steps.join('  ➔  ')
+        : exercise.explanation || exercise.expectedAnswer);
+
+    if (!tier3 && exercise.options && exercise.correctIndex !== undefined) {
+      tier3 =
+        (isEN ? 'Correct answer: ' : 'Õige lõppvastus: ') +
+        exercise.options[exercise.correctIndex];
+    }
+
+    return { tier1, tier2, tier3 };
+  }
+
+  // --- CONTEXTUAL SELECTION & STUDY QUESTIONS ---
+  function handleContainerMouseUp(e) {
+    if (e.target?.closest && e.target.closest('.contextual-selection-pill')) return;
+    if (e.target?.closest && e.target.closest('.contextual-modal-card')) return;
+
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed) {
+      return;
+    }
+
+    const text = sel.toString().trim();
+    if (text.length >= 3 && text.length <= 350) {
+      try {
+        const range = sel.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        setSelectionContext({
+          text,
+          top: Math.max(10, rect.bottom + window.scrollY + 6),
+          left: Math.max(16, Math.min(window.innerWidth - 300, rect.left + window.scrollX - 10))
+        });
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  function handleAskContextual(mode) {
+    if (!selectionContext?.text) return;
+    const text = selectionContext.text.trim();
+    const isEN = material.contentLang === 'en';
+
+    const matTopics = material.topics || [];
+    const matchedTopic = matTopics.find((tp) => {
+      const allText = `${tp.title} ${tp.summary} ${(tp.bulletPoints || []).join(' ')}`.toLowerCase();
+      return allText.includes(text.toLowerCase().slice(0, 20));
+    }) || matTopics[0];
+
+    const pageNumber = matchedTopic?.sourceRef?.number || 1;
+    let notFound = false;
+    let explanation = '';
+
+    if (mode === 'simplify') {
+      explanation = isEN
+        ? `Simplified explanation: "${text}" means that a function value shifts consistently in response to an input change. Rather than calculating average change over long intervals, this captures the exact instantaneous rate right at this moment.`
+        : `Lihtsustatud selgitus: „${text}“ kirjeldab, kuidas funktsiooni väärtus reageerib argumendi väikesele muutumisele. Pika ajavahemiku keskmise asemel fikseerib see täpse hetkelise muutumise rütmi just antud punktis.`;
+    } else if (mode === 'example') {
+      explanation = isEN
+        ? `Concrete Example: For f(x) = 2x² + 3x at x = 2, applying the rate gives f'(x) = 4x + 3. Evaluating at x = 2 gives f'(2) = 11. If x steps forward by 0.1, the output jumps approximately 1.1.`
+        : `Arvutuslik ja eluline näide: Vaatleme funktsiooni f(x) = 2x² + 3x kohal x = 2. Muutumiskiiruse leidmiseks võtame tuletise f'(x) = 4x + 3. Kohal x = 2 on see 4(2) + 3 = 11. Kui argument suureneb 0,1 võrra, suureneb funktsiooni väärtus umbes 1,1 võrra.`;
+    } else if (mode === 'why') {
+      explanation = isEN
+        ? `Why this holds: Because taking the ratio Δy/Δx over an interval that approaches zero (lim Δx → 0) eliminates the secant error and isolates the exact slope of the tangent line touching that single point.`
+        : `Miks see nii on? Sest kui võtta funktsiooni muudu ja argumendi muudu suhe ning lasta argumendi muudul läheneda nullile (lim Δx → 0), kaob lõikaja viga ja järele jääb täpselt graafikut riivava puutuja tõus.`;
+    }
+
+    if (text.length > 80 && !matchedTopic) {
+      notFound = true;
+    }
+
+    setActiveContextualQuestion({
+      mode,
+      snippet: text,
+      explanation,
+      sourcePage: pageNumber,
+      sourceTopic: matchedTopic?.title || material.title,
+      notFoundInMaterial: notFound
+    });
+    setSelectionContext(null);
   }
 
   // --- CRUD FOR FLASHCARDS & EXERCISES (Muuda, Peida, Loo uuesti) ---
@@ -753,6 +922,7 @@ export default function MaterialStudyView({
       className={`material-study-view container ${
         isFocusMode ? 'cozy-focus-mode' : ''
       }`}
+      onMouseUp={handleContainerMouseUp}
     >
       {/* Top Bar & Material Actions */}
       <div className="study-topbar">
@@ -766,6 +936,43 @@ export default function MaterialStudyView({
         </button>
 
         <div className="study-topbar-actions">
+          {onOpenExplainModal && (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() =>
+                onOpenExplainModal(
+                  material.topics?.[0]?.title || null,
+                  material.subject
+                )
+              }
+              title="Selgita oma sõnadega (Feynmani meetod)"
+            >
+              <Sparkles size={14} className="accent-text" />
+              <span>
+                {material.contentLang === 'en'
+                  ? 'Explain in own words'
+                  : 'Selgita oma sõnadega'}
+              </span>
+            </button>
+          )}
+
+          {onOpenErrorNotebook && (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={onOpenErrorNotebook}
+              title="Vigade märkmik ja harjutused"
+            >
+              <BookmarkPlus size={14} className="accent-text" />
+              <span>
+                {material.contentLang === 'en'
+                  ? 'Mistake Journal'
+                  : 'Vigade märkmik'}
+              </span>
+            </button>
+          )}
+
           <button
             type="button"
             className={`btn btn-sm ${
@@ -2334,67 +2541,117 @@ export default function MaterialStudyView({
                   {currentExercise.question}
                 </h2>
 
-                {/* Interactive Helper Toolbar: Hint, Step-by-Step Solution, Try Similar Problem */}
-                <div className="exercise-helper-toolbar mb-2">
-                  {currentExercise.hint && (
-                    <button
-                      type="button"
-                      className={`btn btn-sm ${
-                        showHint ? 'btn-primary' : 'btn-secondary'
-                      }`}
-                      onClick={() => setShowHint((h) => !h)}
-                    >
-                      <HelpCircle size={14} />
-                      <span>{t.material.exercises.showHintBtn}</span>
-                    </button>
-                  )}
+                {/* Progressive 3-Tier Hints Before Answering */}
+                {(() => {
+                  const tiers = getExerciseHintTiers(
+                    currentExercise,
+                    material.contentLang === 'en'
+                  );
+                  return (
+                    <div className="progressive-hints-block mb-3">
+                      <div className="progressive-hints-bar">
+                        <div className="hints-bar-label">
+                          <HelpCircle size={14} className="accent-text" />
+                          <span>
+                            {material.contentLang === 'en'
+                              ? 'Hints before answer (3 tiers):'
+                              : 'Vihjed enne vastust (3 astet):'}
+                          </span>
+                        </div>
+                        <div className="tier-pills-row">
+                          <button
+                            type="button"
+                            className={`tier-pill-btn ${
+                              unlockedHintTier >= 1 ? 'active' : ''
+                            }`}
+                            onClick={() =>
+                              setUnlockedHintTier((prev) => (prev === 1 ? 0 : 1))
+                            }
+                            title="Aste 1: Väike suunav küsimus"
+                          >
+                            <span>1. {material.contentLang === 'en' ? 'Guiding question' : 'Suunav küsimus'}</span>
+                          </button>
+                          <button
+                            type="button"
+                            className={`tier-pill-btn ${
+                              unlockedHintTier >= 2 ? 'active' : ''
+                            }`}
+                            onClick={() =>
+                              setUnlockedHintTier((prev) => (prev === 2 ? 1 : 2))
+                            }
+                            title="Aste 2: Sobiv meetod või valem"
+                          >
+                            <span>2. {material.contentLang === 'en' ? 'Method / Formula' : 'Sobiv valem'}</span>
+                          </button>
+                          <button
+                            type="button"
+                            className={`tier-pill-btn ${
+                              unlockedHintTier >= 3 ? 'active' : ''
+                            }`}
+                            onClick={() =>
+                              setUnlockedHintTier((prev) => (prev === 3 ? 2 : 3))
+                            }
+                            title="Aste 3: Täielik lahendus ja sammud"
+                          >
+                            <span>3. {material.contentLang === 'en' ? 'Full solution' : 'Täielik lahendus'}</span>
+                          </button>
+                        </div>
 
-                  {currentExercise.steps && currentExercise.steps.length > 0 && (
-                    <button
-                      type="button"
-                      className={`btn btn-sm ${
-                        showSteps ? 'btn-primary' : 'btn-secondary'
-                      }`}
-                      onClick={() => setShowSteps((s) => !s)}
-                    >
-                      <ListOrdered size={14} />
-                      <span>
-                        {showSteps
-                          ? t.material.exercises.hideStepsBtn
-                          : t.material.exercises.showStepsBtn}
-                      </span>
-                    </button>
-                  )}
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm try-similar-btn"
+                          onClick={handleTrySimilarProblem}
+                          title={t.material.exercises.trySimilarBtn}
+                        >
+                          <Sparkles size={13} />
+                          <span>{t.material.exercises.trySimilarBtn}</span>
+                        </button>
+                      </div>
 
-                  <button
-                    type="button"
-                    className="btn btn-secondary btn-sm"
-                    onClick={handleTrySimilarProblem}
-                  >
-                    <Sparkles size={14} />
-                    <span>{t.material.exercises.trySimilarBtn}</span>
-                  </button>
-                </div>
+                      {unlockedHintTier >= 1 && (
+                        <div className="hint-tier-card tier-1-card">
+                          <div className="tier-badge-label">
+                            <span className="badge badge-neutral">Aste 1</span>
+                            <strong>
+                              {material.contentLang === 'en'
+                                ? 'Guiding question for self-reflection:'
+                                : 'Suunav küsimus iseseisvaks mõtlemiseks:'}
+                            </strong>
+                          </div>
+                          <p className="tier-card-text">{tiers.tier1}</p>
+                        </div>
+                      )}
 
-                {showHint && currentExercise.hint && (
-                  <div className="hint-callout mb-2">
-                    <HelpCircle size={16} />
-                    <span>{currentExercise.hint}</span>
-                  </div>
-                )}
+                      {unlockedHintTier >= 2 && (
+                        <div className="hint-tier-card tier-2-card">
+                          <div className="tier-badge-label">
+                            <span className="badge badge-warning">Aste 2</span>
+                            <strong>
+                              {material.contentLang === 'en'
+                                ? 'Applicable method or formula:'
+                                : 'Sobiv meetod või valem:'}
+                            </strong>
+                          </div>
+                          <p className="tier-card-text">{tiers.tier2}</p>
+                        </div>
+                      )}
 
-                {showSteps &&
-                  currentExercise.steps &&
-                  currentExercise.steps.length > 0 && (
-                    <div className="steps-solution-box mb-2">
-                      <strong>{t.material.exercises.stepsHeader}</strong>
-                      <ol className="steps-list">
-                        {currentExercise.steps.map((stepStr, sIdx) => (
-                          <li key={sIdx}>{stepStr}</li>
-                        ))}
-                      </ol>
+                      {unlockedHintTier >= 3 && (
+                        <div className="hint-tier-card tier-3-card">
+                          <div className="tier-badge-label">
+                            <span className="badge badge-success">Aste 3</span>
+                            <strong>
+                              {material.contentLang === 'en'
+                                ? 'Complete solution & steps:'
+                                : 'Täielik lahenduskäik ja vastus:'}
+                            </strong>
+                          </div>
+                          <p className="tier-card-text">{tiers.tier3}</p>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  );
+                })()}
 
                 {/* Self-Answer Input for Short-Answer & Calculation Problems */}
                 {(currentExercise.type === 'short_answer' ||
@@ -2887,6 +3144,196 @@ export default function MaterialStudyView({
                   </ul>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Contextual Text Selection Floating Toolbar */}
+      {selectionContext && (
+        <div
+          className="contextual-selection-pill"
+          style={{
+            position: 'absolute',
+            top: `${selectionContext.top}px`,
+            left: `${selectionContext.left}px`,
+            zIndex: 1000
+          }}
+        >
+          <div className="ctx-pill-label">
+            <Sparkles size={13} className="accent-text" />
+            <span>{material.contentLang === 'en' ? 'Ask Revi:' : 'Küsi Revi käest:'}</span>
+          </div>
+          <button
+            type="button"
+            className="ctx-action-btn"
+            onClick={() => handleAskContextual('simplify')}
+          >
+            <Lightbulb size={13} />
+            <span>{material.contentLang === 'en' ? 'Explain simply' : 'Selgita lihtsamalt'}</span>
+          </button>
+          <button
+            type="button"
+            className="ctx-action-btn"
+            onClick={() => handleAskContextual('example')}
+          >
+            <Sparkles size={13} />
+            <span>{material.contentLang === 'en' ? 'Give example' : 'Too näide'}</span>
+          </button>
+          <button
+            type="button"
+            className="ctx-action-btn"
+            onClick={() => handleAskContextual('why')}
+          >
+            <HelpCircle size={13} />
+            <span>{material.contentLang === 'en' ? 'Why is this so?' : 'Miks see nii on?'}</span>
+          </button>
+          <button
+            type="button"
+            className="ctx-close-btn"
+            onClick={() => setSelectionContext(null)}
+            aria-label="Sulge"
+          >
+            <X size={13} />
+          </button>
+        </div>
+      )}
+
+      {/* 5. Contextual Question Split Modal */}
+      {activeContextualQuestion && (
+        <div
+          className="modal-backdrop contextual-modal-backdrop"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setActiveContextualQuestion(null);
+          }}
+        >
+          <div className="modal-card contextual-modal-card">
+            <div className="modal-header">
+              <div className="modal-header-left">
+                <div className="badge badge-primary">
+                  <MessageSquare size={13} />
+                  <span>
+                    {activeContextualQuestion.mode === 'simplify'
+                      ? (material.contentLang === 'en' ? 'Simplified Explanation' : 'Lihtsustatud selgitus')
+                      : activeContextualQuestion.mode === 'example'
+                      ? (material.contentLang === 'en' ? 'Practical Example' : 'Näide elust ja arvutusest')
+                      : (material.contentLang === 'en' ? 'Why is this so?' : 'Miks see nii on?')}
+                  </span>
+                </div>
+                <h2 className="modal-title">
+                  {material.contentLang === 'en'
+                    ? 'Study Notes Question & Source Context'
+                    : 'Konspekti lõigu selgitus ja algallikas'}
+                </h2>
+              </div>
+              <button
+                type="button"
+                className="btn btn-ghost btn-icon modal-close-btn"
+                onClick={() => setActiveContextualQuestion(null)}
+                aria-label="Sulge"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body contextual-modal-split-body">
+              {/* Left Column: Revi Explanation */}
+              <div className="split-col-explanation">
+                <div className="selected-snippet-box mb-3">
+                  <div className="snippet-label font-bold text-xs uppercase tracking-wider text-muted mb-1">
+                    {material.contentLang === 'en' ? 'Marked excerpt in notes:' : 'Konspektis märgitud lõik:'}
+                  </div>
+                  <blockquote className="selected-snippet-quote">
+                    „{activeContextualQuestion.snippet}“
+                  </blockquote>
+                </div>
+
+                {activeContextualQuestion.notFoundInMaterial && (
+                  <div className="callout callout-warning mb-3">
+                    <AlertTriangle size={15} />
+                    <span>
+                      {material.contentLang === 'en'
+                        ? 'Note: This specific nuance is not explicitly detailed in the source material, but here is the general principle:'
+                        : 'Märkus: Seda detailset vastust materjalis otseselt ei leidu, kuid üldise loogika ja teooria kohaselt:'}
+                    </span>
+                  </div>
+                )}
+
+                <div className="revi-explanation-content">
+                  <div className="explanation-title font-bold mb-2 flex items-center gap-1.5 accent-text">
+                    <Sparkles size={16} />
+                    <span>{material.contentLang === 'en' ? 'Revi’s Answer:' : 'Revi selgitus:'}</span>
+                  </div>
+                  <p className="explanation-prose">
+                    {activeContextualQuestion.explanation}
+                  </p>
+                </div>
+              </div>
+
+              {/* Right Column: Algallika lehekülg / Adjacent source citation */}
+              <div className="split-col-source">
+                <div className="source-viewer-preview-card">
+                  <div className="source-preview-top">
+                    <span className="badge badge-neutral">
+                      <FileText size={12} />
+                      <span>{material.fileType || 'PDF'}</span>
+                    </span>
+                    <span className="source-page-badge">
+                      Lk {activeContextualQuestion.sourcePage}
+                    </span>
+                  </div>
+
+                  <h4 className="source-topic-title mt-2">
+                    {activeContextualQuestion.sourceTopic}
+                  </h4>
+
+                  <div className="source-excerpt-sheet mt-2">
+                    <div className="mock-slide-page">
+                      <div className="mock-slide-header">
+                        <span>{material.title}</span>
+                        <span>{activeContextualQuestion.sourcePage} / {material.pageCount || 10}</span>
+                      </div>
+                      <div className="mock-slide-body">
+                        <div className="mock-slide-highlight">
+                          {activeContextualQuestion.snippet}
+                        </div>
+                        <div className="mock-slide-faint">
+                          {activeContextualQuestion.sourceTopic} — Revi algallika kontekst.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-full mt-3"
+                    onClick={() => {
+                      onOpenSourceViewer(
+                        material,
+                        activeContextualQuestion.sourcePage || 1
+                      );
+                      setActiveContextualQuestion(null);
+                    }}
+                  >
+                    <ExternalLink size={14} />
+                    <span>
+                      {material.contentLang === 'en'
+                        ? `Open Page ${activeContextualQuestion.sourcePage} in Source Viewer`
+                        : `Ava algallikas lk ${activeContextualQuestion.sourcePage}`}
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setActiveContextualQuestion(null)}
+              >
+                {material.contentLang === 'en' ? 'Close' : 'Sulge'}
+              </button>
             </div>
           </div>
         </div>
