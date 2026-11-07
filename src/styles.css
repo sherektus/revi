@@ -145,7 +145,7 @@ button {
 
 .container {
   width: 100%;
-  max-width: 1180px;
+  max-width: 1260px;
   margin: 0 auto;
   padding: 0 1.5rem;
 }
@@ -167,7 +167,7 @@ button {
   position: sticky;
   top: 0;
   z-index: 40;
-  background-color: color-mix(in srgb, var(--bg-main) 86%, transparent);
+  background-color: color-mix(in srgb, var(--bg-main) 88%, transparent);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border-color);
 }
@@ -176,52 +176,63 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 4.4rem;
-  gap: 1rem;
+  min-height: 4.3rem;
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+  gap: 0.85rem;
+  max-width: 1360px;
 }
 
 .navbar-left {
   display: flex;
   align-items: center;
-  gap: 1.75rem;
+  gap: 1.15rem;
+  min-width: 0;
 }
 
 .brand-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.55rem;
   font-weight: 700;
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   color: var(--text-primary);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .brand-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.15rem;
+  height: 2.15rem;
   border-radius: 0.65rem;
   background: var(--accent);
   color: #fffdf9;
   box-shadow: 0 4px 12px var(--accent-border);
+  flex-shrink: 0;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
+  flex-wrap: nowrap;
 }
 
 .nav-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.5rem 0.9rem;
+  gap: 0.4rem;
+  padding: 0.46rem 0.78rem;
   border-radius: 0.65rem;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 600;
+  line-height: 1.2;
   color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.16s ease;
 }
 
@@ -238,7 +249,9 @@ button {
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.45rem;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* --- COZY POMODORO TIMER PILL --- */
@@ -520,7 +533,7 @@ button {
 
 .hero-section {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   gap: 2.35rem;
   align-items: stretch;
   margin-bottom: 2.6rem;
@@ -910,7 +923,7 @@ button {
 
 .library-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.55rem;
   padding: 0.8rem;
   background: var(--bg-subtle);
@@ -1035,15 +1048,18 @@ button {
 }
 
 .study-tab-btn {
-  flex: 1;
+  flex: 1 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
-  padding: 0.75rem 1rem;
+  gap: 0.5rem;
+  padding: 0.7rem 0.95rem;
   border-radius: 0.7rem;
   font-weight: 700;
-  font-size: 0.93rem;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  flex-shrink: 0;
   color: var(--text-secondary);
   transition: all 0.16s ease;
 }
@@ -1191,7 +1207,7 @@ button {
 
 .topic-two-col {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1.25rem;
 }
 
@@ -2008,7 +2024,7 @@ button {
 /* --- SOURCE VIEWER LAYOUT --- */
 .source-viewer-layout {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 260px minmax(0, 1fr);
   flex: 1;
   min-height: 0;
 }
@@ -2136,6 +2152,32 @@ button {
 }
 
 /* --- RESPONSIVE DESIGN (MOBILE & TABLET) --- */
+@media (max-width: 1140px) {
+  .navbar-inner {
+    height: auto;
+    padding: 0.6rem 1.2rem;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .navbar-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .nav-links {
+    overflow-x: auto;
+    max-width: 100%;
+    padding-bottom: 0.15rem;
+  }
+
+  .navbar-right {
+    width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+}
+
 @media (max-width: 920px) {
   .hero-section {
     grid-template-columns: 1fr;
@@ -2171,6 +2213,7 @@ button {
     width: 100%;
     justify-content: space-between;
     gap: 0.5rem;
+    flex-wrap: wrap;
   }
 
   .navbar-right {
@@ -2211,7 +2254,7 @@ button {
 /* --- NEW DASHBOARD, CALENDAR, QUICK TEST, FORMULA SHEET & CRUD STYLES --- */
 .home-dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1.5rem;
   margin-bottom: 2.5rem;
 }
@@ -2225,6 +2268,8 @@ button {
   border: 1px solid var(--border-color);
   border-radius: 1.2rem;
   box-shadow: var(--shadow-sm);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .due-today-panel {
@@ -2465,17 +2510,19 @@ button {
 /* --- CALENDAR VIEW & STUDY PLANS --- */
 .calendar-layout-grid {
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
   gap: 1.5rem;
   align-items: start;
 }
 
 .calendar-month-card {
-  padding: 1.4rem;
+  padding: 1.35rem;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 1.15rem;
   box-shadow: var(--shadow-sm);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .calendar-month-header {
@@ -2492,7 +2539,8 @@ button {
 
 .calendar-weekdays-row {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.35rem;
   text-align: center;
   margin-bottom: 0.5rem;
 }
@@ -2502,17 +2550,23 @@ button {
   font-weight: 700;
   color: var(--text-muted);
   padding: 0.3rem 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .calendar-days-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 0.35rem;
 }
 
 .calendar-day-cell {
-  min-height: 82px;
-  padding: 0.4rem;
+  min-width: 0;
+  width: 100%;
+  min-height: 86px;
+  padding: 0.42rem;
   background: var(--bg-main);
   border: 1px solid var(--border-color);
   border-radius: 0.65rem;
@@ -2520,6 +2574,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  overflow: hidden;
   transition: all 0.14s ease;
 }
 
@@ -2551,6 +2606,7 @@ button {
   justify-content: space-between;
   font-size: 0.78rem;
   font-weight: 700;
+  min-width: 0;
 }
 
 .day-event-dot {
@@ -2558,19 +2614,28 @@ button {
   height: 6px;
   border-radius: 50%;
   background: var(--accent);
+  flex-shrink: 0;
 }
 
 .day-pills-stack {
   display: flex;
   flex-direction: column;
-  gap: 0.18rem;
+  gap: 0.2rem;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 .day-event-pill {
-  font-size: 0.66rem;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-size: 0.67rem;
   font-weight: 600;
-  padding: 0.12rem 0.32rem;
-  border-radius: 0.3rem;
+  line-height: 1.3;
+  padding: 0.14rem 0.35rem;
+  border-radius: 0.32rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2596,6 +2661,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
+  min-width: 0;
 }
 
 .calendar-event-card {
@@ -2604,6 +2670,8 @@ button {
   border: 1px solid var(--border-color);
   border-radius: 1.1rem;
   box-shadow: var(--shadow-sm);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .calendar-event-card.event-completed {
@@ -2716,6 +2784,7 @@ button {
   border: 1px solid var(--border-color);
   border-radius: 0.55rem;
   font-size: 0.82rem;
+  min-width: 0;
 }
 
 .plan-session-row.session-done {
@@ -2728,6 +2797,8 @@ button {
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
+  min-width: 0;
+  flex: 1;
 }
 
 .session-date-badge {
@@ -2735,10 +2806,15 @@ button {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--accent-text);
+  flex-shrink: 0;
 }
 
 .session-topic-name {
   font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* --- FORMULA SHEET VIEW --- */

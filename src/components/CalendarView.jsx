@@ -257,29 +257,41 @@ export default function CalendarView({
                   </div>
 
                   <div className="day-pills-stack">
-                    {cell.dayEvents.slice(0, 2).map((ev) => (
-                      <span
-                        key={ev.id}
-                        className={`day-event-pill ${
-                          ev.completed ? 'pill-done' : 'pill-deadline'
-                        }`}
-                        title={ev.title}
-                      >
-                        {ev.title}
-                      </span>
-                    ))}
+                    {cell.dayEvents.slice(0, 2).map((ev) => {
+                      const shortTitle =
+                        (ev.title || '').length > 16
+                          ? `${ev.title.slice(0, 15).trim()}…`
+                          : ev.title;
+                      return (
+                        <span
+                          key={ev.id}
+                          className={`day-event-pill ${
+                            ev.completed ? 'pill-done' : 'pill-deadline'
+                          }`}
+                          title={ev.title}
+                        >
+                          {shortTitle}
+                        </span>
+                      );
+                    })}
 
-                    {cell.daySessions.slice(0, 2).map((sess) => (
-                      <span
-                        key={sess.id}
-                        className={`day-event-pill pill-session ${
-                          sess.completed ? 'pill-done' : ''
-                        }`}
-                        title={`${sess.topicTitle} (${sess.minutes} min)`}
-                      >
-                        📚 {sess.topicTitle}
-                      </span>
-                    ))}
+                    {cell.daySessions.slice(0, 2).map((sess) => {
+                      const shortTopic =
+                        (sess.topicTitle || '').length > 14
+                          ? `${sess.topicTitle.slice(0, 13).trim()}…`
+                          : sess.topicTitle;
+                      return (
+                        <span
+                          key={sess.id}
+                          className={`day-event-pill pill-session ${
+                            sess.completed ? 'pill-done' : ''
+                          }`}
+                          title={`${sess.topicTitle} (${sess.minutes} min)`}
+                        >
+                          📚 {shortTopic}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
               );

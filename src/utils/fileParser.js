@@ -43,6 +43,124 @@ function getMimeFromExt(path) {
   return null;
 }
 
+function toSuperscriptText(str) {
+  const map = {
+    '0': '⁰',
+    '1': '¹',
+    '2': '²',
+    '3': '³',
+    '4': '⁴',
+    '5': '⁵',
+    '6': '⁶',
+    '7': '⁷',
+    '8': '⁸',
+    '9': '⁹',
+    '+': '⁺',
+    '-': '⁻',
+    '=': '⁼',
+    '(': '⁽',
+    ')': '⁾',
+    n: 'ⁿ'
+  };
+  return String(str)
+    .split('')
+    .map((ch) => map[ch] || ch)
+    .join('');
+}
+
+function toSubscriptText(str) {
+  const map = {
+    '0': '₀',
+    '1': '₁',
+    '2': '₂',
+    '3': '₃',
+    '4': '₄',
+    '5': '₅',
+    '6': '₆',
+    '7': '₇',
+    '8': '₈',
+    '9': '₉',
+    '+': '₊',
+    '-': '₋',
+    '=': '₌',
+    '(': '₍',
+    ')': '₎',
+    a: 'ₐ',
+    e: 'ₑ',
+    i: 'ᵢ',
+    o: 'ₒ',
+    u: 'ᵤ',
+    x: 'ₓ',
+    n: 'ₙ',
+    m: 'ₘ',
+    k: 'ₖ',
+    p: 'ₚ',
+    s: 'ₛ',
+    t: 'ₜ'
+  };
+  const converted = String(str)
+    .split('')
+    .map((ch) => map[ch] || null);
+  if (converted.every(Boolean)) {
+    return converted.join('');
+  }
+  return `_${str}`;
+}
+
+function extractOmathText(mathNode) {
+  if (!mathNode) return '';
+  const localName = (mathNode.localName || mathNode.nodeName || '').replace(/^.*:/, '');
+
+  if (localName === 't') {
+    return mathNode.textContent || '';
+  }
+
+  if (localName === 'f') {
+    const num = Array.from(mathNode.childNodes).find(
+      (n) => (n.localName || n.nodeName || '').replace(/^.*:/, '') === 'num'
+    );
+    const den = Array.from(mathNode.childNodes).find(
+      (n) => (n.localName || n.nodeName || '').replace(/^.*:/, '') === 'den'
+    );
+    const numTxt = num ? extractOmathText(num).trim() : '';
+    const denTxt = den ? extractOmathText(den).trim() : '';
+    if (numTxt && denTxt) {
+      const safeNum = numTxt.length > 2 && /[+\-−]/.test(numTxt) ? `(${numTxt})` : numTxt;
+      const safeDen = denTxt.length > 2 && /[+\-−·*]/.test(denTxt) ? `(${denTxt})` : denTxt;
+      return `${safeNum} / ${safeDen}`;
+    }
+  }
+
+  if (localName === 'sSup') {
+    const children = Array.from(mathNode.childNodes);
+    const baseNode = children.find((n) => (n.localName || n.nodeName || '').replace(/^.*:/, '') === 'e');
+    const supNode = children.find((n) => (n.localName || n.nodeName || '').replace(/^.*:/, '') === 'sup');
+    const baseTxt = baseNode ? extractOmathText(baseNode).trim() : '';
+    const supTxt = supNode ? extractOmathText(supNode).trim() : '';
+    return `${baseTxt}${toSuperscriptText(supTxt)}`;
+  }
+
+  if (localName === 'sSub') {
+    const children = Array.from(mathNode.childNodes);
+    const baseNode = children.find((n) => (n.localName || n.nodeName || '').replace(/^.*:/, '') === 'e');
+    const subNode = children.find((n) => (n.localName || n.nodeName || '').replace(/^.*:/, '') === 'sub');
+    const baseTxt = baseNode ? extractOmathText(baseNode).trim() : '';
+    const subTxt = subNode ? extractOmathText(subNode).trim() : '';
+    return `${baseTxt}${toSubscriptText(subTxt)}`;
+  }
+
+  if (localName === 'rad') {
+    const children = Array.from(mathNode.childNodes);
+    const baseNode = children.find((n) => (n.localName || n.nodeName || '').replace(/^.*:/, '') === 'e');
+    const baseTxt = baseNode ? extractOmathText(baseNode).trim() : '';
+    return `√(${baseTxt})`;
+  }
+
+  return Array.from(mathNode.childNodes || [])
+    .map((child) => extractOmathText(child))
+    .join('');
+}
+
 async function parsePdfFile(file, contentLang) {
   const arrayBuffer = await file.arrayBuffer();
   const pagePrefix = contentLang === 'en' ? 'Page' : 'Lk';
@@ -57,22 +175,34 @@ async function parsePdfFile(file, contentLang) {
       const page = await pdf.getPage(i);
       const textContent = await page.getTextContent();
 
-      // Reconstruct lines based on vertical transform coordinates
+      // Reconstruct lines based on vertical transform coordinates, keeping formula subscripts/superscripts together
       const lines = [];
       let currentLine = [];
       let lastY = null;
+      let lastStr = '';
 
       for (const item of textContent.items) {
         if (!item.str) continue;
+        const str = item.str;
         const y = item.transform ? Math.round(item.transform[5]) : null;
-        if (lastY !== null && y !== null && Math.abs(y - lastY) > 5) {
+        const dy = lastY !== null && y !== null ? Math.abs(y - lastY) : 0;
+
+        // Keep subscript/superscript math tokens on the same line when vertical offset is small (<= 8pt)
+        const isSubOrSupToken =
+          dy > 4 &&
+          dy <= 9 &&
+          (str.trim().length <= 4 || /^[0-9+\-=()xyzabtnk₀₁₂₃₄²³]+$/i.test(str.trim())) &&
+          lastStr.trim().length <= 18;
+
+        if (lastY !== null && y !== null && dy > 5 && !isSubOrSupToken) {
           if (currentLine.length > 0) {
             lines.push(currentLine.join(' ').replace(/\s+/g, ' ').trim());
             currentLine = [];
           }
         }
-        currentLine.push(item.str);
-        if (y !== null) lastY = y;
+        currentLine.push(str);
+        lastStr = str;
+        if (y !== null && !isSubOrSupToken) lastY = y;
       }
       if (currentLine.length > 0) {
         lines.push(currentLine.join(' ').replace(/\s+/g, ' ').trim());
@@ -81,12 +211,20 @@ async function parsePdfFile(file, contentLang) {
       const content = lines.filter(Boolean).join('\n').trim();
       const extractedFigures = [];
 
-      // Check if page mentions a figure/graph/diagram and try to capture a page visual snapshot
+      // Check if page mentions a figure/graph/diagram OR is a visual diagram slide with brief caption text
       const figureCaptionLine = lines.find((l) =>
-        /\b(?:joonis|skeem|graafik|diagramm|fig(?:ure)?\.?)\s*\d*/i.test(l)
+        /\b(?:joonis|skeem|graafik|diagramm|epüür|lõige|vaade|fig(?:ure)?\.?)\s*\d*/i.test(l)
       );
+      const nonHeaderLines = lines.filter(
+        (l) =>
+          l.trim().length > 2 &&
+          !/\b(?:capt\.|prof\.|mni\s*\d+|teema\s*\d+)\b/i.test(l) &&
+          !/^\d+$/.test(l.trim())
+      );
+      const isDiagramSlide =
+        i > 1 && nonHeaderLines.length >= 1 && nonHeaderLines.length <= 3 && content.length < 180;
 
-      if (figureCaptionLine && typeof document !== 'undefined') {
+      if ((figureCaptionLine || isDiagramSlide) && typeof document !== 'undefined') {
         try {
           const viewport = page.getViewport({ scale: 1.15 });
           const canvas = document.createElement('canvas');
@@ -97,13 +235,18 @@ async function parsePdfFile(file, contentLang) {
             await page.render({ canvasContext: ctx, viewport }).promise;
             const dataUrl = canvas.toDataURL('image/png');
             if (dataUrl && dataUrl.startsWith('data:image/')) {
+              const rawCap =
+                figureCaptionLine ||
+                nonHeaderLines[0] ||
+                `${pagePrefix} ${i}`;
+              const cleanCap = rawCap.replace(/^[•●▪\-*]+\s*/, '').replace(/[,:;]+$/, '').trim();
               extractedFigures.push({
-                title: figureCaptionLine.slice(0, 90),
+                title: cleanCap.slice(0, 90),
                 description:
-                  lines.find((l) => l !== figureCaptionLine && l.length > 25) ||
+                  nonHeaderLines.find((l) => l !== rawCap && l.length > 15) ||
                   (isEN
                     ? `Visual figure extracted from ${pagePrefix} ${i}.`
-                    : `Leheküljelt (${pagePrefix} ${i}) leitud joonis.`),
+                    : `Slaidilt / leheküljelt (${pagePrefix} ${i}) eraldatud joonis: ${cleanCap}.`),
                 imageUrl: dataUrl
               });
             }
@@ -114,8 +257,13 @@ async function parsePdfFile(file, contentLang) {
       }
 
       if (content.length > 0) {
-        const firstLine = lines.find((l) => l.trim().length > 2) || `${pagePrefix} ${i}`;
-        const cleanTitle = firstLine.length > 70 ? firstLine.slice(0, 67) + '...' : firstLine;
+        const firstLine =
+          nonHeaderLines[0] || lines.find((l) => l.trim().length > 2) || `${pagePrefix} ${i}`;
+        const cleanTitle = firstLine
+          .replace(/^[•●▪\-*]+\s*/, '')
+          .replace(/[,:;]+$/, '')
+          .trim()
+          .slice(0, 70);
         pages.push({
           pageNumber: i,
           unitType: 'page',
@@ -185,11 +333,51 @@ async function parsePptxFile(file, contentLang) {
       const lines = [];
 
       for (const p of paragraphs) {
-        const texts = Array.from(p.getElementsByTagName('a:t'))
-          .map((node) => node.textContent || '')
-          .join('');
-        if (texts.trim()) {
-          lines.push(texts.trim());
+        let paraStr = '';
+        for (const child of Array.from(p.childNodes || [])) {
+          const local = (child.localName || child.nodeName || '').replace(/^.*:/, '');
+          if (local === 'r') {
+            const rPr = child.getElementsByTagName('a:rPr')[0];
+            const baseline = rPr ? parseInt(rPr.getAttribute('baseline') || '0', 10) : 0;
+            const rawRun = Array.from(child.getElementsByTagName('a:t'))
+              .map((n) => n.textContent || '')
+              .join('');
+            if (baseline > 15000 && rawRun.trim().length <= 5) {
+              paraStr += toSuperscriptText(rawRun.trim());
+            } else if (baseline < -10000 && rawRun.trim().length <= 5) {
+              paraStr += toSubscriptText(rawRun.trim());
+            } else {
+              paraStr += rawRun;
+            }
+          } else if (local === 'm' || local === 'oMathPara' || local === 'oMath') {
+            const mathTxt = extractOmathText(child).trim();
+            if (mathTxt) {
+              paraStr += (paraStr && !paraStr.endsWith(' ') ? ' ' : '') + mathTxt + ' ';
+            }
+          } else if (child.getElementsByTagName) {
+            const nestedMath = Array.from(child.getElementsByTagName('m:oMath'));
+            if (nestedMath.length > 0) {
+              const mathTxt = nestedMath.map((m) => extractOmathText(m)).join(' ').trim();
+              if (mathTxt) {
+                paraStr += (paraStr && !paraStr.endsWith(' ') ? ' ' : '') + mathTxt + ' ';
+              }
+            } else {
+              const tNodes = Array.from(child.getElementsByTagName('a:t'));
+              if (tNodes.length > 0) {
+                paraStr += tNodes.map((n) => n.textContent || '').join('');
+              }
+            }
+          }
+        }
+
+        if (!paraStr.trim()) {
+          paraStr = Array.from(p.getElementsByTagName('a:t'))
+            .map((node) => node.textContent || '')
+            .join('');
+        }
+
+        if (paraStr.trim()) {
+          lines.push(paraStr.replace(/\s+/g, ' ').trim());
         }
       }
 
