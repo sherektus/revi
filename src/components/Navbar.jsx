@@ -1,5 +1,16 @@
-import React from 'react';
-import { BookOpen, Library, Plus, Sun, Moon, Layers } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import {
+  BookOpen,
+  Library,
+  Plus,
+  Sun,
+  Moon,
+  Layers,
+  Coffee,
+  Play,
+  Pause,
+  RotateCcw
+} from 'lucide-react';
 
 export default function Navbar({
   t,
@@ -11,6 +22,42 @@ export default function Navbar({
   onNavigate,
   onOpenUploadModal
 }) {
+  // Cozy Pomodoro Timer (25 min focus / 5 min break)
+  const [timerMode, setTimerMode] = useState('focus'); // 'focus' | 'break'
+  const [secondsLeft, setSecondsLeft] = useState(25 * 60);
+  const [isRunning, setIsRunning] = useState(false);
+
+  useEffect(() => {
+    if (!isRunning) return;
+    const interval = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          const nextMode = timerMode === 'focus' ? 'break' : 'focus';
+          setTimerMode(nextMode);
+          setIsRunning(false);
+          return nextMode === 'focus' ? 25 * 60 : 5 * 60;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isRunning, timerMode]);
+
+  function toggleTimerMode() {
+    const nextMode = timerMode === 'focus' ? 'break' : 'focus';
+    setTimerMode(nextMode);
+    setIsRunning(false);
+    setSecondsLeft(nextMode === 'focus' ? 25 * 60 : 5 * 60);
+  }
+
+  function resetTimer() {
+    setIsRunning(false);
+    setSecondsLeft(timerMode === 'focus' ? 25 * 60 : 5 * 60);
+  }
+
+  const mins = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
+  const secs = String(secondsLeft % 60).padStart(2, '0');
+
   return (
     <header className="navbar">
       <div className="navbar-inner container">
@@ -22,7 +69,7 @@ export default function Navbar({
             aria-label={t.appName}
           >
             <span className="brand-icon">
-              <Layers size={20} strokeWidth={2.3} />
+              <Layers size={19} strokeWidth={2.2} />
             </span>
             <span className="brand-text">{t.appName}</span>
           </button>
@@ -48,6 +95,47 @@ export default function Navbar({
         </div>
 
         <div className="navbar-right">
+          {/* Cozy Focus / Break Study Timer */}
+          <div className={`cozy-timer-pill ${isRunning ? 'timer-active' : ''}`}>
+            <button
+              type="button"
+              className="timer-mode-tag"
+              onClick={toggleTimerMode}
+              title={
+                timerMode === 'focus' ? t.nav.timerFocus : t.nav.timerBreak
+              }
+            >
+              <Coffee size={14} />
+              <span>
+                {timerMode === 'focus' ? t.nav.timerFocus : t.nav.timerBreak}
+              </span>
+            </button>
+            <span className="timer-clock">
+              {mins}:{secs}
+            </span>
+            <button
+              type="button"
+              className="timer-ctrl-btn"
+              onClick={() => setIsRunning((r) => !r)}
+              title={isRunning ? t.nav.timerPause : t.nav.timerStart}
+              aria-label={isRunning ? t.nav.timerPause : t.nav.timerStart}
+            >
+              {isRunning ? <Pause size={13} /> : <Play size={13} />}
+            </button>
+            {(isRunning ||
+              secondsLeft !== (timerMode === 'focus' ? 25 * 60 : 5 * 60)) && (
+              <button
+                type="button"
+                className="timer-ctrl-btn"
+                onClick={resetTimer}
+                title={t.nav.timerReset}
+                aria-label={t.nav.timerReset}
+              >
+                <RotateCcw size={13} />
+              </button>
+            )}
+          </div>
+
           <button
             type="button"
             className="btn btn-primary btn-sm nav-add-btn"

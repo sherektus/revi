@@ -8,7 +8,12 @@ export const translations = {
       addMaterial: 'Lisa materjal',
       lightMode: 'Lülita heledale režiimile',
       darkMode: 'Lülita tumedale režiimile',
-      langSwitch: 'Vaheta keelt'
+      langSwitch: 'Vaheta keelt',
+      timerFocus: 'Fookus',
+      timerBreak: 'Paus',
+      timerStart: 'Käivita fookustaimer (25 min)',
+      timerPause: 'Peata taimer',
+      timerReset: 'Lähtesta taimer'
     },
     hero: {
       badge: 'Nutikas õppimine tudengitele',
@@ -94,6 +99,10 @@ export const translations = {
       resetNotification: 'Edenemine on nullitud.',
       contentLanguageTag: 'Sisu keel',
       overallProgress: 'Üldine edenemine',
+      focusModeBtn: 'Rahulik fookusvaade',
+      exitFocusModeBtn: 'Tavaline vaade',
+      keyboardShortcutsHint: 'Kiirklahvid: Tühik = pööra kaarti • 1 = vajan kordamist • 2 = teadsin',
+      exerciseShortcutsHint: 'Kiirklahvid: 1–4 = vali vastus • Enter / → = järgmine harjutus',
       tabs: {
         summary: 'Kordamispunktid',
         flashcards: 'Mälukaardid',
@@ -194,7 +203,12 @@ export const translations = {
       addMaterial: 'Add material',
       lightMode: 'Switch to light mode',
       darkMode: 'Switch to dark mode',
-      langSwitch: 'Switch language'
+      langSwitch: 'Switch language',
+      timerFocus: 'Focus',
+      timerBreak: 'Break',
+      timerStart: 'Start focus timer (25 min)',
+      timerPause: 'Pause timer',
+      timerReset: 'Reset timer'
     },
     hero: {
       badge: 'Smart study workflows for students',
@@ -280,6 +294,10 @@ export const translations = {
       resetNotification: 'Progress has been reset.',
       contentLanguageTag: 'Content language',
       overallProgress: 'Overall progress',
+      focusModeBtn: 'Cozy focus mode',
+      exitFocusModeBtn: 'Standard view',
+      keyboardShortcutsHint: 'Shortcuts: Space = flip card • 1 = need review • 2 = knew it',
+      exerciseShortcutsHint: 'Shortcuts: 1–4 = select option • Enter / → = next exercise',
       tabs: {
         summary: 'Study Points',
         flashcards: 'Flashcards',

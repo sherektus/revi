@@ -16,7 +16,10 @@ import {
   XCircle,
   ExternalLink,
   Calculator,
-  Globe
+  Globe,
+  Maximize2,
+  Minimize2,
+  Keyboard
 } from 'lucide-react';
 import { calculateMaterialStats } from '../utils/storage';
 
@@ -31,6 +34,7 @@ export default function MaterialStudyView({
   onSwitchPairedSample
 }) {
   const [showHint, setShowHint] = useState(false);
+  const [isFocusMode, setIsFocusMode] = useState(false);
 
   const activeTab = matProgress?.activeTab || 'summary';
   const selectedTopicId = matProgress?.selectedTopicId || 'all';
@@ -57,19 +61,85 @@ export default function MaterialStudyView({
     setShowHint(false);
   }, [exState.currentIndex, activeTab, material.id]);
 
-  // Keyboard support for Flashcard flipping & navigation
+  // --- FLASHCARDS LOGIC ---
+  const allFlashcards = material.flashcards || [];
+  const activeDeckIds =
+    fcState.activeDeckIds && fcState.activeDeckIds.length > 0
+      ? fcState.activeDeckIds
+      : allFlashcards.map((c) => c.id);
+
+  const activeFlashcards = activeDeckIds
+    .map((id) => allFlashcards.find((c) => c.id === id))
+    .filter(Boolean);
+
+  const safeCardIndex = Math.min(
+    Math.max(0, fcState.currentIndex || 0),
+    Math.max(0, activeFlashcards.length - 1)
+  );
+  const currentCard = activeFlashcards[safeCardIndex];
+
+  // --- EXERCISES LOGIC ---
+  const allExercises = material.exercises || [];
+  const activeExerciseIds =
+    exState.activeExerciseIds && exState.activeExerciseIds.length > 0
+      ? exState.activeExerciseIds
+      : allExercises.map((e) => e.id);
+
+  const activeExercises = activeExerciseIds
+    .map((id) => allExercises.find((e) => e.id === id))
+    .filter(Boolean);
+
+  const safeExerciseIndex = Math.min(
+    Math.max(0, exState.currentIndex || 0),
+    Math.max(0, activeExercises.length - 1)
+  );
+  const currentExercise = activeExercises[safeExerciseIndex];
+  const currentAnswer = currentExercise
+    ? exState.answersById[currentExercise.id]
+    : null;
+
+  // Ergonomic Keyboard Shortcuts for Flashcards and Exercises
   useEffect(() => {
     function handleKeyDown(e) {
-      if (activeTab !== 'flashcards' || fcState.isSessionFinished) return;
       if (
         document.activeElement &&
         ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)
       ) {
         return;
       }
-      if (e.code === 'Space') {
-        e.preventDefault();
-        handleFlipCard();
+
+      if (activeTab === 'flashcards' && !fcState.isSessionFinished) {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          handleFlipCard();
+        } else if (e.key === '1') {
+          e.preventDefault();
+          handleMarkCard('review');
+        } else if (e.key === '2') {
+          e.preventDefault();
+          handleMarkCard('knew');
+        } else if (e.code === 'ArrowLeft') {
+          e.preventDefault();
+          handleNavigateCard(safeCardIndex - 1);
+        } else if (e.code === 'ArrowRight') {
+          e.preventDefault();
+          handleNavigateCard(safeCardIndex + 1);
+        }
+      } else if (activeTab === 'exercises' && !exState.isSessionFinished && currentExercise) {
+        const isAnswered = Boolean(currentAnswer?.checked);
+        if (!isAnswered && ['1', '2', '3', '4'].includes(e.key)) {
+          const idx = parseInt(e.key, 10) - 1;
+          if (idx >= 0 && idx < (currentExercise.options || []).length) {
+            e.preventDefault();
+            handleSelectExerciseOption(idx);
+          }
+        } else if (isAnswered && (e.code === 'Enter' || e.code === 'ArrowRight')) {
+          e.preventDefault();
+          handleNextExercise();
+        } else if (e.code === 'ArrowLeft') {
+          e.preventDefault();
+          handleNavigateExercise(safeExerciseIndex - 1);
+        }
       }
     }
     window.addEventListener('keydown', handleKeyDown);
@@ -89,23 +159,6 @@ export default function MaterialStudyView({
       selectedTopicId: topicId
     });
   }
-
-  // --- FLASHCARDS LOGIC ---
-  const allFlashcards = material.flashcards || [];
-  const activeDeckIds =
-    fcState.activeDeckIds && fcState.activeDeckIds.length > 0
-      ? fcState.activeDeckIds
-      : allFlashcards.map((c) => c.id);
-
-  const activeFlashcards = activeDeckIds
-    .map((id) => allFlashcards.find((c) => c.id === id))
-    .filter(Boolean);
-
-  const safeCardIndex = Math.min(
-    Math.max(0, fcState.currentIndex || 0),
-    Math.max(0, activeFlashcards.length - 1)
-  );
-  const currentCard = activeFlashcards[safeCardIndex];
 
   function handleFlipCard() {
     onUpdateProgress(material.id, {
@@ -199,29 +252,8 @@ export default function MaterialStudyView({
     });
   }
 
-  // --- EXERCISES LOGIC ---
-  const allExercises = material.exercises || [];
-  const activeExerciseIds =
-    exState.activeExerciseIds && exState.activeExerciseIds.length > 0
-      ? exState.activeExerciseIds
-      : allExercises.map((e) => e.id);
-
-  const activeExercises = activeExerciseIds
-    .map((id) => allExercises.find((e) => e.id === id))
-    .filter(Boolean);
-
-  const safeExerciseIndex = Math.min(
-    Math.max(0, exState.currentIndex || 0),
-    Math.max(0, activeExercises.length - 1)
-  );
-  const currentExercise = activeExercises[safeExerciseIndex];
-  const currentAnswer = currentExercise
-    ? exState.answersById[currentExercise.id]
-    : null;
-
   function handleSelectExerciseOption(optionIdx) {
     if (!currentExercise) return;
-    // Immediately check & reveal answer + explanation upon selecting an option
     const isCorrect = optionIdx === currentExercise.correctIndex;
     const nextAnswersById = {
       ...exState.answersById,
@@ -285,7 +317,6 @@ export default function MaterialStudyView({
 
     if (wrongIds.length === 0) return;
 
-    // Clear previous answers for those wrong exercises so the user can answer them fresh
     const updatedAnswers = { ...exState.answersById };
     wrongIds.forEach((id) => {
       delete updatedAnswers[id];
@@ -330,13 +361,11 @@ export default function MaterialStudyView({
     });
   }
 
-  // Filtered topics in Summary view
   const displayedTopics =
     selectedTopicId === 'all'
       ? material.topics || []
       : (material.topics || []).filter((tp) => tp.id === selectedTopicId);
 
-  // Flashcards session summary numbers
   const deckKnewCount = activeFlashcards.filter(
     (c) => fcState.statusById[c.id] === 'knew'
   ).length;
@@ -344,7 +373,6 @@ export default function MaterialStudyView({
     (c) => fcState.statusById[c.id] === 'review'
   ).length;
 
-  // Exercises session summary numbers
   const sessionCorrectCount = activeExercises.filter(
     (e) => exState.answersById[e.id]?.isCorrect
   ).length;
@@ -357,7 +385,11 @@ export default function MaterialStudyView({
       : 0;
 
   return (
-    <div className="material-study-view container">
+    <div
+      className={`material-study-view container ${
+        isFocusMode ? 'cozy-focus-mode' : ''
+      }`}
+    >
       {/* Top Bar & Material Info */}
       <div className="study-topbar">
         <button
@@ -370,6 +402,21 @@ export default function MaterialStudyView({
         </button>
 
         <div className="study-topbar-actions">
+          <button
+            type="button"
+            className={`btn btn-sm ${
+              isFocusMode ? 'btn-primary' : 'btn-secondary'
+            }`}
+            onClick={() => setIsFocusMode((f) => !f)}
+          >
+            {isFocusMode ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+            <span>
+              {isFocusMode
+                ? t.material.exitFocusModeBtn
+                : t.material.focusModeBtn}
+            </span>
+          </button>
+
           {material.isSample && material.pairedSampleId && (
             <button
               type="button"
@@ -406,34 +453,36 @@ export default function MaterialStudyView({
         </div>
       </div>
 
-      {/* Material Header Card */}
-      <div className="study-header-card">
-        <div className="study-header-left">
-          <div className="material-badges">
-            <span className="badge badge-violet">{material.subject}</span>
-            <span className="badge badge-neutral">
-              {material.fileType} • {t.material.contentLanguageTag}:{' '}
-              {(material.contentLang || 'et').toUpperCase()}
-            </span>
+      {/* Material Header Card (hidden in Focus Mode for calm study) */}
+      {!isFocusMode && (
+        <div className="study-header-card">
+          <div className="study-header-left">
+            <div className="material-badges">
+              <span className="badge badge-violet">{material.subject}</span>
+              <span className="badge badge-neutral">
+                {material.fileType} • {t.material.contentLanguageTag}:{' '}
+                {(material.contentLang || 'et').toUpperCase()}
+              </span>
+            </div>
+            <h1 className="study-material-title">{material.title}</h1>
           </div>
-          <h1 className="study-material-title">{material.title}</h1>
-        </div>
 
-        <div className="study-header-right">
-          <div className="overall-progress-box">
-            <div className="progress-label-line">
-              <span>{t.material.overallProgress}</span>
-              <span className="progress-pct">{stats.progressPercent}%</span>
-            </div>
-            <div className="progress-track">
-              <div
-                className="progress-fill"
-                style={{ width: `${stats.progressPercent}%` }}
-              />
+          <div className="study-header-right">
+            <div className="overall-progress-box">
+              <div className="progress-label-line">
+                <span>{t.material.overallProgress}</span>
+                <span className="progress-pct">{stats.progressPercent}%</span>
+              </div>
+              <div className="progress-track">
+                <div
+                  className="progress-fill"
+                  style={{ width: `${stats.progressPercent}%` }}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Mode Switcher Tabs: 1. Kordamispunktid, 2. Mälukaardid, 3. Harjutused */}
       <div className="study-tabs" role="tablist">
@@ -481,7 +530,6 @@ export default function MaterialStudyView({
       {/* TAB 1: KORDAMISPUNKTID (STUDY POINTS) */}
       {activeTab === 'summary' && (
         <div className="summary-tab-content">
-          {/* Topic Selector Pills */}
           <div className="topic-pills-bar">
             <button
               type="button"
@@ -545,7 +593,6 @@ export default function MaterialStudyView({
                 )}
 
                 <div className="topic-two-col">
-                  {/* Key Concepts */}
                   {tp.concepts && tp.concepts.length > 0 && (
                     <div className="concepts-panel">
                       <h3 className="subsection-title">
@@ -563,7 +610,6 @@ export default function MaterialStudyView({
                     </div>
                   )}
 
-                  {/* Formulas & Relations */}
                   {tp.formulas && tp.formulas.length > 0 && (
                     <div className="formulas-panel">
                       <h3 className="subsection-title">
@@ -605,7 +651,6 @@ export default function MaterialStudyView({
 
           {!fcState.isSessionFinished && currentCard ? (
             <div className="session-stage">
-              {/* Session Progress Bar: e.g. 4/8 */}
               <div className="session-progress-header">
                 <div className="session-counter-badge">
                   <span>{t.material.flashcards.progressCounter}</span>
@@ -748,6 +793,7 @@ export default function MaterialStudyView({
                   >
                     <RotateCcw size={17} />
                     <span>{t.material.flashcards.needReviewBtn}</span>
+                    <kbd className="keycap-hint">1</kbd>
                   </button>
 
                   <button
@@ -757,6 +803,7 @@ export default function MaterialStudyView({
                   >
                     <Check size={18} />
                     <span>{t.material.flashcards.knewItBtn}</span>
+                    <kbd className="keycap-hint">2</kbd>
                   </button>
                 </div>
 
@@ -781,9 +828,13 @@ export default function MaterialStudyView({
                   <ChevronRight size={18} />
                 </button>
               </div>
+
+              <div className="shortcuts-caption-row">
+                <Keyboard size={14} />
+                <span>{t.material.keyboardShortcutsHint}</span>
+              </div>
             </div>
           ) : (
-            /* Flashcard Session Complete Summary */
             <div className="session-summary-card">
               <div className="summary-award-circle">
                 <Award size={36} />
@@ -862,7 +913,6 @@ export default function MaterialStudyView({
 
           {!exState.isSessionFinished && currentExercise ? (
             <div className="session-stage">
-              {/* Exercise Progress Bar: e.g. 4/8 */}
               <div className="session-progress-header">
                 <div className="session-counter-badge">
                   <span>{t.material.exercises.progressCounter}</span>
@@ -897,7 +947,6 @@ export default function MaterialStudyView({
                 </span>
               </div>
 
-              {/* Exercise Card */}
               <div className="exercise-card">
                 <div className="exercise-card-top">
                   <span className="exercise-prompt-caption">
@@ -978,6 +1027,9 @@ export default function MaterialStudyView({
                           {optionLetters[oIdx] || oIdx + 1}
                         </span>
                         <span className="option-text">{opt}</span>
+                        {!isAnswered && (
+                          <kbd className="keycap-hint">{oIdx + 1}</kbd>
+                        )}
                         {isAnswered && isCorrectOption && (
                           <CheckCircle2 size={19} className="option-status-icon" />
                         )}
@@ -989,7 +1041,6 @@ export default function MaterialStudyView({
                   })}
                 </div>
 
-                {/* Explanation & Correct Answer Feedback Box */}
                 {currentAnswer?.checked && (
                   <div
                     className={`exercise-feedback-box ${
@@ -1072,9 +1123,13 @@ export default function MaterialStudyView({
                   </button>
                 </div>
               </div>
+
+              <div className="shortcuts-caption-row">
+                <Keyboard size={14} />
+                <span>{t.material.exerciseShortcutsHint}</span>
+              </div>
             </div>
           ) : (
-            /* Exercise Session Complete Summary */
             <div className="session-summary-card">
               <div className="summary-award-circle">
                 <Award size={36} />
